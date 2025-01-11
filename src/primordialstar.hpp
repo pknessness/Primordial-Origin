@@ -87,7 +87,9 @@ namespace PrimordialStar {
 		int id;
 		vector<int> connected;
 
-		PathNode(Point2D pos, Cardinal wall);
+		PathNode(Point2D pos, Cardinal wall, Agent* agent);
+
+		~PathNode();
 
 		Point2D rawPos() {
 			return pos;
@@ -103,19 +105,6 @@ namespace PrimordialStar {
 
 	vector<PathNode*> basePathNodes;
 	map2d<int8_t>* blobGrid;
-
-	PathNode::PathNode(Point2D pos, Cardinal wall) : pos(pos), wall(wall) {
-		id = basePathNodes.size();
-		basePathNodes.push_back(this);
-	}
-
-	//Point2D findNextWall(Point2D start, Point2D direction) {
-	//	Point2D dir = normalize(direction);
-	//	if (dir.y == 0) {
-
-	//	}
-	//	return { 0,0 };
-	//}
 
 	//DDA https://en.wikipedia.org/wiki/Digital_differential_analyzer_(graphics_algorithm)
 	bool checkLinearPath(Point2D start, Point2D end, Agent* agent) {
@@ -143,9 +132,24 @@ namespace PrimordialStar {
 		return true;
 	}
 
-	void calculateConnection(PathNode* p, Agent* agent) {
+	//void calculateConnection(PathNode* p, Agent* agent) {
+	//	static float maxDist = 0;
+	//	for (int i = 0; i < basePathNodes.size(); i++) {
+	//		if (i == p->id || find(p->connected.begin(), p->connected.end(), i) != p->connected.end()) {
+	//			continue;
+	//		}
+	//		PrimordialStar::PathNode* node = PrimordialStar::basePathNodes[i];
+	//		if (checkLinearPath(p->rawPos(), node->rawPos(), agent)) {
+	//			p->connected.push_back(i);
+	//			node->connected.push_back(p->id);
+	//			float d = DistanceSquared2D(node->position(0), p->position(0));
+	//		}
+	//	}
+	//}
+
+	void calculateNewConnection(PathNode* p, Agent* agent) {
 		for (int i = 0; i < basePathNodes.size(); i++) {
-			if (i == p->id || find(p->connected.begin(), p->connected.end(), i) != p->connected.end()) {
+			if (i == p->id) {
 				continue;
 			}
 			PrimordialStar::PathNode* node = PrimordialStar::basePathNodes[i];
@@ -155,6 +159,38 @@ namespace PrimordialStar {
 			}
 		}
 	}
+
+	void breakAllConnections(PathNode* p) {
+		for (int i = 0; i < p->connected.size(); i++) {
+			if (p->connected[i] >= PrimordialStar::basePathNodes.size()) {
+				continue;
+			}
+			PrimordialStar::PathNode* node = PrimordialStar::basePathNodes[p->connected[i]];
+			for (int c = 0; c < node->connected.size(); c++) {
+				if (node->connected[c] == p->id) {
+					node->connected.erase(node->connected.begin() + c);
+				}
+			}
+		}
+	}
+
+	PathNode::PathNode(Point2D pos, Cardinal wall, Agent *agent) : pos(pos), wall(wall) {
+		id = basePathNodes.size();
+		basePathNodes.push_back(this);
+		calculateNewConnection(this, agent);
+	}
+
+	PathNode::~PathNode(){
+		breakAllConnections(this);
+	}
+
+	//Point2D findNextWall(Point2D start, Point2D direction) {
+	//	Point2D dir = normalize(direction);
+	//	if (dir.y == 0) {
+
+	//	}
+	//	return { 0,0 };
+	//}
 
 	void generateBlobGrid() {
 
@@ -246,32 +282,34 @@ namespace PrimordialStar {
 					//bool basic_up_lt = up && up_lt && lt;
 
 					if (check_UP_RT(i, j) && ((Aux::checkPathable(i - 1, j + 1, agent) || !check_UP_RT(i - 1, j + 1)) || (Aux::checkPathable(i + 1, j - 1, agent) || !check_UP_RT(i + 1, j - 1)))) {
-						new PathNode(Point2D{ (float)(i + 1 + displacementMinute), (float)(j + 1 + displacementMinute) }, DN_LT);
+						new PathNode(Point2D{ (float)(i + 1 + displacementMinute), (float)(j + 1 + displacementMinute) }, DN_LT, agent);
 					}
 					if (check_DN_RT(i, j) && ((Aux::checkPathable(i - 1, j - 1, agent) || !check_DN_RT(i - 1, j - 1)) || (Aux::checkPathable(i + 1, j + 1, agent) || !check_DN_RT(i + 1, j + 1)))) {
-						new PathNode(Point2D{ (float)(i + 1 + displacementMinute), (float)(j - displacementMinute) }, UP_LT);
+						new PathNode(Point2D{ (float)(i + 1 + displacementMinute), (float)(j - displacementMinute) }, UP_LT, agent);
 					}
 					if (check_DN_LT(i, j) && ((Aux::checkPathable(i - 1, j + 1, agent) || !check_DN_LT(i - 1, j + 1)) || (Aux::checkPathable(i + 1, j - 1, agent) || !check_DN_LT(i + 1, j - 1)))) {
-						new PathNode(Point2D{ (float)(i - displacementMinute), (float)(j - displacementMinute) }, UP_RT);
+						new PathNode(Point2D{ (float)(i - displacementMinute), (float)(j - displacementMinute) }, UP_RT, agent);
 					}
 					if (check_UP_LT(i, j) && ((Aux::checkPathable(i - 1, j - 1, agent) || !check_UP_LT(i - 1, j - 1)) || (Aux::checkPathable(i + 1, j + 1, agent) || !check_UP_LT(i + 1, j + 1)))) {
-						new PathNode(Point2D{ (float)(i - displacementMinute), (float)(j + 1 + displacementMinute) }, DN_RT);
+						new PathNode(Point2D{ (float)(i - displacementMinute), (float)(j + 1 + displacementMinute) }, DN_RT, agent);
 					}
 				}
 			}
 		}
-		for (int i = 0; i < basePathNodes.size(); i++) {
-			calculateConnection(basePathNodes[i], agent);
-		}
+		//for (int i = 0; i < basePathNodes.size(); i++) {
+		//	calculateConnection(basePathNodes[i], agent);
+		//}
 	}
 
 	vector<Point2D> getPath(Point2D start, Point2D end, float radius, Agent* agent) {
-		PathNode* startNode = new PathNode(start, INVALID);
-		PathNode* operatingNode = startNode;
-		PathNode* endNode = new PathNode(end, INVALID);
+		PathNode* startNode = new PathNode(start, INVALID, agent);
+		
+		//calculateNewConnection(startNode, agent);
 
-		calculateConnection(startNode, agent);
-		calculateConnection(endNode, agent);
+		PathNode* operatingNode = startNode;
+		PathNode* endNode = new PathNode(end, INVALID, agent);
+		
+		//calculateNewConnection(endNode, agent);
 
 		bool* visited = new bool[basePathNodes.size()];
 		memset(visited, 0, basePathNodes.size() * sizeof(bool));
@@ -330,67 +368,12 @@ namespace PrimordialStar {
 		delete[] visited;
 		basePathNodes.pop_back();
 		basePathNodes.pop_back();
+
+		delete startNode;
+		delete endNode;
 		
 		//printf("SOMETHING WENT WRONG\n");
 		return points;
-	}
-
-	float getPathLength(Point2D start, Point2D end, float radius, Agent* agent) {
-		PathNode* startNode = new PathNode(start, INVALID);
-		PathNode* operatingNode = startNode;
-		PathNode* endNode = new PathNode(end, INVALID);
-
-		calculateConnection(startNode, agent);
-		calculateConnection(endNode, agent);
-
-		bool* visited = new bool[basePathNodes.size()];
-		memset(visited, 0, basePathNodes.size() * sizeof(bool));
-
-		float length = FLT_MAX;
-
-		if (startNode->connected.size() == 0 || endNode->connected.size() == 0) {
-			//length = -1;
-		}
-		else {
-			std::priority_queue<StarNode, vector<StarNode>, greater<float>> starNodes;
-			starNodes.push(StarNode(operatingNode->id, 0, Distance2D(start, end)));
-			visited[operatingNode->id] = true;
-			bool found = false;
-			for (int cycles = 0; cycles < 10000; cycles++) {
-				if (starNodes.size() == 0) {
-					break;
-				}
-				StarNode star = starNodes.top();
-				starNodes.pop();
-				operatingNode = basePathNodes[star.pathNode];
-				Point2D currentPos = operatingNode->position(radius);
-				for (int i = 0; i < operatingNode->connected.size(); i++) {
-					int subNodeID = operatingNode->connected[i];
-					if (visited[subNodeID]) {
-						continue;
-					}
-					Point2D nextPos = basePathNodes[subNodeID]->position(radius);
-					starNodes.push(StarNode(subNodeID, star.g + Distance2D(currentPos, nextPos), Distance2D(nextPos, end)));
-					visited[subNodeID] = true;
-
-					//DebugText(agent, strprintf("%.1f,%.1f", star.g + Distance2D(currentPos, nextPos), Distance2D(nextPos, end)), AP3D(nextPos));
-
-					if (operatingNode->connected[i] == endNode->id) {
-						length = star.g + Distance2D(currentPos, nextPos);
-						found = true;
-						break;
-					}
-				}
-				if (found) {
-					break;
-				}
-			}
-		}
-		delete[] visited;
-		basePathNodes.pop_back();
-		basePathNodes.pop_back();
-
-		return length;
 	}
 
 	float getPathLength(vector<Point2D> path) {
@@ -400,6 +383,66 @@ namespace PrimordialStar {
 			travelled += Distance2D(path[i], path[i + 1]);
 		}
 		return travelled;
+	}
+
+	float getPathLength(Point2D start, Point2D end, float radius, Agent* agent) {
+		return getPathLength(getPath(start, end, radius, agent));
+
+		//PathNode* startNode = new PathNode(start, INVALID);
+		//PathNode* operatingNode = startNode;
+		//PathNode* endNode = new PathNode(end, INVALID);
+
+		//calculateConnection(startNode, agent);
+		//calculateConnection(endNode, agent);
+
+		//bool* visited = new bool[basePathNodes.size()];
+		//memset(visited, 0, basePathNodes.size() * sizeof(bool));
+
+		//float length = FLT_MAX;
+
+		//if (startNode->connected.size() == 0 || endNode->connected.size() == 0) {
+		//	//length = -1;
+		//}
+		//else {
+		//	std::priority_queue<StarNode, vector<StarNode>, greater<float>> starNodes;
+		//	starNodes.push(StarNode(operatingNode->id, 0, Distance2D(start, end)));
+		//	visited[operatingNode->id] = true;
+		//	bool found = false;
+		//	for (int cycles = 0; cycles < 10000; cycles++) {
+		//		if (starNodes.size() == 0) {
+		//			break;
+		//		}
+		//		StarNode star = starNodes.top();
+		//		starNodes.pop();
+		//		operatingNode = basePathNodes[star.pathNode];
+		//		Point2D currentPos = operatingNode->position(radius);
+		//		for (int i = 0; i < operatingNode->connected.size(); i++) {
+		//			int subNodeID = operatingNode->connected[i];
+		//			if (visited[subNodeID]) {
+		//				continue;
+		//			}
+		//			Point2D nextPos = basePathNodes[subNodeID]->position(radius);
+		//			starNodes.push(StarNode(subNodeID, star.g + Distance2D(currentPos, nextPos), Distance2D(nextPos, end)));
+		//			visited[subNodeID] = true;
+
+		//			//DebugText(agent, strprintf("%.1f,%.1f", star.g + Distance2D(currentPos, nextPos), Distance2D(nextPos, end)), AP3D(nextPos));
+
+		//			if (operatingNode->connected[i] == endNode->id) {
+		//				length = star.g + Distance2D(currentPos, nextPos);
+		//				found = true;
+		//				break;
+		//			}
+		//		}
+		//		if (found) {
+		//			break;
+		//		}
+		//	}
+		//}
+		//delete[] visited;
+		//basePathNodes.pop_back();
+		//basePathNodes.pop_back();
+
+		//return length;
 	}
 
 	Point2D distanceAlongPath(vector<Point2D> path, float distance) {

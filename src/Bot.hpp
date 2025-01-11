@@ -24,7 +24,7 @@
 #define START_ME Point2D{40,50}
 #define START_OP Point2D{60,50}
 
-#define MICRO_TEST_2 1
+#define MICRO_TEST_2 0
 
 using namespace sc2;
 
@@ -402,10 +402,10 @@ public:
             if (Distance2D(node->rawPos(), Observation()->GetCameraPos()) > 15) {
                 continue;
             }
-            //for (int c = 0; c < node->connected.size(); c++) {
-            //    PrimordialStar::PathNode* node2 = PrimordialStar::basePathNodes[node->connected[c]];
-            //    DebugLine(this, P3D(node->rawPos()) + Point3D{ 0,0,1 }, P3D(node2->rawPos()) + Point3D{ 0,0,1 }, Colors::Blue);
-            //}
+            for (int c = 0; c < node->connected.size(); c++) {
+                PrimordialStar::PathNode* node2 = PrimordialStar::basePathNodes[node->connected[c]];
+                DebugLine(this, P3D(node->rawPos()) + Point3D{ 0,0,1 }, P3D(node2->rawPos()) + Point3D{ 0,0,1 }, Colors::Blue);
+            }
             DebugSphere(this, P3D(node->rawPos()), 0.5);
         }
         DebugSphere(this, P3D(Observation()->GetCameraPos()), 0.5);
@@ -814,6 +814,7 @@ public:
             //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_ADEPT, Observation()->GetGameInfo().enemy_start_locations[0], 2, 6);
             //Debug()->DebugCreateUnit(UNIT_TYPEID::TERRAN_MARINE, Observation()->GetGameInfo().enemy_start_locations[0], 2, 14);
 
+            Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_OBSERVER, middle, 1, 1);
             Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_STALKER, middle, 1, 1);
             Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_ADEPT, Observation()->GetGameInfo().enemy_start_locations[0], 2, 2);
         #endif
@@ -1272,7 +1273,7 @@ public:
 
         //displaySpacialHashGrid();
 
-        displayEnemyDamageGrid();
+        //displayEnemyDamageGrid();
 
         //displayPrimordialStarNodes();
 
@@ -1400,6 +1401,9 @@ public:
         }
     }
 };
+
+//primordialstar optimizations: 
+//-check max num of paths from nodes and max length of a path to optimize
 
 //node
 

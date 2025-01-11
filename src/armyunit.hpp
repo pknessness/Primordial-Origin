@@ -699,7 +699,7 @@ public:
                 DebugLine(agent,Point3D{ escapeLoc.x,escapeLoc.y, pos3D(agent).z}, Point3D{escapeLoc.x,escapeLoc.y, pos3D(agent).z + 1.5F}, Colors::Purple);
             }
             statTargetPos = posTarget;
-            ignoreFrames = 0;
+            ignoreFrames = 5;
         }
         //constexpr float extraRadius = 2.0F;
         //if (ignoreFrames > 0) {
