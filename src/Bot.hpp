@@ -116,7 +116,7 @@ public:
         //Debug()->SendDebug();
     }
 
-    void grid() {
+    void grid(bool nearbyOnly = true) {
         GameInfo game_info = Observation()->GetGameInfo();
 
         int mapWidth = game_info.width;
@@ -124,16 +124,16 @@ public:
 
         Point2D center = Observation()->GetCameraPos();
         int wS = int(center.x) - 10;
-        if (wS < 0)
+        if (wS < 0 || !nearbyOnly)
             wS = 0;
         int hS = int(center.y) - 5;
-        if (hS < 0)
+        if (hS < 0 || !nearbyOnly)
             hS = 0;
         int wE = int(center.x) + 11;
-        if (wE > mapWidth)
+        if (wE > mapWidth || !nearbyOnly)
             wE = mapWidth;
         int hE = int(center.y) + 14;
-        if (hE > mapHeight)
+        if (hE > mapHeight || !nearbyOnly)
             hE = mapHeight;
 
         int fontSize = 8;
@@ -402,10 +402,10 @@ public:
             if (Distance2D(node->rawPos(), Observation()->GetCameraPos()) > 15) {
                 continue;
             }
-            for (int c = 0; c < node->connected.size(); c++) {
-                PrimordialStar::PathNode* node2 = PrimordialStar::basePathNodes[node->connected[c]];
-                DebugLine(this, P3D(node->rawPos()) + Point3D{ 0,0,1 }, P3D(node2->rawPos()) + Point3D{ 0,0,1 }, Colors::Blue);
-            }
+            //for (int c = 0; c < node->connected.size(); c++) {
+            //    PrimordialStar::PathNode* node2 = PrimordialStar::basePathNodes[node->connected[c]];
+            //    DebugLine(this, P3D(node->rawPos()) + Point3D{ 0,0,3 }, P3D(node2->rawPos()) + Point3D{ 0,0,3 }, Colors::Blue);
+            //}
             DebugSphere(this, P3D(node->rawPos()), 0.5);
         }
         DebugSphere(this, P3D(Observation()->GetCameraPos()), 0.5);
@@ -431,12 +431,67 @@ public:
                 DebugSphere(this, P3D(p), 0.5, { 61,102,220 });
             }
             //DebugSphere(this, P3D(PrimordialStar::distanceAlongPath(path, 5.5)), 0.5, {21,42,120});
-            printf("len: %.1f len2: %.1f\n", PrimordialStar::getPathLength(Observation()->GetCameraPos(), rally_point, 0.5, this), l2);
+            //printf("len: %.1f len2: %.1f\n", PrimordialStar::getPathLength(Observation()->GetCameraPos(), rally_point, 0.5, this), l2);
         }
         else {
             DebugLine(this, P3D(rally_point) + Point3D{ 0,0,1 }, P3D(Observation()->GetCameraPos()) + Point3D{ 0,0,1 }, Colors::Red);
         }
 
+    }
+
+    void pathVerification() {
+        #define NUM_PTS_RT 20
+        vector<Point2D> pts;
+        pts.reserve(NUM_PTS_RT);
+
+        for (int asd = 0; asd < NUM_PTS_RT; asd++) {
+            pts.push_back( Aux::getRandomPathable(this));
+        }
+
+        vector<float> differenceInDistance;
+        differenceInDistance.reserve(NUM_PTS_RT * NUM_PTS_RT);
+
+        timeus startTime = std::chrono::steady_clock::now();
+        for (int a = 0; a < NUM_PTS_RT; a++) {
+            Point2D from = pts[a];
+            DebugSphere(this, P3D(from), 0.25, { 61,102,220 });
+            for (int b = 0; b < NUM_PTS_RT; b++) {
+                Point2D to = pts[b];
+                auto path = PrimordialStar::getPathDijkstra2(from, to, 0, this);
+                float dist = PrimordialStar::getPathLength(path);
+                float sc2dist = Query()->PathingDistance(from, to);
+                float diff = dist - sc2dist;
+                if (0 && diff < 0) {
+                    printf("S{%.1f,%.1f} E{%.1f,%.1f} D[%.1f]\n", from.x, from.y, to.x, to.y, diff);
+                }
+                if (diff > 10 || dist < -10) {
+                    Color c = Aux::randomColor();
+                    float z = std::rand() * 2.0F / RAND_MAX;
+                    for (int i = 0; i < path.size() - 1; i++) {
+                        DebugLine(this, P3D(path[i]) + Point3D{ 0,0,1.5F + z }, P3D(path[i + 1]) + Point3D{ 0,0,1.5F + z }, c);
+                    }
+                }
+                differenceInDistance.push_back(diff);
+            }
+        }
+        timeus endTime = std::chrono::steady_clock::now();
+        long long dt = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
+        float mean = 0;
+        float min = 400;
+        float max = 0;
+        for (float f : differenceInDistance) {
+            if (f < min) {
+                min = f;
+            }
+            if (f > max) {
+                max = f;
+            }
+            mean += f;
+            printf("%.1f\n", f);
+        }
+        mean /= differenceInDistance.size();
+        printf("PATH VERIFICATION [%d^2] %.1fs MEAN:%.1f MIN:%.1f MAX:%.1f\n", NUM_PTS_RT, dt / 1000000.0, mean, min, max);
+        Debug()->SendDebug();
     }
 
     void listUnitWraps() {
@@ -692,8 +747,6 @@ public:
         path_zhang_suen = new map2d<int8_t>(mapWidth, mapHeight, true);
         PrimordialStar::blobGrid = new map2d<int8_t>(mapWidth, mapHeight, true);
 
-        PrimordialStar::generatePathNodes(this);
-
         UnitManager::enemyDamageNet = new map2d<DamageLocation>(mapWidth * UnitManager::damageNetPrecision, mapHeight * UnitManager::damageNetPrecision, true);
         UnitManager::enemyDamageNetModify = new map2d<int8_t>(mapWidth * UnitManager::damageNetPrecision, mapHeight * UnitManager::damageNetPrecision, true);
         UnitManager::enemyDamageNetTemp = new map2d<float>(mapWidth * UnitManager::damageNetPrecision, mapHeight * UnitManager::damageNetPrecision, true);
@@ -715,13 +768,18 @@ public:
             if (Aux::isMineral(*unit)) {
                 imRef(path_zhang_suen, int(unit->pos.x + 0.5F), int(unit->pos.y)) = 1;
                 imRef(path_zhang_suen, int(unit->pos.x - 0.5F), int(unit->pos.y)) = 1;
+
                 imRef(Aux::buildingBlocked, int(unit->pos.x + 0.5F), int(unit->pos.y)) = 1;
                 imRef(Aux::buildingBlocked, int(unit->pos.x - 0.5F), int(unit->pos.y)) = 1;
+
+                imRef(Aux::pathingMap, int(unit->pos.x + 0.5F), int(unit->pos.y)) = 1;
+                imRef(Aux::pathingMap, int(unit->pos.x - 0.5F), int(unit->pos.y)) = 1;
             } else if (Aux::isVespene(*unit)) {
                 for (int i = -1; i <= 1; i++) {
                     for (int j = -1; j <= 1; j++) {
                         imRef(path_zhang_suen, int(unit->pos.x + i), int(unit->pos.y + j)) = 1;
                         imRef(Aux::buildingBlocked, int(unit->pos.x + i), int(unit->pos.y + j)) = 1;
+                        imRef(Aux::pathingMap, int(unit->pos.x + i), int(unit->pos.y + j)) = 1;
                     }
                 }
             } else {
@@ -729,6 +787,21 @@ public:
                 Aux::addPlacement(unit->pos, unit->unit_type);
             }
         }
+
+        grid(false);
+        PrimordialStar::generatePathNodes(this);
+        for (int i = 0; i < PrimordialStar::basePathNodes.size(); i++) {
+            PrimordialStar::PathNode* node = PrimordialStar::basePathNodes[i];
+            if (Distance2D(node->rawPos(), Observation()->GetCameraPos()) > 300) {
+                continue;
+            }
+            DebugSphere(this, P3D(node->rawPos()), 0.5, {250,50,100});
+            for (int c = 0; c < node->connected.size(); c++) {
+                PrimordialStar::PathNode* node2 = PrimordialStar::basePathNodes[node->connected[c]];
+                DebugLine(this, P3D(node->rawPos()) + Point3D{ 0,0,1 }, P3D(node2->rawPos()) + Point3D{ 0,0,1 }, Colors::Blue);
+            }
+        }
+        pathVerification();
 
         #if MICRO_TEST == 0
             for (int i = -4; i <= 4; i++) {

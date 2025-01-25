@@ -146,6 +146,28 @@ static bool checkPathable(Point2D p, Agent* agent) {
     return checkPathable(int(p.x), int(p.y), agent);
 }
 
+static Point2D getRandomPathable(Agent* agent, float startX = -1, float endX = -1, float startY = -1, float endY = -1) {
+    float sX = startX;
+    float eX = endX;
+    float sY = startY; 
+    float eY = endY;
+    if (sX == -1) sX = 0;
+    if (eX == -1) eX = agent->Observation()->GetGameInfo().width;
+    if (sY == -1) sY = 0;
+    if (eY == -1) eY = agent->Observation()->GetGameInfo().height;
+    Point2D p;
+    while (!Aux::checkPathable(p, agent)) {
+        float x = sX + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eX - sX)));
+        float y = sY + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eY - sY)));
+        p = Point2D{ x, y };
+    }
+    return p;
+}
+
+static Color randomColor() {
+    return Color{ uint8_t(255 * rand() / RAND_MAX) , uint8_t(255 * rand() / RAND_MAX) , uint8_t(255 * rand() / RAND_MAX) };
+}
+
 static bool isPylon(const Unit &unit) {
     UnitTypeID type = unit.unit_type;
     return (type == UNIT_TYPEID::PROTOSS_PYLON);

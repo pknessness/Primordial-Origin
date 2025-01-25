@@ -472,7 +472,7 @@ public:
             //damageCost /= (PrimordialStar::getPathLength(fullpath) + 4.0F);
             //damageCost += UnitManager::getRelevantDamage(this, UnitManager::getRadiusAvgDamage(escapePointF, radius + 2.0F, agent), agent);
 
-            printf("%.1f,%.1f eC:%.1f dC:%.1fPRE\n",x ,y , escapeCost, damageCost);
+            //printf("%.1f,%.1f eC:%.1f dC:%.1fPRE\n",x ,y , escapeCost, damageCost);
             DebugLine(agent,Point3D{ escapePointF.x,escapePointF.y,0 }, Point3D{ escapePointF.x,escapePointF.y, 53.0F });
 
             if (escapeCost == -1 || damageCost < escapeCost) {
@@ -594,7 +594,7 @@ public:
                     float damageRadius = radius + targetWrap->radius + weap.range;
 
                     float dTtoEnemy = abs(Distance2D(pos(agent), targetWrap->pos(agent)) - damageRadius) / getStats(agent).movement_speed;
-                    printf("dto %f:wC %f\n", dTtoEnemy, get(agent)->weapon_cooldown);
+                    //printf("dto %f:wC %f\n", dTtoEnemy, get(agent)->weapon_cooldown);
                     if (dTtoEnemy >= get(agent)->weapon_cooldown) {
                         posTarget = targetWrap->pos(agent);
                         //mode = 'a';

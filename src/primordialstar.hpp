@@ -6,11 +6,14 @@
 #include "constants.h"
 #include "debugging.hpp"
 
+#define MAX_CONN_DIST 50
+
 using namespace sc2;
 using namespace std;
 
 class StarNode {
 public:
+	//PathNode this compares to
 	int pathNode;
 
 	//distance already travelled
@@ -29,6 +32,44 @@ public:
 
 	operator float() {
 		return g + h;
+	}
+};
+
+class AStarCompare {
+public:
+	bool operator()(StarNode a, StarNode b)
+	{
+		return (a.g + a.h > b.g + b.h);
+	}
+};
+
+class DijkStarNode {
+public:
+
+	//PathNode this compares to
+	int pathNode;
+
+	//distance already travelled
+	float g;
+
+	DijkStarNode(int pathNode, float g) : pathNode(pathNode), g(g) {
+
+	}
+
+	//bool operator<(const StarNode& b) const {
+	//	return	(g + h) < (b.g + b.h);
+	//}
+
+	operator float() {
+		return g;
+	}
+};
+
+class DijkstraCompare {
+public:
+	bool operator()(DijkStarNode a, DijkStarNode b)
+	{
+		return (a.g > b.g);
 	}
 };
 
@@ -106,6 +147,9 @@ namespace PrimordialStar {
 	vector<PathNode*> basePathNodes;
 	map2d<int8_t>* blobGrid;
 
+	int maxConnections = 0;
+	float maxDistanceConnection = 0.0F;
+
 	//DDA https://en.wikipedia.org/wiki/Digital_differential_analyzer_(graphics_algorithm)
 	bool checkLinearPath(Point2D start, Point2D end, Agent* agent) {
 		float dx = end.x - start.x;
@@ -154,6 +198,17 @@ namespace PrimordialStar {
 			}
 			PrimordialStar::PathNode* node = PrimordialStar::basePathNodes[i];
 			if (checkLinearPath(p->rawPos(), node->rawPos(), agent)) {
+				float dist = Distance2D(p->rawPos(), node->rawPos());
+				if (dist > MAX_CONN_DIST) {
+					continue;
+				}
+				if (maxDistanceConnection < dist) {
+					maxDistanceConnection = dist;
+				}
+				int m = std::max(p->connected.size(), node->connected.size());
+				if (maxConnections < m) {
+					maxConnections = m;
+				}
 				p->connected.push_back(i);
 				node->connected.push_back(p->id);
 			}
@@ -299,6 +354,7 @@ namespace PrimordialStar {
 		//for (int i = 0; i < basePathNodes.size(); i++) {
 		//	calculateConnection(basePathNodes[i], agent);
 		//}
+		printf("MAX CONNECTIONS OF A NODE: %d\t MAX DISTANCE OF A CONNECTION: %.2f\n", maxConnections, maxDistanceConnection);
 	}
 
 	vector<Point2D> getPath(Point2D start, Point2D end, float radius, Agent* agent) {
@@ -321,7 +377,7 @@ namespace PrimordialStar {
 
 		}
 		else {
-			std::priority_queue<StarNode, vector<StarNode>, greater<float>> starNodes;
+			priority_queue<StarNode, vector<StarNode>, AStarCompare> starNodes;
 			starNodes.push(StarNode(operatingNode->id, 0, Distance2D(start, end)));
 			visited[operatingNode->id] = true;
 			bool found = false;
@@ -372,6 +428,138 @@ namespace PrimordialStar {
 		delete startNode;
 		delete endNode;
 		
+		//printf("SOMETHING WENT WRONG\n");
+		return points;
+	}
+
+	vector<Point2D> getPathDijkstra(Point2D start, Point2D end, float radius, Agent* agent) {
+		PathNode* startNode = new PathNode(start, INVALID, agent);
+
+		PathNode* endNode = new PathNode(end, INVALID, agent);
+
+		//bool* visited = new bool[basePathNodes.size()];
+		//memset(visited, 0, basePathNodes.size() * sizeof(bool));
+
+		vector<Point2D> points;
+
+		if (startNode->connected.size() == 0 || endNode->connected.size() == 0) {
+
+		}
+		else {
+			vector<StarNode> unvisited;
+			unvisited.reserve(basePathNodes.size());
+
+			for (PathNode* p : basePathNodes) {
+				unvisited.push_back(StarNode(p->id, FLT_MAX, 0));
+			}
+
+			int opId = basePathNodes.size() - 2;
+			unvisited[opId].g = 0;
+
+			for (int cycles = 0; cycles < 10000; cycles++) {
+				
+				//visited[opId] = true;
+				for (int i = 0; i < basePathNodes[opId]->connected.size(); i++) {
+					int subNodeID = basePathNodes[opId]->connected[i];
+					float dist = Distance2D(basePathNodes[opId]->position(radius), basePathNodes[subNodeID]->position(radius)) + unvisited[opId].g;
+					
+					if (unvisited[subNodeID].g > dist) {
+						unvisited[subNodeID].g = dist;
+					}
+				}
+
+				int minId = -1;
+				for (int i = 0; i < unvisited.size(); i++) {
+					//if (visited[i]) {
+					//	continue;
+					//}
+					if (minId == -1 || unvisited[minId] > unvisited[i]) {
+						minId = i;
+					}
+				}
+				opId = minId;
+			}
+		}
+
+
+
+
+		//delete[] visited;
+		basePathNodes.pop_back();
+		basePathNodes.pop_back();
+
+		delete startNode;
+		delete endNode;
+
+		//printf("SOMETHING WENT WRONG\n");
+		return points;
+	}
+
+	vector<Point2D> getPathDijkstra2(Point2D start, Point2D end, float radius, Agent* agent) {
+		PathNode* startNode = new PathNode(start, INVALID, agent);
+
+		PathNode* endNode = new PathNode(end, INVALID, agent);
+
+		//bool* visited = new bool[basePathNodes.size()];
+		//memset(visited, 0, basePathNodes.size() * sizeof(bool));
+
+		vector<Point2D> points;
+
+		if (startNode->connected.size() == 0 || endNode->connected.size() == 0) {
+
+		}
+		else {
+			priority_queue<DijkStarNode, vector<DijkStarNode>, DijkstraCompare> Q;
+
+			vector<float> dist;
+			vector<int> parent;
+			dist.reserve(basePathNodes.size());
+			parent.reserve(basePathNodes.size());
+			for (int i = 0; i < basePathNodes.size(); i++) {
+				dist.push_back(FLT_MAX);
+				parent.push_back(-1);
+			}
+
+			Q.push(DijkStarNode(startNode->id, 0));
+			dist[startNode->id] = 0;
+
+			while (Q.size() > 0) {
+				DijkStarNode u = Q.top(); Q.pop();
+
+				PathNode* operatingNode = basePathNodes[u.pathNode];
+				for (int i = 0; i < operatingNode->connected.size(); i++) {
+					PathNode* adjacentNode = basePathNodes[operatingNode->connected[i]];
+					float weight = Distance2D(operatingNode->position(radius), adjacentNode->position(radius));
+
+					if (dist[adjacentNode->id] > dist[u.pathNode] + weight) {
+						parent[adjacentNode->id] = u.pathNode;
+						dist[adjacentNode->id] = dist[u.pathNode] + weight;
+
+						Q.push(DijkStarNode(adjacentNode->id, dist[adjacentNode->id]));
+					}
+				}
+			}
+
+			int node = endNode->id;
+			for (int cycles = 0; cycles < 10000; cycles++) {
+				points.insert(points.begin(), basePathNodes[node]->position(radius));
+				if (node == startNode->id) {
+					break;
+				}
+				node = parent[node];
+			}
+		}
+
+
+
+
+		//delete[] visited;
+		basePathNodes.pop_back();
+		basePathNodes.pop_back();
+
+		delete startNode;
+		delete endNode;
+
 		//printf("SOMETHING WENT WRONG\n");
 		return points;
 	}
