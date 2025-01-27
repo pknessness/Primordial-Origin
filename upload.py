@@ -2,7 +2,6 @@ from os import path, environ
 from typing import Union
 
 import requests
-import yaml
 #from loguru import logger
 import os
 from datetime import datetime
