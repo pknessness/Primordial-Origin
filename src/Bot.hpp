@@ -491,7 +491,7 @@ public:
         }
         mean /= differenceInDistance.size();
         printf("PATH VERIFICATION [%d^2] %.1fs MEAN:%.1f MIN:%.1f MAX:%.1f\n", NUM_PTS_RT, dt / 1000000.0, mean, min, max);
-        Debug()->SendDebug();
+        SendDebug(this);
     }
 
     void listUnitWraps() {
@@ -887,9 +887,9 @@ public:
             //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_ADEPT, Observation()->GetGameInfo().enemy_start_locations[0], 2, 6);
             //Debug()->DebugCreateUnit(UNIT_TYPEID::TERRAN_MARINE, Observation()->GetGameInfo().enemy_start_locations[0], 2, 14);
 
-            Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_OBSERVER, middle, 1, 1);
-            Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_STALKER, middle, 1, 1);
-            Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_ADEPT, Observation()->GetGameInfo().enemy_start_locations[0], 2, 2);
+            //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_OBSERVER, middle, 1, 1);
+            //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_STALKER, middle, 1, 1);
+            //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_ADEPT, Observation()->GetGameInfo().enemy_start_locations[0], 2, 2);
         #endif
     }
 
@@ -1401,7 +1401,7 @@ public:
 
         onStepProfiler.midLog("ProfilerLog");
 
-        Debug()->SendDebug();
+        SendDebug(this);
 
         onStepProfiler.midLog("DebugSend");
     }

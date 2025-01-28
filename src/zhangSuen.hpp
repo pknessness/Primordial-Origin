@@ -7,6 +7,7 @@
 
 #include "map2d.hpp"
 #include "constants.h"
+#include "debugging.hpp"
 
 //https://github.com/linbojin/Skeletonization-by-Zhang-Suen-Thinning-Algorithm
 //https://www.researchgate.net/publication/308822048_A_new_thinning_algorithm_for_binary_images
@@ -141,7 +142,7 @@ void zhangSuenThinning(map2d<int8_t>* map, Agent *agent) {
                 }
             }
         }
-        agent-> Debug()->SendDebug();
+        SendDebug(agent);
 
         if (!changedPixel) {
             break;

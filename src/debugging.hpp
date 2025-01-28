@@ -60,12 +60,9 @@ void DebugSphere(Agent* agent, const Point3D& p, float r, Color color = Colors::
 #endif
 }
 
-//! Outputs a sphere specified as a 3D point in the game world and a radius. Map coordinates are used.
-//!< \param p Center of the sphere.
-//!< \param r Radius of the sphere.
-//!< \param color (Optional) Color of the lines.
 void SendDebug(Agent* agent) {
 #ifndef BUILD_FOR_LADDER
     agent->Debug()->SendDebug();
+    printf("sendebug;\n");
 #endif
 }

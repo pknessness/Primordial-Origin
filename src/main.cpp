@@ -153,9 +153,9 @@ int main(int argc, char* argv[])
         //bot.Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_ADEPT, START_OP, 2, 6);
         //bot.Debug()->DebugCreateUnit(UNIT_TYPEID::TERRAN_MARINE, START_OP, 2, 14);
 
-        bot.Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_OBSERVER, START_ME, 1, 13);
-        bot.Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_COLOSSUS, START_ME, 1, 1);
-        bot.Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_ADEPT, START_OP, 2, 6);
+        //bot.Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_OBSERVER, START_ME, 1, 13);
+        //bot.Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_COLOSSUS, START_ME, 1, 1);
+        //bot.Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_ADEPT, START_OP, 2, 6);
 
         while (coordinator.Update()) {
         }
