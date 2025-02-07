@@ -170,11 +170,12 @@ int main(int argc, char* argv[])
         //                       "5_13/GoldenAura513AIE.SC2Map", "5_13/Gresvan513AIE.SC2Map",
         //                       "5_13/HardLead513AIE.SC2Map",   "5_13/SiteDelta513AIE.SC2Map" };
 
-        std::string maps[6] = { "2024S4_Maps/AbyssalReefAIE.SC2Map",  "2024S4_Maps/AcropolisAIE.SC2Map",
-                               "2024S4_Maps/AutomatonAIE.SC2Map", "2024S4_Maps/EphemeronAIE.SC2Map",
-                               "2024S4_Maps/InterloperAIE.SC2Map",   "2024S4_Maps/ThunderbirdAIE.SC2Map" };
+        std::string maps[6] = { "AbyssalReefAIE.SC2Map",  "AcropolisAIE.SC2Map",
+                               "AutomatonAIE.SC2Map", "EphemeronAIE.SC2Map",
+                               "InterloperAIE.SC2Map",   "ThunderbirdAIE.SC2Map" };
 
         int r = std::rand() % 6;
+        r = 0;
         printf("rand %d [%d %d %d %d %d %d] %d\n", r, std::rand(), std::rand(), std::rand(), std::rand(), std::rand(),
             std::rand(), RAND_MAX);
 

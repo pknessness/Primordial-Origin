@@ -336,7 +336,10 @@ namespace UnitManager {
         Point2D starting = pos + Point2D{ radius, 0 };
         int operating_x = int(starting.x * damageNetPrecision);
         int operating_y = int(starting.y * damageNetPrecision);
-        imRef(enemyDamageNetModify, operating_x, operating_y) = 1;
+        if (operating_x >= 0 && operating_x < enemyDamageNetModify->width() && operating_y >= 0 && operating_y < enemyDamageNetModify->height()) {
+            imRef(enemyDamageNetModify, operating_x, operating_y) = 1;
+        }
+        
 
         int dir_x = 0;
         int dir_y = 0;

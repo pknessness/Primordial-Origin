@@ -18,6 +18,8 @@
 #include <sc2api/sc2_gametypes.h>
 #include <sc2utils/sc2_arg_parser.h>
 #include "debugging.hpp"
+#include "bmp.hpp"
+#include "sc2api/sc2_client.h"
 
 #define DISPLAY_AIR 0
 #define MICRO_TEST 0
@@ -46,6 +48,8 @@ public:
 
     clock_t last_time;
 
+    string fileName = "";
+
     Point3D P3D(const Point2D& p) {
         return Point3D(p.x, p.y, Observation()->TerrainHeight(p));
     }
@@ -73,16 +77,18 @@ public:
                 continue;
             // auto path = generator.findPath(staging_location, (Point2DI)point);
             // expansionDistance.push_back(path.size());
-            auto came_from = jps(gridmap, staging_location, {int(point.x),int(point.y)}, Tool::euclidean, this);
-            auto pathToExpansion = Tool::reconstruct_path(staging_location, {int(point.x), int(point.y)}, came_from);
+            //auto came_from = jps(gridmap, staging_location, {int(point.x),int(point.y)}, Tool::euclidean, this);
+            //auto pathToExpansion = Tool::reconstruct_path(staging_location, {int(point.x), int(point.y)}, came_from);
 
-            double length = fullDist(pathToExpansion);
+            //double length = fullDist(pathToExpansion);
             //expansionDistance.push_back(length);
 
             //for (Location l : pathToExpansion) {
             //    printf("[%d,%d]", l.x, l.y);
             //}
             //printf("{%.1f}\n\n", length);
+
+            float length = PrimordialStar::getPathLength(P2D(staging_location), P2D(point), 0.2, this);
 
             constexpr int numsteps = 6;
             Units neut = Observation()->GetUnits(Unit::Alliance::Neutral, Aux::isMineral);
@@ -175,6 +181,66 @@ public:
 
                     DebugBox(this,Point3D(w + BOX_BORDER, h + BOX_BORDER, height + 0.01F),
                                          Point3D(w + 1 - BOX_BORDER, h + 1 - BOX_BORDER, height + boxHeight), c);
+                    //#if MICRO_TEST
+                    //    DebugText(this,strprintf("%d, %d", w, h),
+                    //                          Point3D(w + BOX_BORDER, h + 0.2 + BOX_BORDER, height + 0.1),
+                    //                          Color(200, 90, 15), 4);
+                    //#endif
+
+                    DebugText(this, strprintf("%d, %d", w, h),
+                        Point3D(w + BOX_BORDER, h + 0.2 + BOX_BORDER, height + 0.1),
+                        Color(200, 90, 15), 8);
+
+                    /*std::string cs = imRef(display, w, h);
+                    float disp = cs.length() * 0.0667 * fontSize / 15;
+                    DebugText(this,cs, Point3D(w + 0.5 - disp, h + 0.5, height + 0.1 + displace),
+                                          Color(200, 190, 115), fontSize);*/
+                }
+            }
+        }
+    }
+
+    void displayMaxDistanceGrid(float maximal, bool nearbyOnly = true) {
+        GameInfo game_info = Observation()->GetGameInfo();
+
+        int mapWidth = game_info.width;
+        int mapHeight = game_info.height - 1;
+
+        Point2D center = Observation()->GetCameraPos();
+        int wS = int(center.x) - 10;
+        if (wS < 0 || !nearbyOnly)
+            wS = 0;
+        int hS = int(center.y) - 5;
+        if (hS < 0 || !nearbyOnly)
+            hS = 0;
+        int wE = int(center.x) + 11;
+        if (wE > mapWidth || !nearbyOnly)
+            wE = mapWidth;
+        int hE = int(center.y) + 14;
+        if (hE > mapHeight || !nearbyOnly)
+            hE = mapHeight;
+
+        int fontSize = 8;
+
+        #define BOX_BORDER 0.02
+
+        for (int w = wS; w < wE; w++) {
+            for (int h = hS; h < hE; h++) {
+                Point2DI point = Point2DI(w, h);
+                float boxHeight = 0;
+                Color c(255, 255, 255);
+
+                if (Aux::checkPathable(w, h, this)) {
+                    //c = { uint8_t(imRef(PrimordialStar::maxDistanceGrid,w,h).distance/maximal * 255.0), 0, 0};
+                }
+
+                if (0 || !(c.r == 255 && c.g == 255 && c.b == 255) || boxHeight != 0) {
+                    float height = (Observation()->TerrainHeight(Point2D{ float(w), float(h) }) + Observation()->TerrainHeight(Point2D{ w + 1.0F, h + 1.0F })) / 2;
+                    //float height = Observation()->TerrainHeight(Point2D{ w + 0.5F, h + 0.5F });
+
+
+                    DebugBox(this, Point3D(w + BOX_BORDER, h + BOX_BORDER, height + 0.01F),
+                        Point3D(w + 1 - BOX_BORDER, h + 1 - BOX_BORDER, height + boxHeight), c);
                     //#if MICRO_TEST
                     //    DebugText(this,strprintf("%d, %d", w, h),
                     //                          Point3D(w + BOX_BORDER, h + 0.2 + BOX_BORDER, height + 0.1),
@@ -457,7 +523,7 @@ public:
             DebugSphere(this, P3D(from), 0.25, { 61,102,220 });
             for (int b = 0; b < NUM_PTS_RT; b++) {
                 Point2D to = pts[b];
-                auto path = PrimordialStar::getPathDijkstra2(from, to, 0, this);
+                auto path = PrimordialStar::getPathDijkstra(from, to, 0, this);
                 float dist = PrimordialStar::getPathLength(path);
                 float sc2dist = Query()->PathingDistance(from, to);
                 float diff = dist - sc2dist;
@@ -487,7 +553,7 @@ public:
                 max = f;
             }
             mean += f;
-            printf("%.1f\n", f);
+            //printf("%.1f\n", f);
         }
         mean /= differenceInDistance.size();
         printf("PATH VERIFICATION [%d^2] %.1fs MEAN:%.1f MIN:%.1f MAX:%.1f\n", NUM_PTS_RT, dt / 1000000.0, mean, min, max);
@@ -726,8 +792,27 @@ public:
         return danger;
     }
 
+    Color pathingMapToColor(int8_t map) {
+        switch (map) {
+        case (0):
+            return {255,255,255};
+        case (127):
+            return { 0,0,0 };
+        case (64):
+            return { 40,205,60 };
+        case (101):
+            return { 205,40,60 };
+        case (102):
+            return { 40,60,205 };
+        default:
+            return { 200, 180, (uint8_t)map };
+        }
+    }
+
     //! Called when a game is started or restarted.
     virtual void OnGameStart() final {
+        //bmpTest();
+
         profilerPrint = false;
         profilerThreshold = 10;
         last_time = clock();
@@ -740,12 +825,16 @@ public:
 
         Aux::buildingBlocked = new map2d<int8_t>(mapWidth, mapHeight, true);
         Aux::pathingMap = new map2d<int8_t>(mapWidth, mapHeight, true);
+        printf("CHAR:%d\n", imRef(Aux::pathingMap, 0, 0));
         Aux::loadPathables(this);
         Aux::influenceMap = new map2d<int8_t>(mapWidth, mapHeight, true);
         Aux::influenceMapEnemy = new map2d<int8_t>(mapWidth, mapHeight, true);
 
         path_zhang_suen = new map2d<int8_t>(mapWidth, mapHeight, true);
         PrimordialStar::blobGrid = new map2d<int8_t>(mapWidth, mapHeight, true);
+        PrimordialStar::minDistanceGrid = new map2d<MinDistanceNode>(mapWidth, mapHeight, true);
+        PrimordialStar::maxDistanceGrid = new map2d<DistanceNode>(mapWidth, mapHeight, true);
+        
 
         UnitManager::enemyDamageNet = new map2d<DamageLocation>(mapWidth * UnitManager::damageNetPrecision, mapHeight * UnitManager::damageNetPrecision, true);
         UnitManager::enemyDamageNetModify = new map2d<int8_t>(mapWidth * UnitManager::damageNetPrecision, mapHeight * UnitManager::damageNetPrecision, true);
@@ -764,32 +853,118 @@ public:
 
         Units units = Observation()->GetUnits(sc2::Unit::Alliance::Neutral);
 
-        for (const Unit* unit : units) {
-            if (Aux::isMineral(*unit)) {
-                imRef(path_zhang_suen, int(unit->pos.x + 0.5F), int(unit->pos.y)) = 1;
-                imRef(path_zhang_suen, int(unit->pos.x - 0.5F), int(unit->pos.y)) = 1;
-
-                imRef(Aux::buildingBlocked, int(unit->pos.x + 0.5F), int(unit->pos.y)) = 1;
-                imRef(Aux::buildingBlocked, int(unit->pos.x - 0.5F), int(unit->pos.y)) = 1;
-
-                imRef(Aux::pathingMap, int(unit->pos.x + 0.5F), int(unit->pos.y)) = 1;
-                imRef(Aux::pathingMap, int(unit->pos.x - 0.5F), int(unit->pos.y)) = 1;
-            } else if (Aux::isVespene(*unit)) {
-                for (int i = -1; i <= 1; i++) {
-                    for (int j = -1; j <= 1; j++) {
-                        imRef(path_zhang_suen, int(unit->pos.x + i), int(unit->pos.y + j)) = 1;
-                        imRef(Aux::buildingBlocked, int(unit->pos.x + i), int(unit->pos.y + j)) = 1;
-                        imRef(Aux::pathingMap, int(unit->pos.x + i), int(unit->pos.y + j)) = 1;
-                    }
-                }
-            } else {
-                //printf("NEUTRAL:%s\n", UnitTypeToName(unit->unit_type));
-                Aux::addPlacement(unit->pos, unit->unit_type);
+        printf("Playing on %s\n", Observation()->GetGameInfo().map_name.c_str());
+        for (char c : Observation()->GetGameInfo().map_name) {
+            if (c != ' ') {
+                fileName += c;
             }
         }
 
-        grid(false);
+        for (const Unit* unit : units) {
+            //if (Aux::isMineral(*unit)) {
+            //    //imRef(path_zhang_suen, int(unit->pos.x + 0.5F), int(unit->pos.y)) = 1;
+            //    //imRef(path_zhang_suen, int(unit->pos.x - 0.5F), int(unit->pos.y)) = 1;
+            //    Aux::loadUnitPlacement(path_zhang_suen, unit->pos, unit->unit_type, 2);
+
+            //    //imRef(Aux::buildingBlocked, int(unit->pos.x + 0.5F), int(unit->pos.y)) = 1;
+            //    //imRef(Aux::buildingBlocked, int(unit->pos.x - 0.5F), int(unit->pos.y)) = 1;
+            //    Aux::loadUnitPlacement(Aux::buildingBlocked, unit->pos, unit->unit_type, 2);
+
+            //    //imRef(Aux::pathingMap, int(unit->pos.x + 0.5F), int(unit->pos.y)) = 1;
+            //    //imRef(Aux::pathingMap, int(unit->pos.x - 0.5F), int(unit->pos.y)) = 1;
+            //    Aux::loadUnitPlacement(Aux::pathingMap, unit->pos, unit->unit_type, 2);
+            //} else if (Aux::isVespene(*unit)) {
+            //    for (int i = -1; i <= 1; i++) {
+            //        for (int j = -1; j <= 1; j++) {
+            //            imRef(path_zhang_suen, int(unit->pos.x + i), int(unit->pos.y + j)) = 1;
+            //            imRef(Aux::buildingBlocked, int(unit->pos.x + i), int(unit->pos.y + j)) = 1;
+            //            imRef(Aux::pathingMap, int(unit->pos.x + i), int(unit->pos.y + j)) = 1;
+            //        }
+            //    }
+            //} else {
+            //    printf("NEUTRAL:%s\n", UnitTypeToName(unit->unit_type));
+            //    DebugText(this, UnitTypeToName(unit->unit_type), unit->pos + Point3D{ 0,0,1 });
+            //    DebugSphere(this, unit->pos, unit->radius);
+            //    Aux::addPlacement(unit->pos, unit->unit_type);
+            //}
+            Aux::loadUnitPlacement(path_zhang_suen, unit->pos, unit->unit_type, 1);
+            Aux::loadUnitPlacement(Aux::buildingBlocked, unit->pos, unit->unit_type, 64);
+            Aux::loadUnitPlacement(Aux::pathingMap, unit->pos, unit->unit_type, 64);
+        }
+        timeus startGenerateGrid = std::chrono::steady_clock::now();
+
+        float maximalMin = PrimordialStar::generateMinDistanceGrid(this);
+
+        printf("Generating Min Distance Grid took %.3fms\n", std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - startGenerateGrid).count() / 1000.0);
+
+        startGenerateGrid = std::chrono::steady_clock::now();
+
+        float maximalMax = PrimordialStar::generateMaxDistanceGrid(this);
+
+        printf("Generating Max Distance Grid took %.3fms\n", std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - startGenerateGrid).count() / 1000.0);
+
+        //saveBitmap("black.bmp", mapWidth, mapHeight, [](int i, int j) {return 0;}, [](int i, int j) {return 0;}, [](int i, int j) {return 0;});
+        saveBitmap("pathable.bmp", mapWidth, mapHeight, [](int i, int j) {return imRef(Aux::pathingMap, i, j);}, [](int i, int j) {return imRef(Aux::pathingMap, i, j);}, [](int i, int j) {return imRef(Aux::pathingMap, i, j);});
+        //saveBitmap("placable.bmp", mapWidth, mapHeight, [](int i, int j) {return imRef(Aux::pathingMap, i, j) * 255;}, [](int i, int j) {return imRef(Aux::pathingMap, i, j) * 255;}, [](int i, int j) {return imRef(Aux::pathingMap, i, j) * 255;});
+
+        saveBitmap(fileName + "_distanceMaxPP.bmp", mapWidth, mapHeight, 
+            [maximalMax](int i, int j) {return uint8_t(imRef(PrimordialStar::maxDistanceGrid, i, j).distancePP / maximalMax * 255.0);},
+            [maximalMax](int i, int j) {return uint8_t(imRef(PrimordialStar::maxDistanceGrid, i, j).distancePP / maximalMax * 255.0);},
+            [maximalMax](int i, int j) {return uint8_t(imRef(PrimordialStar::maxDistanceGrid, i, j).distancePP / maximalMax * 255.0);});
+
+        saveBitmap(fileName + "_distanceMaxNP.bmp", mapWidth, mapHeight,
+            [maximalMax](int i, int j) {return uint8_t(imRef(PrimordialStar::maxDistanceGrid, i, j).distanceNP / maximalMax * 255.0);},
+            [maximalMax](int i, int j) {return uint8_t(imRef(PrimordialStar::maxDistanceGrid, i, j).distanceNP / maximalMax * 255.0);},
+            [maximalMax](int i, int j) {return uint8_t(imRef(PrimordialStar::maxDistanceGrid, i, j).distanceNP / maximalMax * 255.0);});
+
+        saveBitmap(fileName + "_distanceMaxNN.bmp", mapWidth, mapHeight,
+            [maximalMax](int i, int j) {return uint8_t(imRef(PrimordialStar::maxDistanceGrid, i, j).distanceNN / maximalMax * 255.0);},
+            [maximalMax](int i, int j) {return uint8_t(imRef(PrimordialStar::maxDistanceGrid, i, j).distanceNN / maximalMax * 255.0);},
+            [maximalMax](int i, int j) {return uint8_t(imRef(PrimordialStar::maxDistanceGrid, i, j).distanceNN / maximalMax * 255.0);});
+
+        saveBitmap(fileName + "_distanceMaxPN.bmp", mapWidth, mapHeight,
+            [maximalMax](int i, int j) {return uint8_t(imRef(PrimordialStar::maxDistanceGrid, i, j).distancePN / maximalMax * 255.0);},
+            [maximalMax](int i, int j) {return uint8_t(imRef(PrimordialStar::maxDistanceGrid, i, j).distancePN / maximalMax * 255.0);},
+            [maximalMax](int i, int j) {return uint8_t(imRef(PrimordialStar::maxDistanceGrid, i, j).distancePN / maximalMax * 255.0);});
+
+        saveBitmap(fileName + "_distanceMin.bmp", mapWidth, mapHeight,
+            [maximalMin](int i, int j) {return uint8_t(imRef(PrimordialStar::minDistanceGrid, i, j).distance / maximalMin * 255.0);},
+            [maximalMin](int i, int j) {return uint8_t(imRef(PrimordialStar::minDistanceGrid, i, j).distance / maximalMin * 255.0);},
+            [maximalMin](int i, int j) {return uint8_t(imRef(PrimordialStar::minDistanceGrid, i, j).distance / maximalMin * 255.0);});
+
+        //saveBitmap(fileName + "_master.bmp", mapWidth, mapHeight,
+        //    [this](int i, int j) {return (Aux::checkPathable(i, j, this) ? 255 : 0);},
+        //    [this](int i, int j) {return (Aux::checkPlacable(i, j, this) ? 255 : 0);},
+        //    [this](int i, int j) {return (Aux::checkPathable(i, j, this) || Aux::checkPlacable(i, j, this) ? 255 : 0);});
+
+        saveBitmap(fileName + "_master.bmp", mapWidth, mapHeight,
+            [this](int i, int j) {return pathingMapToColor(Aux::getPathable(i, j, this)).r;},
+            [this](int i, int j) {return pathingMapToColor(Aux::getPathable(i, j, this)).g;},
+            [this](int i, int j) {return pathingMapToColor(Aux::getPathable(i, j, this)).b;});
+
+        //grid(false);
+        displayMaxDistanceGrid(maximalMax, false);
+
+        timeus startPathNoding = std::chrono::steady_clock::now();
+
         PrimordialStar::generatePathNodes(this);
+
+        printf("Generating %d PathNodes took %.3fms ", PrimordialStar::basePathNodes.size(), std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - startPathNoding).count() / 1000.0);
+        
+        int numConnections = 0;
+        
+        for (PrimordialStar::PathNode* node : PrimordialStar::basePathNodes) {
+            numConnections += node->connected.size();
+        }
+        
+        printf("with %d connections\n", numConnections);
+        //original PrimordialStar on Abyssal Reef is 229.322 and 202.749 and 220.070 with 35932,35928
+        //changed something (wall nocheck maybe?) and it changed it to 166ms
+        //after adding the wall preprocessing it reduces to 141ms + 108ms
+        //adding wall preprocessing with squared not root makes it 58ms + 39ms
+
+
+
         for (int i = 0; i < PrimordialStar::basePathNodes.size(); i++) {
             PrimordialStar::PathNode* node = PrimordialStar::basePathNodes[i];
             if (Distance2D(node->rawPos(), Observation()->GetCameraPos()) > 300) {
@@ -927,7 +1102,11 @@ public:
         }
         //else
         if (unit->is_building) {
-            Aux::addPlacement(unit->pos, unit->unit_type);
+            /*Aux::addPlacement(unit->pos, unit->unit_type);*/
+
+            Aux::loadUnitPlacement(Aux::buildingBlocked, unit->pos, unit->unit_type, 101);
+            Aux::loadUnitPlacement(Aux::pathingMap, unit->pos, unit->unit_type, 101);
+
             UnitTypes allData = Observation()->GetUnitTypeData();
             UnitTypeData unit_stats = allData.at(static_cast<uint32_t>(unit->unit_type));
             GameInfo game_info = Observation()->GetGameInfo();
@@ -953,28 +1132,29 @@ public:
         if (unit->alliance == Unit::Alliance::Self) {
             UnitWrapper* u = UnitManager::find(unit->unit_type, unit->tag);
             delete u;
-            if (unit->is_building) {
-                Aux::removePlacement(unit->pos, unit->unit_type);
-                //UnitTypes allData = Observation()->GetUnitTypeData();
-                //UnitTypeData unit_stats = allData.at(static_cast<uint32_t>(unit->unit_type));
-                //GameInfo game_info = Observation()->GetGameInfo();
+            //if (unit->is_building) {
+            //    //Aux::removePlacement(unit->pos, unit->unit_type);
+            //    //Aux::loadUnitPlacement(map2d<int8_t>*map, Point2D pos, UnitTypeID unit_type, int8_t value) {
+            //    //UnitTypes allData = Observation()->GetUnitTypeData();
+            //    //UnitTypeData unit_stats = allData.at(static_cast<uint32_t>(unit->unit_type));
+            //    //GameInfo game_info = Observation()->GetGameInfo();
 
-                //for (int i = std::max(0, int(unit->pos.x - unit_stats.sight_range) - 2);
-                //     i < std::min(game_info.width, int(unit->pos.x + unit_stats.sight_range) + 2); i++) {
-                //    for (int j = std::max(0, int(unit->pos.y - unit_stats.sight_range) - 2);
-                //         j < std::min(game_info.height, int(unit->pos.y + unit_stats.sight_range) + 2); j++) {
-                //        if (Distance2D(Point2D{i + 0.5F, j + 0.5F}, unit->pos) < unit_stats.sight_range) {
-                //            imRef(Aux::influenceMap, i, j) -= 1;
-                //        }
-                //    }
-                //}
-            }
+            //    //for (int i = std::max(0, int(unit->pos.x - unit_stats.sight_range) - 2);
+            //    //     i < std::min(game_info.width, int(unit->pos.x + unit_stats.sight_range) + 2); i++) {
+            //    //    for (int j = std::max(0, int(unit->pos.y - unit_stats.sight_range) - 2);
+            //    //         j < std::min(game_info.height, int(unit->pos.y + unit_stats.sight_range) + 2); j++) {
+            //    //        if (Distance2D(Point2D{i + 0.5F, j + 0.5F}, unit->pos) < unit_stats.sight_range) {
+            //    //            imRef(Aux::influenceMap, i, j) -= 1;
+            //    //        }
+            //    //    }
+            //    //}
+            //}
         } else if(unit->alliance == Unit::Alliance::Enemy) {
             UnitWrapper* u = UnitManager::findEnemy(unit->unit_type, unit->tag);
             delete u;
             printf("HOSTILE %s %Ix DEAD\n", UnitTypeToName(unit->unit_type), unit->tag);
             if (unit->is_building) {
-                Aux::removePlacement(unit->pos, unit->unit_type);
+                //Aux::removePlacement(unit->pos, unit->unit_type);
                 UnitTypes allData = Observation()->GetUnitTypeData();
                 UnitTypeData unit_stats = allData.at(static_cast<uint32_t>(unit->unit_type));
                 GameInfo game_info = Observation()->GetGameInfo();
@@ -990,7 +1170,10 @@ public:
                 }
             }
         }
-        
+        if (unit->is_building) {
+            Aux::loadUnitPlacement(Aux::buildingBlocked, unit->pos, unit->unit_type, 0);
+            Aux::loadUnitPlacement(Aux::pathingMap, unit->pos, unit->unit_type, 0);
+        }
     }
 
     //! Called when a unit becomes idle, this will only occur as an event so will only be called when the unit becomes
@@ -1216,6 +1399,35 @@ public:
                 Macro::addAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_WARPPRISM);
             }
         #endif
+
+        if (0) {
+            //((ObservationImp*)Observation())->game_info_cached_ = false;
+            int mapWidth = Observation()->GetGameInfo().width;
+            int mapHeight = Observation()->GetGameInfo().height;
+            if (Observation()->GetGameLoop() == 2) {
+                saveBitmap(fileName + "_pre_pathable.bmp", mapWidth, mapHeight, 
+                    [this](int i, int j) {return (Observation()->IsPathable({ float(i), float(j) }) ? 255 : 0);}, 
+                    [this](int i, int j) {return (Observation()->IsPathable({ float(i), float(j) }) ? 255 : 0);}, 
+                    [this](int i, int j) {return (Observation()->IsPathable({ float(i), float(j) }) ? 255 : 0);});
+                Debug()->DebugShowMap();
+            }
+            else if (Observation()->GetGameLoop() == 82) {
+                saveBitmap(fileName + "_mid_pathable.bmp", mapWidth, mapHeight,
+                    [this](int i, int j) {return (Observation()->IsPathable({ float(i), float(j) }) ? 255 : 0);},
+                    [this](int i, int j) {return (Observation()->IsPathable({ float(i), float(j) }) ? 255 : 0);},
+                    [this](int i, int j) {return (Observation()->IsPathable({ float(i), float(j) }) ? 255 : 0);});
+                Units units = Observation()->GetUnits(sc2::Unit::Alliance::Neutral);
+                for (const Unit* unit : units) {
+                    Debug()->DebugKillUnit(unit);
+                }
+            }
+            else if (Observation()->GetGameLoop() == 162) {
+                saveBitmap(fileName + "_end_pathable.bmp", mapWidth, mapHeight,
+                    [this](int i, int j) {return (Observation()->IsPathable({ float(i), float(j) }) ? 255 : 0);},
+                    [this](int i, int j) {return (Observation()->IsPathable({ float(i), float(j) }) ? 255 : 0);},
+                    [this](int i, int j) {return (Observation()->IsPathable({ float(i), float(j) }) ? 255 : 0);});
+            }
+        }
 
         onStepProfiler.midLog("BuildOrderSetup");
 
@@ -1457,7 +1669,10 @@ public:
         Aux::addPlacement(unit->pos, unit->unit_type);
 
         if (unit->is_building) {
-            Aux::addPlacement(unit->pos, unit->unit_type);
+
+            Aux::loadUnitPlacement(Aux::buildingBlocked, unit->pos, unit->unit_type, 102);
+            Aux::loadUnitPlacement(Aux::pathingMap, unit->pos, unit->unit_type, 102);
+
             UnitTypes allData = Observation()->GetUnitTypeData();
             UnitTypeData unit_stats = allData.at(static_cast<uint32_t>(unit->unit_type));
             GameInfo game_info = Observation()->GetGameInfo();
@@ -1477,8 +1692,13 @@ public:
 
 //primordialstar optimizations: 
 //-check max num of paths from nodes and max length of a path to optimize
+//modify max dist to not include rocks
 
-//node
+//rework enemy squads code
+
+//add scout to initial probe
+
+//add search and destroy code
 
 //units should still retreat when no targets nearby
 

@@ -20,6 +20,34 @@ using namespace sc2;
 
 //enum Composition { NONE, AIR, GND, BOTH };
 
+int8_t diagULBR[10][10] = {
+    {0,0,0,0,0,0,1,1,1,0},
+    {0,0,0,0,0,1,1,1,1,1},
+    {0,0,0,0,1,1,1,1,1,1},
+    {0,0,0,1,1,1,1,1,1,1},
+    {0,0,1,1,1,1,1,1,1,0},
+    {0,1,1,1,1,1,1,1,0,0},
+    {1,1,1,1,1,1,1,0,0,0},
+    {1,1,1,1,1,1,0,0,0,0},
+    {1,1,1,1,1,0,0,0,0,0},
+    {0,1,1,1,0,0,0,0,0,0},
+};
+
+int8_t diagBLUR[10][10] = {
+    {0,1,1,1,0,0,0,0,0,0},
+    {1,1,1,1,1,0,0,0,0,0},
+    {1,1,1,1,1,1,0,0,0,0},
+    {1,1,1,1,1,1,1,0,0,0},
+    {0,1,1,1,1,1,1,1,0,0},
+    {0,0,1,1,1,1,1,1,1,0},
+    {0,0,0,1,1,1,1,1,1,1},
+    {0,0,0,0,1,1,1,1,1,1},
+    {0,0,0,0,0,1,1,1,1,1},
+    {0,0,0,0,0,0,1,1,1,0},
+};
+
+//"image" here is rotated 90CW from actual, so make sure footprint here ^ is rotated 90CW to compensate
+
 //#define Composition Weapon::TargetType
 using Composition = Weapon::TargetType;
 using Targets = std::map<Tag, Tags>;
@@ -142,8 +170,27 @@ static bool checkPathable(int x, int y, Agent *agent) {
     return imRef(pathingMap, x, y) == 0;
 }
 
+static int getPathable(int x, int y, Agent* agent) {
+    if (x < 0 || x >= pathingMap->width() || y < 0 || y >= pathingMap->height()) {
+        return 127;
+    }
+    return imRef(pathingMap, x, y);
+}
+
+static bool checkPlacable(int x, int y, Agent* agent) {
+    if (x < 0 || x >= buildingBlocked->width() || y < 0 || y >= buildingBlocked->height()) {
+        return false;
+    }
+    //return agent->Observation()->IsPathable({float(x), float(y)});
+    return imRef(buildingBlocked, x, y) == 0 && agent->Observation()->IsPlacable({ float(x), float(y) });
+}
+
 static bool checkPathable(Point2D p, Agent* agent) {
     return checkPathable(int(p.x), int(p.y), agent);
+}
+
+static int getPathable(Point2D p, Agent* agent) {
+    return getPathable(int(p.x), int(p.y), agent);
 }
 
 static Point2D getRandomPathable(Agent* agent, float startX = -1, float endX = -1, float startY = -1, float endY = -1) {
@@ -183,19 +230,27 @@ static bool isAssimilator(const Unit &unit) {
     return (type == UNIT_TYPEID::PROTOSS_ASSIMILATOR);
 }
 
+static bool isMineralType(UnitTypeID type) {
+    return (type == UNIT_TYPEID::NEUTRAL_MINERALFIELD || type == UNIT_TYPEID::NEUTRAL_LABMINERALFIELD ||
+        type == UNIT_TYPEID::NEUTRAL_MINERALFIELD750 || type == UNIT_TYPEID::NEUTRAL_LABMINERALFIELD750 ||
+        type == UNIT_TYPEID::NEUTRAL_MINERALFIELD450 || type == UNIT_TYPEID::NEUTRAL_RICHMINERALFIELD ||
+        type == UNIT_TYPEID::NEUTRAL_RICHMINERALFIELD750);
+}
+
 static bool isMineral(const Unit &unit) {
     UnitTypeID type = unit.unit_type;
-    return (type == UNIT_TYPEID::NEUTRAL_MINERALFIELD || type == UNIT_TYPEID::NEUTRAL_LABMINERALFIELD ||
-            type == UNIT_TYPEID::NEUTRAL_MINERALFIELD750 || type == UNIT_TYPEID::NEUTRAL_LABMINERALFIELD750 ||
-            type == UNIT_TYPEID::NEUTRAL_MINERALFIELD450);
+    return isMineralType(type);
+}
+
+static bool isVespeneType(UnitTypeID type) {
+    return (type == UNIT_TYPEID::NEUTRAL_VESPENEGEYSER || type == UNIT_TYPEID::NEUTRAL_PROTOSSVESPENEGEYSER ||
+        type == UNIT_TYPEID::NEUTRAL_PURIFIERVESPENEGEYSER || type == UNIT_TYPEID::NEUTRAL_RICHVESPENEGEYSER ||
+        type == UNIT_TYPEID::NEUTRAL_SHAKURASVESPENEGEYSER || type == UNIT_TYPEID::NEUTRAL_SPACEPLATFORMGEYSER);
 }
 
 static bool isVespene(const Unit &unit) {
     UnitTypeID type = unit.unit_type;
-    return (type == UNIT_TYPEID::NEUTRAL_VESPENEGEYSER || type == UNIT_TYPEID::NEUTRAL_PROTOSSVESPENEGEYSER ||
-            type == UNIT_TYPEID::NEUTRAL_PURIFIERVESPENEGEYSER || type == UNIT_TYPEID::NEUTRAL_RICHVESPENEGEYSER ||
-            type == UNIT_TYPEID::NEUTRAL_SHAKURASVESPENEGEYSER || type == UNIT_TYPEID::NEUTRAL_SPACEPLATFORMGEYSER);
-    // return (type == UNIT_TYPEID::NEUTRAL_VESPENEGEYSER);
+    return isVespeneType(type);
 }
 
 static UnitTypeID buildAbilityToUnit(AbilityID build_ability) {
@@ -452,6 +507,7 @@ static int structureDiameter(UnitTypeID type) {
             return 3;
         case (uint32_t(UNIT_TYPEID::PROTOSS_TWILIGHTCOUNCIL)):
             return 3;
+
         case (uint32_t(UNIT_TYPEID::NEUTRAL_DESTRUCTIBLECITYDEBRIS6X6)):
             return 6;
         case (uint32_t(UNIT_TYPEID::NEUTRAL_DESTRUCTIBLEDEBRIS6X6)):
@@ -464,6 +520,64 @@ static int structureDiameter(UnitTypeID type) {
             return 2;
         case (uint32_t(UNIT_TYPEID::UNBUILDABLEROCKSDESTRUCTIBLE)):
             return 2;
+        case (uint32_t(UNIT_TYPEID::DEBRIS2X2NONCONJOINED)):
+            return 2;
+        case (uint32_t(UNIT_TYPEID::DESTRUCTIBLEROCKEX16X6)):
+            return 6;
+        case (uint32_t(UNIT_TYPEID::DESTRUCTIBLEROCKEX14X4)):
+            return 4;
+
+        case (uint32_t(UNIT_TYPEID::NEUTRAL_DESTRUCTIBLEDEBRISRAMPDIAGONALHUGEBLUR)):
+            return -1;
+        case (uint32_t(UNIT_TYPEID::NEUTRAL_DESTRUCTIBLEDEBRISRAMPDIAGONALHUGEULBR)):
+            return -1;
+        case (uint32_t(UNIT_TYPEID::NEUTRAL_DESTRUCTIBLEROCKEX1DIAGONALHUGEBLUR)):
+            return -1;
+        //case (uint32_t(UNIT_TYPEID::NEUTRAL)):
+        //    return 0;
+        //case (uint32_t(UNIT_TYPEID::NEUTRAL)):
+        //    return 0;
+        //case (uint32_t(UNIT_TYPEID::NEUTRAL)):
+        //    return 0;
+        //case (uint32_t(UNIT_TYPEID::NEUTRAL)):
+        //    return 0;
+        //case (uint32_t(UNIT_TYPEID::NEUTRAL)):
+        //    return 0;
+        //case (uint32_t(UNIT_TYPEID::NEUTRAL)):
+        //    return 0;
+        //case (uint32_t(UNIT_TYPEID::NEUTRAL)):
+        //    return 0;
+        //case (uint32_t(UNIT_TYPEID::NEUTRAL)):
+        //    return 0;
+        //case (uint32_t(UNIT_TYPEID::NEUTRAL)):
+        //    return 0;
+        //case (uint32_t(UNIT_TYPEID::NEUTRAL)):
+        //    return 0;
+        //case (uint32_t(UNIT_TYPEID::NEUTRAL)):
+        //    return 0;
+        //case (uint32_t(UNIT_TYPEID::NEUTRAL)):
+        //    return 0;
+        //case (uint32_t(UNIT_TYPEID::NEUTRAL)):
+        //    return 0;
+        //case (uint32_t(UNIT_TYPEID::NEUTRAL)):
+        //    return 0;
+        //case (uint32_t(UNIT_TYPEID::NEUTRAL)):
+        //    return 0;
+        //case (uint32_t(UNIT_TYPEID::NEUTRAL)):
+        //    return 0;
+        //case (uint32_t(UNIT_TYPEID::NEUTRAL)):
+        //    return 0;
+        //case (uint32_t(UNIT_TYPEID::NEUTRAL)):
+        //    return 0;
+        //case (uint32_t(UNIT_TYPEID::NEUTRAL)):
+        //    return 0;
+        //case (uint32_t(UNIT_TYPEID::NEUTRAL)):
+        //    return 0;
+        //case (uint32_t(UNIT_TYPEID::NEUTRAL)):
+        //    return 0;
+        //case (uint32_t(UNIT_TYPEID::NEUTRAL)):
+        //    return 0;
+
         default:
             return 0;
     }
@@ -478,6 +592,51 @@ static int structureDiameter(UnitTypeID type) {
     PROTOSS_TEMPLARARCHIVE = 68, PROTOSS_TWILIGHTCOUNCIL = 65,
     PROTOSS_WARPGATE = 133,*/
 }
+
+static void loadUnitPlacement(map2d<int8_t>* map, Point2D pos, int sizeX, int sizeY, int8_t value, int8_t(*pattern)[10][10] = nullptr) {
+    int x = pos.x - (sizeX / 2) + ((sizeX % 2 == 0) ? 0.5F : 0.0F);
+    int y = pos.y - (sizeY / 2) + ((sizeY % 2 == 0) ? 0.5F : 0.0F);
+    for (int i = 0; i < sizeX; i++) {
+        for (int j = 0; j < sizeY; j++) {
+            // printf("{%d,%d}", i, j);
+            if (pattern == nullptr || (*pattern)[i][j] == 1) {
+                imRef(map, i + x, j + y) = value;
+            }
+        }
+    }
+}
+
+static void loadUnitPlacement(map2d<int8_t>* map, Point2D pos, UnitTypeID unit_type, int8_t value) {
+    int diam = structureDiameter(unit_type);
+    if (isMineralType(unit_type)) {
+        loadUnitPlacement(map, pos, 2, 1, value);
+    }
+    else if (isVespeneType(unit_type)) {
+        loadUnitPlacement(map, pos, 3, 3, value);
+    }
+    else if (diam > 0) {
+        loadUnitPlacement(map, pos, diam, diam, value);
+    }
+    else if (unit_type == UNIT_TYPEID::DESTRUCTIBLEROCKEX1HORIZONTALHUGE) {
+        loadUnitPlacement(map, pos, 12, 4, value);
+    }
+    else if (unit_type == UNIT_TYPEID::DESTRUCTIBLEROCKEX1VERTICALHUGE) {
+        loadUnitPlacement(map, pos, 4, 12, value);
+    }
+    else if (unit_type == UNIT_TYPEID::NEUTRAL_DESTRUCTIBLEDEBRISRAMPDIAGONALHUGEBLUR) {
+        loadUnitPlacement(map, pos, 10, 10, value, &diagBLUR);
+    }
+    else if (unit_type == UNIT_TYPEID::NEUTRAL_DESTRUCTIBLEDEBRISRAMPDIAGONALHUGEULBR) {
+        loadUnitPlacement(map, pos, 10, 10, value, &diagULBR);
+    }
+    else if (unit_type == UNIT_TYPEID::NEUTRAL_DESTRUCTIBLEROCKEX1DIAGONALHUGEBLUR) {
+        loadUnitPlacement(map, pos, 10, 10, value, &diagBLUR);
+    }
+    else{
+        printf("UNSUPPORTED ID %s\n", UnitTypeToName(unit_type));
+    }
+}
+
 
 static bool requiresPylon(AbilityID build_ability) {
     switch (uint32_t(build_ability)) {

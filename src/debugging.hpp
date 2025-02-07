@@ -63,6 +63,5 @@ void DebugSphere(Agent* agent, const Point3D& p, float r, Color color = Colors::
 void SendDebug(Agent* agent) {
 #ifndef BUILD_FOR_LADDER
     agent->Debug()->SendDebug();
-    printf("sendebug;\n");
 #endif
 }

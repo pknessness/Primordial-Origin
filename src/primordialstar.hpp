@@ -1,3 +1,6 @@
+//PRIMORDIAL STAR IS A HOMEBREW PATHFINDING BASED ON TAUT PATHS
+//I LEARNED LATER IT IS EQUIVALENT TO VISIBILITY GRAPHS
+
 #pragma once
 #include <cfloat>
 #include <sc2api/sc2_api.h>
@@ -7,10 +10,21 @@
 #include "constants.h"
 #include "debugging.hpp"
 
-#define MAX_CONN_DIST 50
+#define MAX_CONN_DIST_SQRD 65025
 
 using namespace sc2;
 using namespace std;
+
+struct DistanceNode {
+	float distancePP;
+	float distanceNP;
+	float distanceNN;
+	float distancePN;
+};
+
+struct MinDistanceNode {
+	float distance;
+};
 
 class StarNode {
 public:
@@ -120,6 +134,38 @@ namespace PrimordialStar {
 		}
 	}
 
+	Point2D cardinalToNormDirection(Cardinal& cardinal) {
+		switch (cardinal) {
+		case(UP): {
+			return { 0,1 };
+		}
+		case(UP_RT): {
+			return { 0.7071067812,0.7071067812 };
+		}
+		case(RT): {
+			return { 1,0 };
+		}
+		case(DN_RT): {
+			return { 0.7071067812,-0.7071067812 };
+		}
+		case(DN): {
+			return { 0,-1 };
+		}
+		case(DN_LT): {
+			return { -0.7071067812,-0.7071067812 };
+		}
+		case(LT): {
+			return { -1,0 };
+		}
+		case(UP_LT): {
+			return { -0.7071067812,0.7071067812 };
+		}
+		default: {
+			return { 0,0 };
+		}
+		}
+	}
+
 	class PathNode {
 	private:
 		Point2D pos;
@@ -141,15 +187,17 @@ namespace PrimordialStar {
 			if (wall == INVALID) {
 				return pos;
 			}
-			return pos - normalize(cardinalToDirection(wall)) * radius;
+			return pos - cardinalToNormDirection(wall) * radius;
 		}
 	};
 
 	vector<PathNode*> basePathNodes;
 	map2d<int8_t>* blobGrid;
+	map2d<DistanceNode>* maxDistanceGrid;
+	map2d<MinDistanceNode>* minDistanceGrid;
 
 	int maxConnections = 0;
-	float maxDistanceConnection = 0.0F;
+	float maxDistanceConnectionSquared = 0.0F;
 
 	//DDA https://en.wikipedia.org/wiki/Digital_differential_analyzer_(graphics_algorithm)
 	bool checkLinearPath(Point2D start, Point2D end, Agent* agent) {
@@ -177,34 +225,251 @@ namespace PrimordialStar {
 		return true;
 	}
 
-	//void calculateConnection(PathNode* p, Agent* agent) {
-	//	static float maxDist = 0;
-	//	for (int i = 0; i < basePathNodes.size(); i++) {
-	//		if (i == p->id || find(p->connected.begin(), p->connected.end(), i) != p->connected.end()) {
-	//			continue;
-	//		}
-	//		PrimordialStar::PathNode* node = PrimordialStar::basePathNodes[i];
-	//		if (checkLinearPath(p->rawPos(), node->rawPos(), agent)) {
-	//			p->connected.push_back(i);
-	//			node->connected.push_back(p->id);
-	//			float d = DistanceSquared2D(node->position(0), p->position(0));
-	//		}
-	//	}
-	//}
+	float checkWallDistance2(Point2D start, Point2D dir, Agent* agent, int maxSteps = 255){
+		float dx = dir.x;
+		float dy = dir.y;
+		float step = 0;
+
+		if (abs(dx) >= abs(dy)) {
+			step = abs(dx);
+		}
+		else {
+			step = abs(dy);
+		}
+
+		dx /= step;
+		dy /= step;
+
+		Point2D operating = start;
+		for (int i = 0; i < maxSteps; i++) {
+			if (!Aux::checkPathable(int(operating.x), int(operating.y), agent)) {
+				return Distance2D(start, operating);
+			}
+			operating += {dx, dy};
+		}
+		return maxSteps;
+	}
+
+	float rnd(float in) {
+		return (int)(in + 0.1);
+	}
+
+	float checkWallDistance(Point2D origin, Point2D dir, Agent* agent, int maxSteps = 255) {
+		//var delta = Vector2.Normalize(direction - origin);
+		Point2D delta = dir;
+
+		float dxdy = delta.y == 0 ? 0 : delta.x / delta.y;
+		float dydx = delta.x == 0 ? 0 : delta.y / delta.x;
+
+		// If delta X is 0, we set the rayLength to a big one so that the Y ray is always chosen (we're moving straight up or straight down)
+		float rayLengthWhenMovingInX = FLT_MAX;
+		if (delta.x != 0) {
+			rayLengthWhenMovingInX = sqrt(1 + dydx * dydx);
+		}
+
+		// If delta Y is 0, we set the rayLength to a big one so that the X ray is always chosen (we're moving straight left or straight right)
+		float rayLengthWhenMovingInY = FLT_MAX;
+		if (delta.y != 0) {
+			rayLengthWhenMovingInY = sqrt(1 + dxdy * dxdy);
+		}
+
+		// Edge case, if deltaX is 0, stepXDistance can be 0, making the first ray 0, thus it's going to be picked
+		// We want to avoid that so we set it to 1
+		float stepX = 1;
+		float stepXDistance = 1.0F;
+		if (delta.x > 0) {
+			// Moving right
+			stepX = 1;
+			stepXDistance = floor(origin.x + 1) - origin.x;
+		}
+		else if (delta.x < 0) {
+			// Moving left
+			stepX = -1;
+			stepXDistance = origin.x - floor(origin.x);
+		}
+
+		// Edge case, if deltaY is 0, stepYDistance can be 0, making the first ray 0, thus it's going to be picked
+		// We want to avoid that so we set it to 1
+		float stepY = 1;
+		float stepYDistance = 1.0F;
+		if (delta.y > 0) {
+			// Moving up
+			stepY = 1;
+			stepYDistance = floor(origin.y + 1) - origin.y;
+		}
+		else if (delta.y < 0) {
+			// Moving down
+			stepY = -1;
+			stepYDistance = origin.y - floor(origin.y);
+		}
+
+		Point2D lastIntersection = origin;
+		Point2D currentCell = P2D(P2DI(origin));
+		float xRayLength = stepXDistance * rayLengthWhenMovingInX;
+		float yRayLength = stepYDistance * rayLengthWhenMovingInY;
+
+		while (Aux::getPathable(currentCell.x, currentCell.y, agent) != 127) {
+			if (xRayLength < yRayLength) {
+				// Step in X, reduce Y ray
+				yRayLength -= xRayLength;
+
+				// Move to the cell on the left or right
+				currentCell.x += stepX;
+				lastIntersection += delta * xRayLength;
+
+				// Due to float imprecision, we get some rounding errors
+				// We can round X to the closest int to eliminate the error because we know we stepped in X (int, float)
+				lastIntersection.x = rnd(lastIntersection.x);
+
+				// Reset X ray
+				xRayLength = rayLengthWhenMovingInX;
+			}
+			else if (yRayLength < xRayLength) {
+				// Step in Y, reduce X ray
+				xRayLength -= yRayLength;
+
+				// Move to the cell on the bottom or top
+				currentCell.y += stepY;
+				lastIntersection += delta * yRayLength;
+
+				// Due to float imprecision, we get some rounding errors
+				// We can round Y to the closest int to eliminate the error because we know we stepped in Y (float, int)
+				lastIntersection.y = rnd(lastIntersection.y);
+
+				// Reset Y ray
+				yRayLength = rayLengthWhenMovingInY;
+			}
+			else {
+				// Both rays are the same, means we landed exactly on a corner
+				currentCell.x += stepX; // Move to the left/right
+				currentCell.y += stepY; // And up/down
+				lastIntersection += delta * yRayLength; // xRayLength and yRayLength are the same, doesn't matter which one we pick
+
+				// Due to float imprecision, we get some rounding errors
+				// We can round to the closest int to eliminate the error because we know we are a at corner (int, int)
+				lastIntersection.x = rnd(lastIntersection.x);
+				lastIntersection.y = rnd(lastIntersection.y);
+
+				// Reset all rays
+				xRayLength = rayLengthWhenMovingInX;
+				yRayLength = rayLengthWhenMovingInY;
+			}
+		}
+		return Distance2D(origin, lastIntersection);
+	}
+
+	float generateMaxDistanceGrid(Agent* agent) {
+		int mapWidth = agent->Observation()->GetGameInfo().width;
+		int mapHeight = agent->Observation()->GetGameInfo().height;
+		float maximum = 0;
+		for (int i = 0; i < mapWidth; i++) {
+			for (int j = 0; j < mapHeight; j++) {
+				bool center = Aux::getPathable(i, j, agent) != 127;
+				if (center) {
+					float max = 0;
+					constexpr int angleChecks = 16;
+					int steps = 255;
+					float maxes[angleChecks / 4] = { 0 };
+					for (int theta = 0; theta < angleChecks; theta++) {
+						float angle = 2 * M_PI * theta / angleChecks;
+						Point2D dir = {cos(angle), sin(angle)};
+						float dist = checkWallDistance(Point2D{ i + 0.5F, j + 0.5F }, dir, agent, steps);
+						if (dist > max) {
+							max = dist;
+							//steps = dist + 15;
+						}
+						if (dist > maximum) {
+							maximum = dist;
+						}
+
+						if (theta % 4 == 3) {
+							maxes[theta / 4] = max;
+							max = 0;
+						}
+					}
+					
+					imRef(maxDistanceGrid, i, j) = { maxes[0], maxes[1], maxes[2], maxes[3]};
+				}
+				else {
+					imRef(maxDistanceGrid, i, j) = { 0.0 };
+				}
+			}
+		}
+		return maximum;
+	}
+
+	float generateMinDistanceGrid(Agent* agent) {
+		int mapWidth = agent->Observation()->GetGameInfo().width;
+		int mapHeight = agent->Observation()->GetGameInfo().height;
+		float maximum = 0;
+		for (int i = 0; i < mapWidth; i++) {
+			for (int j = 0; j < mapHeight; j++) {
+				bool center = Aux::getPathable(i, j, agent) != 127;
+				if (center) {
+					float min = 255;
+					constexpr int angleChecks = 16;
+					int steps = 255;
+					for (int theta = 0; theta < angleChecks; theta++) {
+						float angle = 2 * M_PI * theta / angleChecks;
+						Point2D dir = { cos(angle), sin(angle) };
+						float dist = checkWallDistance(Point2D{ i + 0.5F, j + 0.5F }, dir, agent, steps);
+						if (dist < min) {
+							min = dist;
+							//steps = dist + 15;
+						}
+					}
+					if (min > maximum) {
+						maximum = min;
+					}
+					imRef(minDistanceGrid, i, j) = { min };
+				}
+				else {
+					imRef(minDistanceGrid, i, j) = { 255 };
+				}
+			}
+		}
+		return maximum;
+	}
 
 	void calculateNewConnection(PathNode* p, Agent* agent) {
+		Point2D pos = p->rawPos();
 		for (int i = 0; i < basePathNodes.size(); i++) {
 			if (i == p->id) {
 				continue;
 			}
 			PrimordialStar::PathNode* node = PrimordialStar::basePathNodes[i];
-			if (checkLinearPath(p->rawPos(), node->rawPos(), agent)) {
-				float dist = Distance2D(p->rawPos(), node->rawPos());
-				if (dist > MAX_CONN_DIST) {
+			Point2D testPos = node->rawPos();
+			if ((p->wall == UP_LT && testPos.x < pos.x && testPos.y > pos.y) || 
+				(p->wall == UP_RT && testPos.x > pos.x && testPos.y > pos.y) ||
+				(p->wall == DN_LT && testPos.x < pos.x && testPos.y < pos.y) ||
+				(p->wall == DN_RT && testPos.x > pos.x && testPos.y < pos.y)) {
+				continue;
+			}
+			float distSqrd = DistanceSquared2D(pos, testPos);
+			//float box = max(abs(pos.x - testPos.x), abs(pos.y - testPos.y)) + 2;
+			float innerMax = 255;//imRef(maxDistanceGrid, int(pos.x), int(pos.y)).distance;
+			if (testPos.x > pos.x && testPos.y >= pos.y) {
+				innerMax = imRef(maxDistanceGrid, int(pos.x), int(pos.y)).distancePP;
+			}
+			else if (testPos.x <= pos.x && testPos.y > pos.y) {
+				innerMax = imRef(maxDistanceGrid, int(pos.x), int(pos.y)).distanceNP;
+			}
+			else if (testPos.x < pos.x && testPos.y <= pos.y) {
+				innerMax = imRef(maxDistanceGrid, int(pos.x), int(pos.y)).distanceNN;
+			}
+			else if (testPos.x >= pos.x && testPos.y < pos.y) {
+				innerMax = imRef(maxDistanceGrid, int(pos.x), int(pos.y)).distancePN;
+			}
+			if (distSqrd > (innerMax * innerMax + 2)) {
+				continue;
+			}
+			if (checkLinearPath(pos, testPos, agent)) {
+				
+				if (distSqrd > MAX_CONN_DIST_SQRD) {
 					continue;
 				}
-				if (maxDistanceConnection < dist) {
-					maxDistanceConnection = dist;
+				if (maxDistanceConnectionSquared < distSqrd) {
+					maxDistanceConnectionSquared = distSqrd;
 				}
 				int m = std::max(p->connected.size(), node->connected.size());
 				if (maxConnections < m) {
@@ -355,7 +620,7 @@ namespace PrimordialStar {
 		//for (int i = 0; i < basePathNodes.size(); i++) {
 		//	calculateConnection(basePathNodes[i], agent);
 		//}
-		printf("MAX CONNECTIONS OF A NODE: %d\t MAX DISTANCE OF A CONNECTION: %.2f\n", maxConnections, maxDistanceConnection);
+		printf("MAX CONNECTIONS OF A NODE: %d\t MAX DISTANCE OF A CONNECTION: %.2f\n", maxConnections, sqrt(maxDistanceConnectionSquared));
 	}
 
 	vector<Point2D> getPath(Point2D start, Point2D end, float radius, Agent* agent) {
@@ -433,7 +698,7 @@ namespace PrimordialStar {
 		return points;
 	}
 
-	vector<Point2D> getPathDijkstra(Point2D start, Point2D end, float radius, Agent* agent) {
+	vector<Point2D> getPathDijkstra3(Point2D start, Point2D end, float radius, Agent* agent) {
 		PathNode* startNode = new PathNode(start, INVALID, agent);
 
 		PathNode* endNode = new PathNode(end, INVALID, agent);
@@ -496,7 +761,7 @@ namespace PrimordialStar {
 		return points;
 	}
 
-	vector<Point2D> getPathDijkstra2(Point2D start, Point2D end, float radius, Agent* agent) {
+	vector<Point2D> getPathDijkstra(Point2D start, Point2D end, float radius, Agent* agent) {
 		PathNode* startNode = new PathNode(start, INVALID, agent);
 
 		PathNode* endNode = new PathNode(end, INVALID, agent);
@@ -528,9 +793,11 @@ namespace PrimordialStar {
 				DijkStarNode u = Q.top(); Q.pop();
 
 				PathNode* operatingNode = basePathNodes[u.pathNode];
+				Point2D rawPosOp = operatingNode->rawPos();
 				for (int i = 0; i < operatingNode->connected.size(); i++) {
 					PathNode* adjacentNode = basePathNodes[operatingNode->connected[i]];
-					float weight = Distance2D(operatingNode->position(radius), adjacentNode->position(radius));
+					Point2D rawPosAdj = adjacentNode->rawPos();
+					float weight = Distance2D(rawPosOp, rawPosAdj);
 
 					if (dist[adjacentNode->id] > dist[u.pathNode] + weight) {
 						parent[adjacentNode->id] = u.pathNode;
