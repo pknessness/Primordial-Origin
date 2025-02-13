@@ -15,6 +15,7 @@ public:
     UnitTypeID type;
     Point3D lastPos;
     float radius;
+    bool isBuilding;
     Unit::Alliance team;
     AvailableAbilities abilities;
     int8_t ignoreFrames;
@@ -812,7 +813,7 @@ namespace UnitManager {
 //    UnitManager::units[type].push_back(this);
 //}
 
-UnitWrapper::UnitWrapper(const Unit *unit) : self(unit->tag), type(unit->unit_type), lastPos{0, 0, 0}, radius(unit->radius), team(unit->alliance) {
+UnitWrapper::UnitWrapper(const Unit *unit) : self(unit->tag), type(unit->unit_type), lastPos{0, 0, 0}, radius(unit->radius), team(unit->alliance), isBuilding(unit->is_building) {
     if (unit->alliance == Unit::Alliance::Self) {
         if (!UnitManager::checkExist(type)) {
             UnitManager::units[type] = UnitWrappers();

@@ -20,6 +20,7 @@
 #include "debugging.hpp"
 #include "bmp.hpp"
 #include "sc2api/sc2_client.h"
+#include "armyControl.hpp"
 
 #define DISPLAY_AIR 0
 #define MICRO_TEST 0
@@ -530,12 +531,24 @@ public:
                 if (0 && diff < 0) {
                     printf("S{%.1f,%.1f} E{%.1f,%.1f} D[%.1f]\n", from.x, from.y, to.x, to.y, diff);
                 }
-                if (diff > 10 || dist < -10) {
+                if (diff > 2 || diff < -2) {
                     Color c = Aux::randomColor();
-                    float z = std::rand() * 2.0F / RAND_MAX;
-                    for (int i = 0; i < path.size() - 1; i++) {
-                        DebugLine(this, P3D(path[i]) + Point3D{ 0,0,1.5F + z }, P3D(path[i + 1]) + Point3D{ 0,0,1.5F + z }, c);
+                    if (diff < 0) {
+                        c.r = 0;
                     }
+                    else if (diff > 0) {
+                        c.g = 0;
+                    }
+                    float z = std::rand() * 2.0F / RAND_MAX;
+                    if (path.size() > 0) {
+                        for (int i = 0; i < path.size() - 1; i++) {
+                            DebugLine(this, P3D(path[i]) + Point3D{ 0,0,1.5F + z }, P3D(path[i + 1]) + Point3D{ 0,0,1.5F + z }, c);
+                        }
+                    }
+                    else {
+                        DebugLine(this, P3D(from) + Point3D{ 0,0,1.5F + z }, P3D(to) + Point3D{ 0,0,1.5F + z }, c);
+                    }
+                    
                 }
                 differenceInDistance.push_back(diff);
             }
@@ -727,70 +740,70 @@ public:
         }
     }
 
-    void manageArmy() {
-        EnemySquads danger = checkDangerAtHome();
-        if (danger.size() == 0) {
-            #if MICRO_TEST
-                squads[0].attack(START_OP);
-            #elif MICRO_TEST_2
-                squads[0].attack(Observation()->GetGameInfo().enemy_start_locations[0]);
-            #else
-                if (squads[0].army.size() > 11) {
-                    squads[0].attack(Observation()->GetGameInfo().enemy_start_locations[0]);
-                } else {
-                    squads[0].attack(rally_point);
-                }
-            #endif
-        } else {
-            for (int i = 0; i < danger.size(); i++) {
-                if (danger[i].unitComp.size() == 1 && (danger[i].unitComp[0] == UNIT_TYPEID::PROTOSS_PROBE ||
-                                                       danger[i].unitComp[0] == UNIT_TYPEID::ZERG_DRONE ||
-                                                       danger[i].unitComp[0] == UNIT_TYPEID::TERRAN_SCV)) {
-                    UnitWrappers probes = UnitManager::get(UNIT_TYPEID::PROTOSS_PROBE);
-                    UnitWrapper* closest = nullptr;
-                    for (UnitWrapper* probeWrap : probes) {
-                        if (closest == nullptr || Distance2D(probeWrap->pos(this), danger[i].center) <
-                                                      Distance2D(closest->pos(this), danger[i].center)) {
-                            closest = probeWrap;
-                        }
-                    }
-                    Actions()->UnitCommand(closest->self, ABILITY_ID::ATTACK, danger[i].center);
-                } else {
-                    squads[0].attack(danger[0].center);
-                }
-            }
-        }
-    }
+    //void manageArmy() {
+    //    EnemySquads danger = checkDangerAtHome();
+    //    if (danger.size() == 0) {
+    //        #if MICRO_TEST
+    //            squads[0].attack(START_OP);
+    //        #elif MICRO_TEST_2
+    //            squads[0].attack(Observation()->GetGameInfo().enemy_start_locations[0]);
+    //        #else
+    //            if (squads[0].army.size() > 11) {
+    //                squads[0].attack(Observation()->GetGameInfo().enemy_start_locations[0]);
+    //            } else {
+    //                squads[0].attack(rally_point);
+    //            }
+    //        #endif
+    //    } else {
+    //        for (int i = 0; i < danger.size(); i++) {
+    //            if (danger[i].unitComp.size() == 1 && (danger[i].unitComp[0] == UNIT_TYPEID::PROTOSS_PROBE ||
+    //                                                   danger[i].unitComp[0] == UNIT_TYPEID::ZERG_DRONE ||
+    //                                                   danger[i].unitComp[0] == UNIT_TYPEID::TERRAN_SCV)) {
+    //                UnitWrappers probes = UnitManager::get(UNIT_TYPEID::PROTOSS_PROBE);
+    //                UnitWrapper* closest = nullptr;
+    //                for (UnitWrapper* probeWrap : probes) {
+    //                    if (closest == nullptr || Distance2D(probeWrap->pos(this), danger[i].center) <
+    //                                                  Distance2D(closest->pos(this), danger[i].center)) {
+    //                        closest = probeWrap;
+    //                    }
+    //                }
+    //                Actions()->UnitCommand(closest->self, ABILITY_ID::ATTACK, danger[i].center);
+    //            } else {
+    //                squads[0].attack(danger[0].center);
+    //            }
+    //        }
+    //    }
+    //}
 
-    EnemySquads checkDangerAtHome() {
-        //UnitWrappers danger = UnitWrappers();
-        EnemySquads danger = EnemySquads();
-        for (auto it = UnitManager::enemies.begin(); it != UnitManager::enemies.end(); it++) {
-            auto all = it->second;
-            for (auto it2 = all.begin(); it2 != all.end(); it2++) {
-                Point2D pos = (*it2)->pos(this);
-                if (pos == Point2D{0, 0}) {
-                    continue;
-                }
-                if (imRef(Aux::influenceMap, int(pos.x), int(pos.y)) != 0) {
-                    //danger.push_back((*it2));
-                    bool added = false;
-                    for (int i = 0; i < danger.size(); i++) {
-                        if (Distance2D(danger[i].center, pos) < ENEMY_SQUAD_RADIUS) {
-                            danger[i].add(*it2, this);
-                            added = true;
-                            break;
-                        }
-                    }
-                    if (added == false) {
-                        danger.emplace_back();
-                        danger.back().add(*it2, this);
-                    }
-                }
-            }
-        }
-        return danger;
-    }
+    //EnemySquads checkDangerAtHome() {
+    //    //UnitWrappers danger = UnitWrappers();
+    //    EnemySquads danger = EnemySquads();
+    //    for (auto it = UnitManager::enemies.begin(); it != UnitManager::enemies.end(); it++) {
+    //        auto all = it->second;
+    //        for (auto it2 = all.begin(); it2 != all.end(); it2++) {
+    //            Point2D pos = (*it2)->pos(this);
+    //            if (pos == Point2D{0, 0}) {
+    //                continue;
+    //            }
+    //            if (imRef(Aux::influenceMap, int(pos.x), int(pos.y)) != 0) {
+    //                //danger.push_back((*it2));
+    //                bool added = false;
+    //                for (int i = 0; i < danger.size(); i++) {
+    //                    if (Distance2D(danger[i].center, pos) < ENEMY_SQUAD_RADIUS) {
+    //                        danger[i].add(*it2, this);
+    //                        added = true;
+    //                        break;
+    //                    }
+    //                }
+    //                if (added == false) {
+    //                    danger.emplace_back();
+    //                    danger.back().add(*it2, this);
+    //                }
+    //            }
+    //        }
+    //    }
+    //    return danger;
+    //}
 
     Color pathingMapToColor(int8_t map) {
         switch (map) {
@@ -825,10 +838,11 @@ public:
 
         Aux::buildingBlocked = new map2d<int8_t>(mapWidth, mapHeight, true);
         Aux::pathingMap = new map2d<int8_t>(mapWidth, mapHeight, true);
-        printf("CHAR:%d\n", imRef(Aux::pathingMap, 0, 0));
         Aux::loadPathables(this);
         Aux::influenceMap = new map2d<int8_t>(mapWidth, mapHeight, true);
         Aux::influenceMapEnemy = new map2d<int8_t>(mapWidth, mapHeight, true);
+
+        Aux::visionMap = new map2d<int16_t>(mapWidth, mapHeight, true);
 
         path_zhang_suen = new map2d<int8_t>(mapWidth, mapHeight, true);
         PrimordialStar::blobGrid = new map2d<int8_t>(mapWidth, mapHeight, true);
@@ -851,9 +865,21 @@ public:
             }
         }
 
-        Units units = Observation()->GetUnits(sc2::Unit::Alliance::Neutral);
+        std::string words[] = {
+            "wrath", "beans", "power", "soul", "rage", "fire",
+            "energy", "love", "fury", "passion", "spirit",
+            "micro", "strength", "presence", "heart", "truth",
+            "macro", "pulse", "force", "breath", "light",
+            "essence", "grace", "wisdom", "cheese", "embrace",
+            "resolve", "might", "aura", "unity"
+        };
+        int numWords = sizeof(words) / sizeof(words[0]);
 
         printf("Playing on %s\n", Observation()->GetGameInfo().map_name.c_str());
+        Actions()->SendChat("My Origin? Its Primordial, baby! (protoss)");
+        Actions()->SendChat(strprintf("Feel the %s of my Protoss (pheart)", words[std::rand() % numWords].c_str()));
+
+        Units units = Observation()->GetUnits(sc2::Unit::Alliance::Neutral);
         for (char c : Observation()->GetGameInfo().map_name) {
             if (c != ' ') {
                 fileName += c;
@@ -888,8 +914,20 @@ public:
             //    Aux::addPlacement(unit->pos, unit->unit_type);
             //}
             Aux::loadUnitPlacement(path_zhang_suen, unit->pos, unit->unit_type, 1);
-            Aux::loadUnitPlacement(Aux::buildingBlocked, unit->pos, unit->unit_type, 64);
-            Aux::loadUnitPlacement(Aux::pathingMap, unit->pos, unit->unit_type, 64);
+
+            int8_t pathingNum = 64;
+            if (Aux::isVespeneType(unit->unit_type)) {
+                pathingNum = 127;
+            }
+
+
+            Aux::loadUnitPlacement(Aux::buildingBlocked, unit->pos, unit->unit_type, pathingNum);
+
+            if (unit->unit_type != UNIT_TYPEID::NEUTRAL_UNBUILDABLEBRICKSDESTRUCTIBLE &&
+                unit->unit_type != UNIT_TYPEID::NEUTRAL_UNBUILDABLEPLATESDESTRUCTIBLE &&
+                unit->unit_type != UNIT_TYPEID::UNBUILDABLEROCKSDESTRUCTIBLE) {
+                Aux::loadUnitPlacement(Aux::pathingMap, unit->pos, unit->unit_type, pathingNum);
+            }
         }
         timeus startGenerateGrid = std::chrono::steady_clock::now();
 
@@ -1050,7 +1088,9 @@ public:
             squads[0].attack(rally_point);
         #endif
 
-        //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_STALKER, middle, 1, 9);
+        //Debug()->DebugShowMap();
+        //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_STALKER, middle, 2, 9);
+        //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_VOIDRAY, Observation()->GetGameInfo().enemy_start_locations[0], 2, 9);
 
         #if MICRO_TEST_2
 
@@ -1185,6 +1225,38 @@ public:
         //UnitManager::find(unit->unit_type, unit->tag)->execute(this);
     }
 
+    void loadVisionMap(Agent* agent) {
+        int mapWidth = agent->Observation()->GetGameInfo().width;
+        int mapHeight = agent->Observation()->GetGameInfo().height;
+        for (int i = 0; i < mapWidth; i++) {
+            for (int j = 0; j < mapHeight; j++) {
+                if (imRef(Aux::visionMap, i, j) > 1) {
+                    imRef(Aux::visionMap, i, j) -= 1;
+                }
+            }
+        }
+
+        for (auto it = UnitManager::units.begin(); it != UnitManager::units.end(); it++) {
+            auto all = it->second;
+            UnitTypeData unit_stats = Aux::getStats(it->first, agent);
+            for (auto it2 = all.begin(); it2 != all.end(); it2++) {
+                Point2D pos = (*it2)->pos(agent);
+
+                for (int i = std::max(0, int(pos.x - unit_stats.sight_range) - 2);
+                    i < std::min(mapWidth, int(pos.x + unit_stats.sight_range) + 2); i++) {
+                    for (int j = std::max(0, int(pos.y - unit_stats.sight_range) - 2);
+                        j < std::min(mapHeight, int(pos.y + unit_stats.sight_range) + 2); j++) {
+                        if (Distance2D(Point2D{ i + 0.5F, j + 0.5F }, pos) < unit_stats.sight_range) {
+                            imRef(Aux::visionMap, i, j) = Aux::visionMax;
+                        }
+                    }
+                }
+            }
+        }
+
+
+    }
+
     //! In non realtime games this function gets called after each step as indicated by step size.
     //! In realtime this function gets called as often as possible after request/responses are received from the game
     //! gathering observation state.
@@ -1222,9 +1294,14 @@ public:
 
         onStepProfiler.midLog("SpacialEnemy");
 
-        manageArmy();
+        loadVisionMap(this);
 
-        onStepProfiler.midLog("ManageArmy");
+        onStepProfiler.midLog("LoadVisionMap");
+
+        //manageArmy();
+        ArmyControl::step(this, rally_point);
+
+        onStepProfiler.midLog("ArmyControl");
 
         string s = "";
         for (int i = 0; i < squads.size(); i ++) {
@@ -1241,12 +1318,12 @@ public:
                 Point3D pos = unit->pos3D(this);
                 s += strprintf("%s %.1fs %Ix %c {%.1f,%.1f}\n", UnitTypeToName(unit->type),
                     unit->get(this)->weapon_cooldown,
-                               ((ArmyUnit*)(unit))->targetWrap, squads[i].squadStates[unit->self], unit->statTargetPos.x, unit->statTargetPos.y);
+                               ((ArmyUnit*)(unit))->targetWrap, squads[i].squadStates[unit->self], unit->posTarget.x, unit->posTarget.y);
                 DebugText(this,strprintf("%c:%c", squads[i].squadStates[unit->self], squads[i].subSquadStates[unit->self]),
                                       pos,
                                       Color(210, 55, 55), 8);
                 
-                DebugLine(this, pos + Point3D{ 0,0,1 }, P3D(unit->statTargetPos) + Point3D{0,0,1}, {255, 150, 150});
+                DebugLine(this, pos + Point3D{ 0,0,1 }, P3D(unit->posTarget) + Point3D{0,0,1}, {255, 150, 150});
                 DebugLine(this, pos + Point3D{ 0,0,1 }, P3D(unit->escapeLoc) + Point3D{ 0,0,1 }, { 10, 150, 255 });
             }
             s += '\n';
@@ -1399,6 +1476,19 @@ public:
                 Macro::addAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_WARPPRISM);
             }
         #endif
+
+        if (Observation()->GetGameLoop() % 200 == 0) { //1344
+            int mapWidth = Observation()->GetGameInfo().width;
+            int mapHeight = Observation()->GetGameInfo().height;
+            time_t now = time(0);
+            char* dt = ctime(&now);
+            //string time = strprintf("_%s_%d_", dt, Observation()->GetGameLoop());
+            string time = strprintf("_%d_", Observation()->GetGameLoop());
+            saveBitmap(fileName + time +"visionMap.bmp", mapWidth, mapHeight,
+                [this](int i, int j) {return (uint8_t)((float)imRef(Aux::visionMap, i, j) * 255 / Aux::visionMax);},
+                [this](int i, int j) {return (uint8_t)((float)imRef(Aux::visionMap, i, j) * 255 / Aux::visionMax);},
+                [this](int i, int j) {return (uint8_t)((float)imRef(Aux::visionMap, i, j) * 255 / Aux::visionMax);});
+        }
 
         if (0) {
             //((ObservationImp*)Observation())->game_info_cached_ = false;
@@ -1690,13 +1780,18 @@ public:
     }
 };
 
+//MICRO
+//executeAttack doesnt work for some reason, redo it its also pretty dogshit code
+
 //primordialstar optimizations: 
 //-check max num of paths from nodes and max length of a path to optimize
-//modify max dist to not include rocks
+//-modify max dist to not include rocks
 
 //rework enemy squads code
 
 //add scout to initial probe
+
+//fix probe creation logic (currently hardcoded)
 
 //add search and destroy code
 

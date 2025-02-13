@@ -5,6 +5,9 @@
 
 #include "map2d.hpp"
 #include "profiler.hpp"
+
+//#include "unitmanager.hpp"
+#include <ctime>
 //#include "jps.hpp"
 //#include "grid.hpp"
 //#include "tools.hpp"
@@ -120,6 +123,9 @@ map2d<int8_t> *buildingBlocked;
 map2d<int8_t> *influenceMap;
 map2d<int8_t> *influenceMapEnemy;
 
+constexpr int visionMax = 1344 * 4;
+map2d<int16_t>* visionMap;
+
 bool init_data = false;
 UnitTypes cached_data;
 
@@ -203,12 +209,44 @@ static Point2D getRandomPathable(Agent* agent, float startX = -1, float endX = -
     if (sY == -1) sY = 0;
     if (eY == -1) eY = agent->Observation()->GetGameInfo().height;
     Point2D p;
-    while (!Aux::checkPathable(p, agent)) {
+    do {
         float x = sX + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eX - sX)));
         float y = sY + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eY - sY)));
         p = Point2D{ x, y };
-    }
+    } while (!Aux::checkPathable(p, agent));
     return p;
+}
+
+static Point2D getRandomNonPathable(Agent* agent, float startX = -1, float endX = -1, float startY = -1, float endY = -1) {
+    float sX = startX;
+    float eX = endX;
+    float sY = startY;
+    float eY = endY;
+    if (sX == -1) sX = 0;
+    if (eX == -1) eX = agent->Observation()->GetGameInfo().width;
+    if (sY == -1) sY = 0;
+    if (eY == -1) eY = agent->Observation()->GetGameInfo().height;
+    Point2D p;
+    do {
+        float x = sX + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eX - sX)));
+        float y = sY + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eY - sY)));
+        p = Point2D{ x, y };
+    } while (Aux::checkPathable(p, agent));
+    return p;
+}
+
+static Point2D getRandomPoint(Agent* agent, float startX = -1, float endX = -1, float startY = -1, float endY = -1) {
+    float sX = startX;
+    float eX = endX;
+    float sY = startY;
+    float eY = endY;
+    if (sX == -1) sX = 0;
+    if (eX == -1) eX = agent->Observation()->GetGameInfo().width;
+    if (sY == -1) sY = 0;
+    if (eY == -1) eY = agent->Observation()->GetGameInfo().height;
+    float x = sX + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eX - sX)));
+    float y = sY + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eY - sY)));
+    return Point2D{ x, y };
 }
 
 static Color randomColor() {

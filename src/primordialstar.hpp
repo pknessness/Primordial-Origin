@@ -367,9 +367,11 @@ namespace PrimordialStar {
 				bool center = Aux::getPathable(i, j, agent) != 127;
 				if (center) {
 					float max = 0;
-					constexpr int angleChecks = 16;
+					constexpr int angleChecks = 64;
 					int steps = 255;
-					float maxes[angleChecks / 4] = { 0 };
+					constexpr int perQuad = angleChecks / 4;
+
+					float maxes[perQuad] = { 0 };
 					for (int theta = 0; theta < angleChecks; theta++) {
 						float angle = 2 * M_PI * theta / angleChecks;
 						Point2D dir = {cos(angle), sin(angle)};
@@ -382,13 +384,13 @@ namespace PrimordialStar {
 							maximum = dist;
 						}
 
-						if (theta % 4 == 3) {
-							maxes[theta / 4] = max;
+						if (theta % perQuad == (perQuad - 1)) {
+							maxes[theta / perQuad] = max;
 							max = 0;
 						}
 					}
 					
-					imRef(maxDistanceGrid, i, j) = { maxes[0], maxes[1], maxes[2], maxes[3]};
+					imRef(maxDistanceGrid, i, j) = {maxes[0], maxes[1], maxes[2], maxes[3]};
 				}
 				else {
 					imRef(maxDistanceGrid, i, j) = { 0.0 };
@@ -407,7 +409,7 @@ namespace PrimordialStar {
 				bool center = Aux::getPathable(i, j, agent) != 127;
 				if (center) {
 					float min = 255;
-					constexpr int angleChecks = 16;
+					constexpr int angleChecks = 24;
 					int steps = 255;
 					for (int theta = 0; theta < angleChecks; theta++) {
 						float angle = 2 * M_PI * theta / angleChecks;
@@ -447,18 +449,23 @@ namespace PrimordialStar {
 			}
 			float distSqrd = DistanceSquared2D(pos, testPos);
 			//float box = max(abs(pos.x - testPos.x), abs(pos.y - testPos.y)) + 2;
-			float innerMax = 255;//imRef(maxDistanceGrid, int(pos.x), int(pos.y)).distance;
+			float innerMax = 255; //imRef(maxDistanceGrid, int(pos.x), int(pos.y)).distance;
+			int intX = (int)(pos.x);
+			int intY = (int)(pos.y);
+			if (intX < 0 || intX >= maxDistanceGrid->width() || intY < 0 || intY >= maxDistanceGrid->height()) {
+				continue;
+			}
 			if (testPos.x > pos.x && testPos.y >= pos.y) {
-				innerMax = imRef(maxDistanceGrid, int(pos.x), int(pos.y)).distancePP;
+				innerMax = imRef(maxDistanceGrid, intX, intY).distancePP;
 			}
 			else if (testPos.x <= pos.x && testPos.y > pos.y) {
-				innerMax = imRef(maxDistanceGrid, int(pos.x), int(pos.y)).distanceNP;
+				innerMax = imRef(maxDistanceGrid, intX, intY).distanceNP;
 			}
 			else if (testPos.x < pos.x && testPos.y <= pos.y) {
-				innerMax = imRef(maxDistanceGrid, int(pos.x), int(pos.y)).distanceNN;
+				innerMax = imRef(maxDistanceGrid, intX, intY).distanceNN;
 			}
 			else if (testPos.x >= pos.x && testPos.y < pos.y) {
-				innerMax = imRef(maxDistanceGrid, int(pos.x), int(pos.y)).distancePN;
+				innerMax = imRef(maxDistanceGrid, intX, intY).distancePN;
 			}
 			if (distSqrd > (innerMax * innerMax + 2)) {
 				continue;
@@ -533,28 +540,48 @@ namespace PrimordialStar {
 		bool up = Aux::checkPathable(i, j + 1, nullptr);
 		bool up_rt = Aux::checkPathable(i + 1, j + 1, nullptr);
 		bool rt = Aux::checkPathable(i + 1, j, nullptr);
-		return up && up_rt && rt;
+
+		//extra trimming conditions
+		bool up_lt = Aux::checkPathable(i - 1, j + 1, nullptr);
+		bool dn_rt = Aux::checkPathable(i + 1, j - 1, nullptr);
+
+		return up && up_rt && rt && (up_lt || dn_rt);
 	}
 
 	bool check_DN_RT(int i, int j) {
 		bool rt = Aux::checkPathable(i + 1, j, nullptr);
 		bool dn_rt = Aux::checkPathable(i + 1, j - 1, nullptr);
 		bool dn = Aux::checkPathable(i, j - 1, nullptr);
-		return dn && dn_rt && rt;
+
+		//extra trimming conditions
+		bool up_rt = Aux::checkPathable(i + 1, j + 1, nullptr);
+		bool dn_lt = Aux::checkPathable(i - 1, j - 1, nullptr);
+
+		return dn && dn_rt && rt && (up_rt || dn_lt);
 	}
 
 	bool check_DN_LT(int i, int j) {
 		bool dn = Aux::checkPathable(i, j - 1, nullptr);
 		bool dn_lt = Aux::checkPathable(i - 1, j - 1, nullptr);
 		bool lt = Aux::checkPathable(i - 1, j, nullptr);
-		return dn && dn_lt && lt;
+
+		//extra trimming conditions
+		bool dn_rt = Aux::checkPathable(i + 1, j - 1, nullptr);
+		bool up_lt = Aux::checkPathable(i - 1, j + 1, nullptr);
+
+		return dn && dn_lt && lt && (dn_rt || up_lt);
 	}
 
 	bool check_UP_LT(int i, int j) {
 		bool lt = Aux::checkPathable(i - 1, j, nullptr);
 		bool up_lt = Aux::checkPathable(i - 1, j + 1, nullptr);
 		bool up = Aux::checkPathable(i, j + 1, nullptr);
-		return up && up_lt && lt;
+
+		//extra trimming conditions
+		bool dn_lt = Aux::checkPathable(i - 1, j - 1, nullptr);
+		bool up_rt = Aux::checkPathable(i + 1, j + 1, nullptr);
+
+		return up && up_lt && lt && (dn_lt || up_rt);
 	}
 
 	void generatePathNodes(Agent *agent) {
@@ -810,6 +837,10 @@ namespace PrimordialStar {
 
 			int node = endNode->id;
 			for (int cycles = 0; cycles < 10000; cycles++) {
+				if (node == -1) {
+					points.clear();
+					break;
+				}
 				points.insert(points.begin(), basePathNodes[node]->position(radius));
 				if (node == startNode->id) {
 					break;

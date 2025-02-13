@@ -13,12 +13,14 @@
 #include "primordialstar.hpp"
 
 constexpr int BERTH = 1;
+constexpr int numChecksSearch = 100;
 
 enum SquadMode {
     ATTACK,
     RETREAT,
     DEFEND,
-    FULL_RETREAT
+    FULL_RETREAT,
+    SEARCH
 };
 
 char *SquadModeToString(SquadMode mode) {
@@ -30,6 +32,8 @@ char *SquadModeToString(SquadMode mode) {
         return "DEFEND";
     } else if (mode == FULL_RETREAT) {
         return "FULL_RETREAT";
+    } else if (mode == SEARCH) {
+        return "SEARCH";
     }
     return "HUH?";
 }
@@ -216,6 +220,8 @@ public:
             return false;
         } else if (mode == FULL_RETREAT) {
             return false;
+        } else if (mode == SEARCH) {
+            return false;
         }
 
         //for (auto wrap : army) {
@@ -250,36 +256,13 @@ public:
         location = location_;
         return false;
     }
-};
 
-#define ENEMY_SQUAD_RADIUS 5
-
-class EnemySquad {
-public:
-    UnitWrappers army;
-    Point2D center;
-    std::vector<UnitTypeID> unitComp;
-
-    EnemySquad() : army(), center(){
-        
-    }
-
-    void add(UnitWrapper *unitWrap, Agent *agent) {
-        army.push_back(unitWrap);
-        Point2D pos = unitWrap->pos(agent);
-        if (army.size() == 1) {
-            center = pos;
-        } else {
-            center += (center * army.size() + pos) / (army.size() + 1);
-        }
-
-        if (std::find(unitComp.begin(), unitComp.end(), unitWrap->type) == unitComp.end()) {
-            unitComp.push_back(unitWrap->type);
-        }
+    bool search(Point2D location_) {
+        mode = SEARCH;
+        location = location_;
+        return false;
     }
 };
-
-using EnemySquads = std::vector<EnemySquad>;
 
 std::vector<Squad> squads = std::vector<Squad>();
 
@@ -287,7 +270,7 @@ class ArmyUnit : public UnitWrapper {
 private:
     
     UnitTypeData stats;
-    bool is_flying;
+    //bool is_flying;
     //int8_t targetFrames = 0;
     
     
@@ -297,7 +280,7 @@ private:
 public:
     Point2D escapeLoc;
 
-    Point2D statTargetPos;
+    Point2D posTarget;
     UnitWrapper* targetWrap;
     Squad* squad;
 
@@ -308,7 +291,7 @@ public:
         }
         squads[0].army.push_back(this);
         squad = &squads[0];
-        is_flying = unit->is_flying; 
+        //is_flying = unit->is_flying; 
         squad->squadStates[self] = 'u';
         squad->subSquadStates[self] = '.';
         escapeLoc = { 0,0 };
@@ -347,6 +330,9 @@ public:
     }
 
     virtual bool execute(Agent *agent) {
+        if (get(agent) == nullptr) {
+            return false;
+        }
         if (squad->mode == ATTACK) {
             return executeAttack(agent);
         } else if (squad->mode == RETREAT) {
@@ -355,6 +341,8 @@ public:
             return executeDefend(agent);
         } else if (squad->mode == FULL_RETREAT) {
             return executeFullRetreat(agent);
+        } else if (squad->mode == SEARCH) {
+            return executeSearch(agent);
         }
         return false;
     }
@@ -516,7 +504,7 @@ public:
             squad->subSquadStates[self] = '.';
             targetWrap = nullptr;
             Point2D position = pos(agent);
-            Point2D posTarget = { 0,0 };
+            posTarget = { 0,0 };
             if (squad->squadStates[self] == 'u') {
                 if (withSquad(agent)) {
                     squad->squadStates[self] = 'n';
@@ -698,7 +686,7 @@ public:
                 agent->Actions()->UnitCommand(self, ABILITY_ID::MOVE_MOVE, escapeLoc);
                 DebugLine(agent,Point3D{ escapeLoc.x,escapeLoc.y, pos3D(agent).z}, Point3D{escapeLoc.x,escapeLoc.y, pos3D(agent).z + 1.5F}, Colors::Purple);
             }
-            statTargetPos = posTarget;
+            //statTargetPos = posTarget;
             ignoreFrames = 5;
         }
         //constexpr float extraRadius = 2.0F;
@@ -829,6 +817,34 @@ public:
 
     virtual bool executeFullRetreat(Agent *agent) {
         Units enemies = agent->Observation()->GetUnits(Unit::Alliance::Enemy);
+        return false;
+    }
+
+    float searchCost(Point2D p) {
+        return imRef(Aux::visionMap, (int)(p.x), (int)(p.y));
+    }
+
+    virtual bool executeSearch(Agent* agent) {
+        if (DistanceSquared2D(pos(agent), posTarget) < 9 || posTarget == Point2D{0,0}) {
+            float cost = -1;
+            posTarget = { 0,0 };
+            for (int i = 0; i < numChecksSearch; i++) {
+                Point2D check;
+                if (get(agent)->is_flying) {
+                    check = Aux::getRandomNonPathable(agent);
+                }
+                else {
+                    check = Aux::getRandomPathable(agent);
+                }
+                float c = searchCost(check);
+                if (c < cost || cost == -1) {
+                    cost = c;
+                    posTarget = check;
+                }
+            }
+        }
+        agent->Actions()->UnitCommand(self, ABILITY_ID::MOVE_MOVE, posTarget);
+        
         return false;
     }
 
