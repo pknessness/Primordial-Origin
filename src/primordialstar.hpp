@@ -441,10 +441,17 @@ namespace PrimordialStar {
 			}
 			PrimordialStar::PathNode* node = PrimordialStar::basePathNodes[i];
 			Point2D testPos = node->rawPos();
-			if ((p->wall == UP_LT && testPos.x < pos.x && testPos.y > pos.y) || 
-				(p->wall == UP_RT && testPos.x > pos.x && testPos.y > pos.y) ||
-				(p->wall == DN_LT && testPos.x < pos.x && testPos.y < pos.y) ||
-				(p->wall == DN_RT && testPos.x > pos.x && testPos.y < pos.y)) {
+			//if ((p->wall == UP_LT && testPos.x > pos.x && testPos.y < pos.y) || 
+			//	(p->wall == UP_RT && testPos.x < pos.x && testPos.y < pos.y) ||
+			//	(p->wall == DN_LT && testPos.x > pos.x && testPos.y > pos.y) ||
+			//	(p->wall == DN_RT && testPos.x < pos.x && testPos.y > pos.y)) {
+			//	continue;
+			//}
+			if (p->wall != INVALID && node->wall != INVALID && 
+				(((p->wall == UP_LT || node->wall == DN_RT) && testPos.x > pos.x && testPos.y < pos.y) ||
+				((p->wall == UP_RT || node->wall == DN_LT) && testPos.x < pos.x && testPos.y < pos.y) ||
+				((p->wall == DN_LT || node->wall == UP_RT) && testPos.x > pos.x && testPos.y > pos.y) ||
+				((p->wall == DN_RT || node->wall == UP_LT) && testPos.x < pos.x && testPos.y > pos.y))) {
 				continue;
 			}
 			float distSqrd = DistanceSquared2D(pos, testPos);

@@ -507,7 +507,7 @@ public:
     }
 
     void pathVerification() {
-        #define NUM_PTS_RT 20
+        #define NUM_PTS_RT 40
         vector<Point2D> pts;
         pts.reserve(NUM_PTS_RT);
 

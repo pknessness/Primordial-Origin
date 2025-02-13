@@ -123,20 +123,22 @@ namespace ArmyControl {
             }
         }
         else if (enemyBuildingCount > 0) {
-            if (unitCount == 0) {
-                
+            if (squads[0].army.size() > 12) {
+                if (squads[0].getCore(agent) != nullptr) {
+                    float mindist = 400;
+                    UnitWrapper* min = nullptr;
+                    for (UnitWrapper* wrap : buildings) {
+                        float dist = PrimordialStar::getPathLength(squads[0].coreCenter(agent), wrap->pos(agent), squads[0].getCore(agent)->radius, agent);
+                        if (dist < mindist) {
+                            min = wrap;
+                            mindist = dist;
+                        }
+                    }
+                    squads[0].attack(min->pos(agent));
+                }
             }
             else {
-                float mindist = 400;
-                UnitWrapper* min = nullptr;
-                for (UnitWrapper* wrap : buildings) {
-                    float dist = PrimordialStar::getPathLength(squads[0].coreCenter(agent), wrap->pos(agent), squads[0].getCore(agent)->radius, agent);
-                    if (dist < mindist) {
-                        min = wrap;
-                        mindist = dist;
-                    }
-                }
-                squads[0].attack(min->pos(agent));
+                
             }
         }
         else {

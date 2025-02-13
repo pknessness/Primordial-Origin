@@ -142,6 +142,15 @@ constexpr auto VESPENE_PER_PROBE_PER_SEC = 61.0 / 60;
 
 constexpr int PYLON_RADIUS = 6;
 
+bool isWithin(Point2D p, Agent* agent) {
+    int mapWidth = agent->Observation()->GetGameInfo().width;
+    int mapHeight = agent->Observation()->GetGameInfo().height;
+    if (p.x < 0 || p.x >= mapWidth || p.y < 0 || p.y >= mapHeight) {
+        return false;
+    }
+    return true;
+}
+
 UnitTypes allData(Agent *agent) {
     if (!init_data) {
         cached_data = agent->Observation()->GetUnitTypeData();

@@ -525,39 +525,6 @@ public:
                 }
             }
             else {
-                //UnitWrappers potentialTargets = UnitWrappers();
-                //std::vector<float> potentialPriority = std::vector<float>();
-                //for (Weapon w : getStats(agent).weapons) {
-                //    for (UnitWrapper* enemy : squad->targets) {
-                //        float weaponRadius = w.range + radius + enemy->radius;
-                //        float enemyRadius = Distance2D(position, enemy->pos(agent));
-                //        if (Army::hitsUnit(w.type, Army::unitTypeTargetComposition(enemy->type))) {
-                //            bool inserted = false;
-                //            float priority = priorityAttack(w, enemy, agent);
-                //            if (enemyRadius > weaponRadius) {
-                //                priority += (weaponRadius - enemyRadius) * 0.1F;
-                //            }
-                //            if (potentialTargets.size() == 0) {
-                //                inserted = true;
-                //                potentialTargets.push_back(enemy);
-                //                potentialPriority.push_back(priority);
-                //            }
-                //            for (int d = 0; d < potentialTargets.size(); d++) {
-                //                if (potentialPriority[d] < priority) {
-                //                    potentialTargets.insert(potentialTargets.begin() + d, enemy);
-                //                    potentialPriority.insert(potentialPriority.begin() + d, priority);
-                //                    inserted = true;
-                //                    break;
-                //                }
-                //            }
-                //            if (inserted == false) {
-                //                potentialTargets.push_back(enemy);
-                //                potentialPriority.push_back(priority);
-                //            }
-                //            break;
-                //        }
-                //    }
-                //}
                 UnitWrappers personalTargets = SpacialHash::findInRadiusEnemy(position, Army::maxWeaponRadius(type), agent);
                 for (int i = 0; i < squad->targets.size(); i++) {
                     if (std::find(personalTargets.begin(), personalTargets.end(), squad->targets[i]) == personalTargets.end()) {
@@ -626,8 +593,8 @@ public:
                 //Point2D direction = UnitManager::weightedVector(this, 1, agent);
                 //Point2D location = position - direction * 2;
                 //escapeLoc = position;
-                if (escapeLoc.x <= 0 || escapeLoc.y <= 0) {
-                    escapeLoc = posTarget;
+                if (!Aux::isWithin(escapeLoc,agent)) {
+                    escapeLoc = position;
                 }
 
                 //escapeCost = UnitManager::getRelevantDamage(this, UnitManager::getRadiusDamage(escapeLoc, radius, agent), agent);
@@ -825,22 +792,38 @@ public:
     }
 
     virtual bool executeSearch(Agent* agent) {
-        if (DistanceSquared2D(pos(agent), posTarget) < 9 || posTarget == Point2D{0,0}) {
-            float cost = -1;
-            posTarget = { 0,0 };
-            for (int i = 0; i < numChecksSearch; i++) {
-                Point2D check;
-                if (get(agent)->is_flying) {
-                    check = Aux::getRandomNonPathable(agent);
-                }
-                else {
-                    check = Aux::getRandomPathable(agent);
-                }
-                float c = searchCost(check);
-                if (c < cost || cost == -1) {
-                    cost = c;
-                    posTarget = check;
-                }
+        //if (DistanceSquared2D(pos(agent), posTarget) < 9 || posTarget == Point2D{0,0}) {
+        //    float cost = -1;
+        //    posTarget = { 0,0 };
+        //    for (int i = 0; i < numChecksSearch; i++) {
+        //        Point2D check;
+        //        if (get(agent)->is_flying) {
+        //            check = Aux::getRandomNonPathable(agent);
+        //        }
+        //        else {
+        //            check = Aux::getRandomPathable(agent);
+        //        }
+        //        float c = searchCost(check);
+        //        if (c < cost || cost == -1) {
+        //            cost = c;
+        //            posTarget = check;
+        //        }
+        //    }
+        //}
+        float cost = searchCost(posTarget);
+        //posTarget = { 0,0 };
+        for (int i = 0; i < numChecksSearch; i++) {
+            Point2D check;
+            if (get(agent)->is_flying) {
+                check = Aux::getRandomNonPathable(agent);
+            }
+            else {
+                check = Aux::getRandomPathable(agent);
+            }
+            float c = searchCost(check);
+            if (c < cost || cost == -1) {
+                cost = c;
+                posTarget = check;
             }
         }
         agent->Actions()->UnitCommand(self, ABILITY_ID::MOVE_MOVE, posTarget);
