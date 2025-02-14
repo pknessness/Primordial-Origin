@@ -539,7 +539,7 @@ namespace Macro {
 
                 macroProfiler.midLog("CheckResources");
 
-                auto abil = agent->Query()->GetAbilitiesForUnits(units);
+                auto abil = agent->Query()->GetAbilitiesForUnits(units); //TODO: GET RID OF THIS AND REPLACE WITH M ASS ABIL
                 for (int i = 0; i < units.size(); i++) {
                     for (int a = 0; a < abil[i].abilities.size(); a ++) {
                         if (abil[i].abilities[a].ability_id == topAct.ability) {
@@ -551,7 +551,7 @@ namespace Macro {
                 macroProfiler.midLog("CheckAbilities");
 
                 if (actionUnit == nullptr) {
-                    diagnostics += "NO UNIT WITH RELEVANT ABILITY";
+                    diagnostics += "NO UNIT WITH RELEVANT ABILITY\n\n";
                     //diagnostics += strprintf(" %d/%d %d/%d\n\n", theoreticalMinerals, int(c.minerals),
                     //                         theoreticalVespene, int(c.vespene));
                     macroProfiler.midLog("NO UNIT WITH RELEVANT ABILITY");

@@ -179,6 +179,10 @@ namespace PrimordialStar {
 
 		~PathNode();
 
+		void updatePos(Point2D p) {
+			pos = p;
+		}
+
 		Point2D rawPos() {
 			return pos;
 		}
@@ -673,54 +677,77 @@ namespace PrimordialStar {
 		vector<Point2D> points;
 		map<int, int> backpath;
 
-		if (startNode->connected.size() == 0 || endNode->connected.size() == 0) {
-
+		if (startNode->connected.size() == 0) {
+			Point2D loc = basePathNodes[0]->rawPos();
+			float mindist = DistanceSquared2D(loc, start);
+			for (int i = 1; i < basePathNodes.size() - 2; i++) {
+				float dist = DistanceSquared2D(basePathNodes[i]->rawPos(), start);
+				if (dist < mindist) {
+					mindist = dist;
+					loc = basePathNodes[i]->rawPos();
+				}
+			}
+			startNode->updatePos(loc);
+			calculateNewConnection(startNode, agent);
 		}
-		else {
-			priority_queue<StarNode, vector<StarNode>, AStarCompare> starNodes;
-			starNodes.push(StarNode(operatingNode->id, 0, Distance2D(start, end)));
-			visited[operatingNode->id] = true;
-			bool found = false;
-			for (int cycles = 0; cycles < 10000; cycles++) {
-				if (starNodes.size() == 0) {
-					break;
+		if (endNode->connected.size() == 0) {
+			Point2D loc = basePathNodes[0]->rawPos();
+			float mindist = DistanceSquared2D(loc, end);
+			for (int i = 1; i < basePathNodes.size() - 2; i++) {
+				float dist = DistanceSquared2D(basePathNodes[i]->rawPos(), end);
+				if (dist < mindist) {
+					mindist = dist;
+					loc = basePathNodes[i]->rawPos();
 				}
-				StarNode star = starNodes.top();
-				starNodes.pop();
-				operatingNode = basePathNodes[star.pathNode];
-				Point2D currentPos = operatingNode->position(radius);
-				for (int i = 0; i < operatingNode->connected.size(); i++) {
-					int subNodeID = operatingNode->connected[i];
-					if (visited[subNodeID]) {
-						continue;
-					}
-					Point2D nextPos = basePathNodes[subNodeID]->position(radius);
-					backpath[subNodeID] = operatingNode->id;
-					starNodes.push(StarNode(subNodeID, star.g + Distance2D(currentPos, nextPos), Distance2D(nextPos, end)));
-					visited[subNodeID] = true;
+			}
+			endNode->updatePos(loc);
+			calculateNewConnection(endNode, agent);
+		}
 
-					//DebugText(agent, strprintf("%.1f,%.1f", star.g + Distance2D(currentPos, nextPos), Distance2D(nextPos, end)), AP3D(nextPos));
-
-					if (operatingNode->connected[i] == endNode->id) {
-						found = true;
-						break;
-					}
+		priority_queue<StarNode, vector<StarNode>, AStarCompare> starNodes;
+		starNodes.push(StarNode(operatingNode->id, 0, Distance2D(start, end)));
+		visited[operatingNode->id] = true;
+		bool found = false;
+		for (int cycles = 0; cycles < 10000; cycles++) {
+			if (starNodes.size() == 0) {
+				break;
+			}
+			StarNode star = starNodes.top();
+			starNodes.pop();
+			operatingNode = basePathNodes[star.pathNode];
+			Point2D currentPos = operatingNode->position(radius);
+			for (int i = 0; i < operatingNode->connected.size(); i++) {
+				int subNodeID = operatingNode->connected[i];
+				if (visited[subNodeID]) {
+					continue;
 				}
-				if (found) {
+				Point2D nextPos = basePathNodes[subNodeID]->position(radius);
+				backpath[subNodeID] = operatingNode->id;
+				starNodes.push(StarNode(subNodeID, star.g + Distance2D(currentPos, nextPos), Distance2D(nextPos, end)));
+				visited[subNodeID] = true;
+
+				//DebugText(agent, strprintf("%.1f,%.1f", star.g + Distance2D(currentPos, nextPos), Distance2D(nextPos, end)), AP3D(nextPos));
+
+				if (operatingNode->connected[i] == endNode->id) {
+					found = true;
 					break;
 				}
 			}
-
-			operatingNode = endNode;
-			points.push_back(basePathNodes[operatingNode->id]->rawPos());
-			for (int i = 0; i < starNodes.size(); i++) {
-				operatingNode = basePathNodes[backpath[operatingNode->id]];
-				points.insert(points.begin(), basePathNodes[operatingNode->id]->position(radius));
-				if (operatingNode->id == startNode->id) {
-					break;
-				}
+			if (found) {
+				break;
 			}
 		}
+
+		operatingNode = endNode;
+		points.push_back(basePathNodes[operatingNode->id]->rawPos());
+		for (int i = 0; i < starNodes.size(); i++) {
+			operatingNode = basePathNodes[backpath[operatingNode->id]];
+			points.insert(points.begin(), basePathNodes[operatingNode->id]->position(radius));
+			if (operatingNode->id == startNode->id) {
+				break;
+			}
+		}
+
 		delete[] visited;
 		basePathNodes.pop_back();
 		basePathNodes.pop_back();

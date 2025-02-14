@@ -558,7 +558,7 @@ public:
                     else {
                         posTarget = pos(agent);
                         //mode = 'r';
-                        squad->subSquadStates[self] = 'r';
+                        squad->subSquadStates[self] = 'c';
                     }
                 }
                 else {
@@ -589,7 +589,7 @@ public:
                 agent->Actions()->UnitCommand(self, ABILITY_ID::ATTACK, posTarget);
                 escapeLoc = posTarget;
             }
-            else if (squad->subSquadStates[self] == 'j' || squad->subSquadStates[self] == 'r') {
+            else if (squad->subSquadStates[self] == 'j' || squad->subSquadStates[self] == 'r' || squad->subSquadStates[self] == 'c') {
                 //Point2D direction = UnitManager::weightedVector(this, 1, agent);
                 //Point2D location = position - direction * 2;
                 //escapeLoc = position;

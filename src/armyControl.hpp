@@ -138,7 +138,7 @@ namespace ArmyControl {
                 }
             }
             else {
-                
+                squads[0].attack(rally);
             }
         }
         else {

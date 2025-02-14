@@ -43,7 +43,7 @@ public:
     std::vector<double> rankedExpansionDistance;
     Point2DI staging_location;
     Point2D rally_point;
-    Point2DI enemy;
+    Point2D enemy;
 
     map2d<int8_t>* path_zhang_suen;
 
@@ -857,7 +857,7 @@ public:
         SpacialHash::initGrid(this);
         SpacialHash::initGridEnemy(this);
 
-        enemy = P2DI(Observation()->GetGameInfo().enemy_start_locations[0]) - Point2DI{ 0,1 };
+        enemy = Observation()->GetGameInfo().enemy_start_locations[0];
 
         for (int i = 0; i < path_zhang_suen->width(); i++) {
             for (int j = 0; j < path_zhang_suen->height(); j++) {
@@ -1396,6 +1396,8 @@ public:
                 Macro::addBuilding(ABILITY_ID::BUILD_PYLON, P2D(staging_location));
 
                 Macro::addBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1});
+
+                Macro::addBuilding(ABILITY_ID::GENERAL_MOVE, enemy);
 
                 Macro::addBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1});
 
