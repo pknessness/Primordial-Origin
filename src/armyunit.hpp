@@ -208,7 +208,13 @@ public:
             
             //targets.clear();
             if (coreCenter(agent) != Point2D{ 0,0 }) {
-                targets = SpacialHash::findInRadiusEnemy(coreCenter(agent), armyballRadius() + squadExtraRadius, agent);
+                Circles c;
+                for (int i = 0; i < army.size(); i++) {
+                    if (squadStates[army[i]->self] != 'u') {
+                        c.push_back(Circle{ army[i]->pos(agent), Army::maxWeaponRadius(army[i]->type) });
+                    }
+                }
+                targets = SpacialHash::findInRadiiEnemy(c, agent);//SpacialHash::findInRadiusEnemy(coreCenter(agent), armyballRadius() + squadExtraRadius, agent);
             }
             //targets = SpacialHash::findInRadiusEnemy(coreCenter(agent), armyballRadius() + squadExtraRadius, agent);
 
@@ -525,13 +531,17 @@ public:
                 }
             }
             else {
-                UnitWrappers personalTargets = SpacialHash::findInRadiusEnemy(position, Army::maxWeaponRadius(type), agent);
-                for (int i = 0; i < squad->targets.size(); i++) {
-                    if (std::find(personalTargets.begin(), personalTargets.end(), squad->targets[i]) == personalTargets.end()) {
-                        personalTargets.push_back(squad->targets[i]);
-                    }
-                }
-                UnitWrappers potentialTargets = getTargetEnemy(personalTargets, agent);
+
+                //UnitWrappers personalTargets = SpacialHash::findInRadiusEnemy(position, Army::maxWeaponRadius(type), agent);
+                //for (int i = 0; i < squad->targets.size(); i++) {
+                //    if (std::find(personalTargets.begin(), personalTargets.end(), squad->targets[i]) == personalTargets.end()) {
+                //        personalTargets.push_back(squad->targets[i]);
+                //    }
+                //}
+
+                //UnitWrappers potentialTargets = getTargetEnemy(personalTargets, agent);
+
+                UnitWrappers potentialTargets = getTargetEnemy(squad->targets, agent);
                 
                 if (potentialTargets.size() != 0) {
                     targetWrap = potentialTargets.front();

@@ -8,17 +8,18 @@
 #include "unit.hpp"
 #include "debugging.hpp"
 
+struct Circle {
+    Point2D pos;
+    float radius;
+};
+
+using Circles = vector<Circle>;
 
 namespace SpacialHash {
 
 map2d<UnitWrappers> *grid;
 map2d<UnitWrappers> *gridEnemy;
 map2d<int8_t>* gridModify;
-
-struct Circle {
-    Point2D pos;
-    float radius;
-};
 
 struct Bounds {
     int xmin;
@@ -58,8 +59,6 @@ struct Bounds {
         }
     }
 };
-
-using Circles = vector<Circle>;
 
 void initGrid(Agent *agent) {
     for (int i = 0; i < grid->width(); i++) {

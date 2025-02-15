@@ -75,13 +75,13 @@ namespace ArmyControl {
                     }
                 }
             }
-            printf("\n");
-            for (int i = 0; i < enemySquads.size(); i++) {
-                printf("%d:\n", i);
-                for (int e = 0; e < enemySquads[i].army.size(); e++) {
-                    printf("%s:\n", UnitTypeToName(enemySquads[i].army[e]->type));
-                }
-            }
+            //printf("\n");
+            //for (int i = 0; i < enemySquads.size(); i++) {
+            //    printf("%d:\n", i);
+            //    for (int e = 0; e < enemySquads[i].army.size(); e++) {
+            //        printf("%s:\n", UnitTypeToName(enemySquads[i].army[e]->type));
+            //    }
+            //}
             
         }
 	}
