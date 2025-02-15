@@ -323,6 +323,66 @@ public:
         }
     }
 
+    void displaySpacialHashGridTEST() {
+        GameInfo game_info = Observation()->GetGameInfo();
+
+        int mapWidth = game_info.width;
+        int mapHeight = game_info.height;
+
+        Point2D center = Observation()->GetCameraPos();
+        int wS = int(center.x) - 10;
+        if (wS < 0)
+            wS = 0;
+        int hS = int(center.y) - 5;
+        if (hS < 0)
+            hS = 0;
+        int wE = int(center.x) + 11;
+        if (wE > mapWidth)
+            wE = mapWidth;
+        int hE = int(center.y) + 14;
+        if (hE > mapHeight)
+            hE = mapHeight;
+
+        int fontSize = 8;
+
+        #define BOX_BORDER 0.02
+
+        for (int w = wS; w < wE; w++) {
+            for (int h = hS; h < hE; h++) {
+                Point2DI point = Point2DI(w, h);
+                float boxHeight = 0;
+                Color c(255, 255, 255);
+
+                // for (auto loc : path) {
+                //     if (loc.x == w && loc.y == h) {
+                //         c = Color(120, 23, 90);
+                //         break;
+                //     }
+                // }
+
+                if (imRef(SpacialHash::gridModify, w, h) != 0) {
+                    c = { 20, 200, 210 };
+                }
+
+                if (0 || !(c.r == 255 && c.g == 255 && c.b == 255)) {
+                    float height = Observation()->TerrainHeight(Point2D{ w + 0.5F, h + 0.5F });
+
+                    DebugBox(this, Point3D(w + BOX_BORDER, h + BOX_BORDER, height + 0.01),
+                        Point3D(w + 1 - BOX_BORDER, h + 1 - BOX_BORDER, height + boxHeight), c);
+                #if MICRO_TEST
+                    DebugText(this, strprintf("%d, %d", w, h),
+                        Point3D(w + BOX_BORDER, h + 0.2 + BOX_BORDER, height + 0.1),
+                        Color(200, 90, 15), 4);
+                #endif
+                    /*std::string cs = imRef(display, w, h);
+                    float disp = cs.length() * 0.0667 * fontSize / 15;
+                    DebugText(this,cs, Point3D(w + 0.5 - disp, h + 0.5, height + 0.1 + displace),
+                                            Color(200, 190, 115), fontSize);*/
+                }
+            }
+        }
+    }
+
     void displayEnemyDamageGrid2() {
         GameInfo game_info = Observation()->GetGameInfo();
 
@@ -824,7 +884,6 @@ public:
 
     //! Called when a game is started or restarted.
     virtual void OnGameStart() final {
-        //bmpTest();
 
         profilerPrint = false;
         profilerThreshold = 10;
@@ -835,21 +894,24 @@ public:
 
         SpacialHash::grid = new map2d<UnitWrappers>(mapWidth, mapHeight, true);
         SpacialHash::gridEnemy = new map2d<UnitWrappers>(mapWidth, mapHeight, true);
+        SpacialHash::gridModify = new map2d<int8_t>(mapWidth, mapHeight, true);
 
         Aux::buildingBlocked = new map2d<int8_t>(mapWidth, mapHeight, true);
         Aux::pathingMap = new map2d<int8_t>(mapWidth, mapHeight, true);
+
         Aux::loadPathables(this);
+
         Aux::influenceMap = new map2d<int8_t>(mapWidth, mapHeight, true);
         Aux::influenceMapEnemy = new map2d<int8_t>(mapWidth, mapHeight, true);
 
         Aux::visionMap = new map2d<int16_t>(mapWidth, mapHeight, true);
 
         path_zhang_suen = new map2d<int8_t>(mapWidth, mapHeight, true);
+
         PrimordialStar::blobGrid = new map2d<int8_t>(mapWidth, mapHeight, true);
         PrimordialStar::minDistanceGrid = new map2d<MinDistanceNode>(mapWidth, mapHeight, true);
         PrimordialStar::maxDistanceGrid = new map2d<DistanceNode>(mapWidth, mapHeight, true);
         
-
         UnitManager::enemyDamageNet = new map2d<DamageLocation>(mapWidth * UnitManager::damageNetPrecision, mapHeight * UnitManager::damageNetPrecision, true);
         UnitManager::enemyDamageNetModify = new map2d<int8_t>(mapWidth * UnitManager::damageNetPrecision, mapHeight * UnitManager::damageNetPrecision, true);
         UnitManager::enemyDamageNetTemp = new map2d<float>(mapWidth * UnitManager::damageNetPrecision, mapHeight * UnitManager::damageNetPrecision, true);
@@ -1649,6 +1711,16 @@ public:
         //grid();
 
         //displaySpacialHashGrid();
+
+        SpacialHash::gridModify->clear();
+
+        float testRadius = 0.375F;
+
+        DebugSphere(this, P3D(Observation()->GetCameraPos()), testRadius);
+
+        SpacialHash::fillGridModify(Observation()->GetCameraPos(), testRadius, this);
+
+        displaySpacialHashGridTEST();
 
         //displayEnemyDamageGrid();
 

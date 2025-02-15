@@ -151,6 +151,15 @@ bool isWithin(Point2D p, Agent* agent) {
     return true;
 }
 
+bool isWithin(int x, int y, Agent* agent) {
+    int mapWidth = agent->Observation()->GetGameInfo().width;
+    int mapHeight = agent->Observation()->GetGameInfo().height;
+    if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) {
+        return false;
+    }
+    return true;
+}
+
 UnitTypes allData(Agent *agent) {
     if (!init_data) {
         cached_data = agent->Observation()->GetUnitTypeData();

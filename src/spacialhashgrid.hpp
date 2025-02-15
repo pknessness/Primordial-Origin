@@ -10,8 +10,56 @@
 
 
 namespace SpacialHash {
+
 map2d<UnitWrappers> *grid;
 map2d<UnitWrappers> *gridEnemy;
+map2d<int8_t>* gridModify;
+
+struct Circle {
+    Point2D pos;
+    float radius;
+};
+
+struct Bounds {
+    int xmin;
+    int xmax;
+    int ymin;
+    int ymax;
+
+    Bounds operator+(const Bounds& b) {
+        Bounds nu = { xmin,xmax,ymin,ymax };
+        if (b.xmin < nu.xmin) {
+            nu.xmin = b.xmin;
+        }
+        if (b.xmax > nu.xmax) {
+            nu.xmax = b.xmax;
+        }
+        if (b.ymin < nu.ymin) {
+            nu.ymin = b.ymin;
+        }
+        if (b.ymax > nu.ymax) {
+            nu.ymax = b.ymax;
+        }
+        return nu;
+    }
+
+    void operator+=(const Bounds& b) {
+        if (b.xmin < xmin) {
+            xmin = b.xmin;
+        }
+        if (b.xmax > xmax) {
+            xmax = b.xmax;
+        }
+        if (b.ymin < ymin) {
+            ymin = b.ymin;
+        }
+        if (b.ymax > ymax) {
+            ymax = b.ymax;
+        }
+    }
+};
+
+using Circles = vector<Circle>;
 
 void initGrid(Agent *agent) {
     for (int i = 0; i < grid->width(); i++) {
@@ -72,17 +120,19 @@ void updateGrid(Agent *agent) {
     }
 }
 
-UnitWrappers findInRadius(Point2D pos, float radius, Agent *agent) {
-    UnitWrappers found;
+void fillGridModify2(Point2D pos, float radius, Agent *agent) {
     float x = pos.x - radius;
     float y = pos.y - radius;
     for (int i = 0; i < radius * 2 + 1; i++) {
         for (int j = 0; j < radius * 2 + 1; j++) {
+            if (!Aux::isWithin((int)(i + x), (int)(j + y), agent)) {
+                continue;
+            }
             bool activate = false;
             for (float a = 0; a <= 1; a += 0.25) {
                 for (float b = 0; b <= 1; b += 0.25) {
                     if (a == 0 || a == 1 || b == 0 || b == 1 || (a == 0.5 && b == 0.5)) {
-                        Point2D temp{float((int)(i + x) + a), float((int)(j + y) + b)};
+                        Point2D temp{ float((int)(i + x) + a), float((int)(j + y) + b) };
                         if (Distance2D(pos, temp) < radius ||
                             ((int)(i + x) == (int)(pos.x) && std::abs(j + y - pos.y) < radius) ||
                             ((int)(j + y) == (int)(pos.y) && std::abs(i + x - pos.x) < radius)) {
@@ -96,7 +146,46 @@ UnitWrappers findInRadius(Point2D pos, float radius, Agent *agent) {
                 }
             }
             if (activate) {
-                UnitWrappers cell = imRef(grid, (int)(i + x), (int)(j + y));
+                imRef(gridModify, (int)(i + x), (int)(j + y)) = 1;
+            }
+        }
+    }
+}
+
+Bounds fillGridModify(Point2D pos, float radius, Agent* agent) {
+    int x = (pos.x - radius);
+    int y = (pos.y - radius);
+    int xmax = (pos.x + radius + 1);
+    int ymax = (pos.y + radius + 1);
+    if (radius < 1) {
+        fillGridModify2(pos, radius, agent);
+        return { x, xmax, y, ymax };
+    }
+    //printf("%d - %d, %d - %d\n", x, xmax, y, ymax);
+    imRef(gridModify, int(pos.x), int(pos.y)) = 1;
+    for (int i = x; i < xmax; i++) {
+        for (int j = y; j < ymax; j++) {
+            float f = Distance2D(pos, Point2D{ (float)i,(float)j });
+            if (i > 1 && i < gridModify->width() && j > 1 && j < gridModify->height() && f < radius) {
+                imRef(gridModify, i, j) = 1;
+                imRef(gridModify, i, j - 1) = 1;
+                imRef(gridModify, i - 1, j) = 1;
+                imRef(gridModify, i - 1, j - 1) = 1;
+            }
+        }
+    }
+    return {x, xmax, y, ymax};
+}
+
+static UnitWrappers findInRadius_INTERNAL(Bounds b, Agent *agent) {
+    UnitWrappers found;
+    for (int i = b.xmin; i < b.xmax; i++) {
+        for (int j = b.ymin; j < b.ymax; j++) {
+            if (!Aux::isWithin(i, j, agent)) {
+                continue;
+            }
+            if (imRef(gridModify, i, j) == 1) {
+                UnitWrappers cell = imRef(grid, i, j);
                 for (auto it = cell.begin(); it != cell.end(); it++) {
                     if (std::find(found.begin(), found.end(), *it) == found.end()) {
                         found.push_back(*it);
@@ -108,6 +197,32 @@ UnitWrappers findInRadius(Point2D pos, float radius, Agent *agent) {
         }
     }
     return found;
+}
+
+UnitWrappers findInRadius(Point2D pos, float radius, Agent* agent) {
+    gridModify->clear();
+    Bounds b = fillGridModify(pos, radius, agent);
+
+    return findInRadius_INTERNAL(b, agent);
+}
+
+UnitWrappers findInRadius(Circle c, Agent* agent) {
+    return findInRadius(c.pos, c.radius, agent);
+}
+
+UnitWrappers findInRadii(Circles c, Agent* agent) {
+    if (c.size() == 0) {
+        return UnitWrappers();
+    }
+    gridModify->clear();
+
+    Bounds bound = fillGridModify(c[0].pos, c[0].radius, agent);
+
+    for (int i = 1; i < c.size(); i++) {
+        bound += fillGridModify(c[i].pos, c[i].radius, agent);
+    }
+
+    return findInRadius_INTERNAL(bound, agent);
 }
 
 void initGridEnemy(Agent *agent) {
@@ -169,45 +284,52 @@ void updateGridEnemy(Agent *agent) {
     }
 }
 
-UnitWrappers findInRadiusEnemy(Point2D pos, float radius, Agent *agent) {
+static UnitWrappers findInRadiusEnemy_INTERNAL(Bounds b, Agent* agent) {
     UnitWrappers found;
-    float x = pos.x - radius;
-    float y = pos.y - radius;
-    for (int i = 0; i < radius * 2 + 1; i++) {
-        for (int j = 0; j < radius * 2 + 1; j++) {
-            int intX = (int)(i + x);
-            int intY = (int)(j + y);
-            if (intX < 0 || intX >= gridEnemy->width() || intY < 0 || intY >= gridEnemy->height()) {
+    for (int i = b.xmin; i < b.xmax; i++) {
+        for (int j = b.ymin; j < b.ymax; j++) {
+            if (!Aux::isWithin(i, j, agent)) {
                 continue;
             }
-            bool activate = false;
-            for (float a = 0; a <= 1; a += 0.25) {
-                for (float b = 0; b <= 1; b += 0.25) {
-                    if (a == 0 || a == 1 || b == 0 || b == 1 || (a == 0.5 && b == 0.5)) {
-                        Point2D temp{float(intX + a), float(intY + b)};
-                        if (Distance2D(pos, temp) < radius ||
-                            (intX == (int)(pos.x) && std::abs(j + y - pos.y) < radius) ||
-                            (intY == (int)(pos.y) && std::abs(i + x - pos.x) < radius)) {
-                            activate = true;
-                            break;
-                        }
-                    }
-                }
-                if (activate) {
-                    break;
-                }
-            }
-            if (activate) {
-                UnitWrappers cell = imRef(gridEnemy, intX, intY);
+            if (imRef(gridModify, i, j) == 1) {
+                UnitWrappers cell = imRef(gridEnemy, i, j);
                 for (auto it = cell.begin(); it != cell.end(); it++) {
                     if (std::find(found.begin(), found.end(), *it) == found.end()) {
                         found.push_back(*it);
                     }
                 }
+                //found.insert(found.end(), cell.begin(), cell.end());
+                //if (find(found.begin(), found.end()))
             }
         }
     }
     return found;
+}
+
+UnitWrappers findInRadiusEnemy(Point2D pos, float radius, Agent* agent) {
+    gridModify->clear();
+    Bounds b = fillGridModify(pos, radius, agent);
+
+    return findInRadiusEnemy_INTERNAL(b, agent);
+}
+
+UnitWrappers findInRadiusEnemy(Circle c, Agent* agent) {
+    return findInRadiusEnemy(c.pos, c.radius, agent);
+}
+
+UnitWrappers findInRadiiEnemy(Circles c, Agent* agent) {
+    if (c.size() == 0) {
+        return UnitWrappers();
+    }
+    gridModify->clear();
+
+    Bounds bound = fillGridModify(c[0].pos, c[0].radius, agent);
+
+    for (int i = 1; i < c.size(); i++) {
+        bound += fillGridModify(c[i].pos, c[i].radius, agent);
+    }
+
+    return findInRadiusEnemy_INTERNAL(bound, agent);
 }
 
 }
