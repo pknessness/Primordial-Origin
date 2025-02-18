@@ -3,8 +3,11 @@
 #include <map>
 #include "unit.hpp"
 #include "constants.h"
+#include "primordialstar.hpp"
 
 map<Tag, int8_t> probeTargetting;
+map<Tag, float> mineralDistance;
+map<Tag, bool> nexusNearby;
 
 Point2D getBuildingLocation(Agent *agent) {
     if (Aux::buildingPointer >= Aux::buildingLocations.size()) {
@@ -101,7 +104,7 @@ public:
     //}
 
     Probe(const Unit* unit) : UnitWrapper(unit) {
-        target = 0;
+        target = NullTag;
     }
 
     bool addBuilding(Building building) {
@@ -109,44 +112,82 @@ public:
         return true;
     }
 
-    Tag getTargetTag(Agent *agent) {
+    Tag getTargetTag(Agent *agent) { //TODO: IF ASSIMILATOR EMPTY RETARGET
         if (agent->Observation()->GetUnit(target) == nullptr) {
             target = NullTag;
         }
         if (target == NullTag) {
-            Units minerals = agent->Observation()->GetUnits(Unit::Alliance::Neutral, Aux::isMineral);
-            Units assimilators = agent->Observation()->GetUnits(Unit::Alliance::Self, Aux::isAssimilator);
-            minerals.insert(minerals.end(), assimilators.begin(), assimilators.end());
+            //Units minerals = agent->Observation()->GetUnits(Unit::Alliance::Neutral, Aux::isMineral);
+            //Units assimilators = agent->Observation()->GetUnits(Unit::Alliance::Self, Aux::isAssimilator);
+            //minerals.insert(minerals.end(), assimilators.begin(), assimilators.end());
+            probeTargetting.clear();
 
-            const Unit *nearest = nullptr;
-            for (const Unit *targ : minerals) {
-                if (targ->display_type != Unit::DisplayType::Visible) {
-                    continue;
+            for (UnitWrapper* probesWr : UnitManager::get(UNIT_TYPEID::PROTOSS_PROBE)) {
+                Probe* probe = (Probe*)probesWr;
+                if (probe->target != NullTag && probeTargetting.find(probe->target) == probeTargetting.end()) {
+                    probeTargetting[probe->target] = 0;
                 }
-                if (probeTargetting.find(targ->tag) == probeTargetting.end()) {
-                    probeTargetting[targ->tag] = 0;
+                probeTargetting[probe->target] += 1;
+            }
+
+            UnitWrappers mineralWraps = UnitManager::getMinerals();
+            UnitWrappers assimilatorWraps = UnitManager::get(UNIT_TYPEID::PROTOSS_ASSIMILATOR);
+            mineralWraps.insert(mineralWraps.end(), assimilatorWraps.begin(), assimilatorWraps.end());
+
+            //const Unit *nearest = nullptr;
+
+            float mindist = -1;
+            UnitWrapper* nearestWrap = nullptr;
+            bool hasNexus = false;
+
+            UnitWrappers nexuses = UnitManager::get(UNIT_TYPEID::PROTOSS_NEXUS);
+
+            Point2D position = pos(agent);
+
+            for ( UnitWrapper *targWrap : mineralWraps) {
+                //if (targ->display_type != Unit::DisplayType::Visible) {
+                //    continue;
+                //}
+                Point2D targPos = targWrap->pos(agent);
+
+                if (probeTargetting.find(targWrap->self) == probeTargetting.end()) {
+                    probeTargetting[targWrap->self] = 0;
                 }
-                int limit = 0;
-                if (Aux::isMineral(*targ)) {
+                if (mineralDistance.find(targWrap->self) == mineralDistance.end()) {
+                    mineralDistance[targWrap->self] = PrimordialStar::getPathLength(Aux::startLoc, targPos, radius, agent);
+                }
+                if (nexusNearby.find(targWrap->self) == nexusNearby.end()) {
+                    nexusNearby[targWrap->self] = false;
+                    for (UnitWrapper* nexus : nexuses) {
+                        if (DistanceSquared2D(targPos, nexus->pos(agent)) < 100) {
+                            nexusNearby[targWrap->self] = false;
+                            break;
+                        }
+                    }
+                }
+                int limit = 3;
+                if (Aux::isMineralType(targWrap->type)) {
                     limit = 2;
-                } else if (Aux::isAssimilator(*targ)) {
-                    limit = 3;
-                } else {
-                    printf("ERROR\n");
+                }
+                if (probeTargetting[targWrap->self] >= limit) {
                     continue;
                 }
-                if (probeTargetting[targ->tag] >= limit)
-                    continue;
-                if (nearest == nullptr || Distance2D(nearest->pos, targ->pos) >
-                                            Distance2D(agent->Observation()->GetUnit(self)->pos, targ->pos)) {
-                    nearest = targ;
+
+                float dist = mineralDistance[targWrap->self];
+
+                if (mindist == -1 || (!hasNexus && nexusNearby[targWrap->self]) || dist < mindist) {
+                    if (!hasNexus && nexusNearby[targWrap->self]) {
+                        hasNexus = true;
+                    }
+                    mindist = dist;
+                    nearestWrap = targWrap;
                 }
             }
             
-            if (nearest == nullptr) {
+            if (nearestWrap == nullptr) {
                 return NullTag;
             }
-            target = nearest->tag;
+            target = nearestWrap->self;
             probeTargetting[target] += 1;
         }
         return target;

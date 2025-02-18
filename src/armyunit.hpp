@@ -857,52 +857,53 @@ public:
     }
 };
 
+constexpr int blinkChecks = 20;
+
 class Stalker : public ArmyUnit {
 private:
 public:
     Stalker(const Unit *unit) : ArmyUnit(unit) {
     }
 
+    //the higher the more u want to go.
+    float blinkPriority(Point2D pos, Agent* agent) {
+        return -UnitManager::getRelevantDamage(this, UnitManager::getRadiusAvgDamage(pos, radius + 1.0F, agent), agent);
+    }
+
     virtual bool executeDamaged(Agent *agent, float health, float shields) {
-        if (shields < 0.05 && checkAbility(ABILITY_ID::EFFECT_BLINK_STALKER)) {
-            // Units enemies = agent->Observation()->GetUnits(Unit::Alliance::Enemy);
-            std::vector<DamageNet> enemiesnet;
-            Point2D displace;
-            Point2D stutterDisplace;
-            int numStutterAvg = 0;
-            for (auto it = UnitManager::enemies.begin(); it != UnitManager::enemies.end(); it++) {
-                auto all = it->second;
-                for (auto it2 = all.begin(); it2 != all.end(); it2++) {
-                    UnitTypeData enemy_stats = Aux::getStats((*it2)->type, agent);
-                    if (enemy_stats.weapons.size() == 0) {
-                        continue;
-                    }
-                    float distance = Distance2D((*it2)->pos(agent), pos(agent));
-                    bool withinEnemyRadius = false;
-                    float r1r2 = (*it2)->radius + get(agent)->radius;
-                    for (int i = 0; i < enemy_stats.weapons.size(); i++) {
-                        float r = enemy_stats.weapons[i].range + r1r2;
-                        if ((distance < r) &&
-                            (enemy_stats.weapons[i].type == Weapon::TargetType::Any ||
-                             (enemy_stats.weapons[i].type == Weapon::TargetType::Ground && !get(agent)->is_flying) ||
-                             (enemy_stats.weapons[i].type == Weapon::TargetType::Air && get(agent)->is_flying))) {
-                            // enemy_radius = enemy_stats.weapons[i].range;
-                            withinEnemyRadius = true;
-                            displace += normalize(pos(agent) - (*it2)->pos(agent)) * (r - distance);
-                        }
-                    }
-                    if (displace == Point2D{0, 0}) {
-                        continue;
-                    }
+        if (shields < 0.05 && checkAbility(ABILITY_ID::EFFECT_BLINK)) {
+            printf("TELEPORT STALKER\n");
+
+            float priorityMax = -1;
+            Point2D pos;
+
+            for (int i = 0; i < blinkChecks; i++) {
+                float theta = ((float)std::rand()) * 2 * M_PI / RAND_MAX;
+                float magnitude = 8;//((float)std::rand()) * 8 / RAND_MAX;
+
+                Point2D displace{ cos(theta) * magnitude, sin(theta) * magnitude };
+
+                Point3D upos = pos3D(agent);
+
+                Point3D blinkPos{ upos.x + displace.x, upos.y + displace.y, upos.z };
+
+                if (!Aux::checkPathable(blinkPos, agent)) {
+                    i--;
+                    continue;
                 }
+
+                float priority = blinkPriority(blinkPos, agent);
+                
+                if (priorityMax == -1 || priorityMax < priority) {
+                    pos = blinkPos;
+                    priorityMax = priority;
+                }
+
+                DebugLine(agent, upos, blinkPos, { 240, 73, 250 });
+
             }
-            if (std::sqrt(displace.x * displace.x + displace.y * displace.y) < 2) {
-                displace = normalize(displace) * 2;
-            }
-            Point3D upos = pos3D(agent);
-            Point3D blinkPos{upos.x + displace.x, upos.y + displace.y, upos.z};
-            DebugLine(agent,upos, blinkPos, {24, 123, 250});
-            agent->Actions()->UnitCommand(self, ABILITY_ID::EFFECT_BLINK_STALKER, blinkPos);
+
+            agent->Actions()->UnitCommand(self, ABILITY_ID::EFFECT_BLINK_STALKER, pos);
         }
         return false;
     }

@@ -123,6 +123,10 @@ map2d<int8_t> *buildingBlocked;
 map2d<int8_t> *influenceMap;
 map2d<int8_t> *influenceMapEnemy;
 
+Point2D startLoc;
+Point2D enemyLoc;
+Point2D staging_location;
+
 constexpr int visionMax = 1344 * 4;
 map2d<int16_t>* visionMap;
 
@@ -137,10 +141,16 @@ int pylonPointer = 0;
 std::vector<Point2D> buildingLocations = std::vector<Point2D>();
 int buildingPointer = 0;
 
+std::vector<Effect> currentEffects;
+
 constexpr auto MINERALS_PER_PROBE_PER_SEC = 55.0 / 60;
 constexpr auto VESPENE_PER_PROBE_PER_SEC = 61.0 / 60;
 
 constexpr int PYLON_RADIUS = 6;
+
+void loadEffects(Agent* agent) {
+    currentEffects = agent->Observation()->GetEffects();
+}
 
 bool isWithin(Point2D p, Agent* agent) {
     int mapWidth = agent->Observation()->GetGameInfo().width;
@@ -688,7 +698,11 @@ static void loadUnitPlacement(map2d<int8_t>* map, Point2D pos, UnitTypeID unit_t
     else if (unit_type == UNIT_TYPEID::NEUTRAL_DESTRUCTIBLEROCKEX1DIAGONALHUGEBLUR) {
         loadUnitPlacement(map, pos, 10, 10, value, &diagBLUR);
     }
+    else if (unit_type == UNIT_TYPEID::DESTRUCTIBLERAMPDIAGONALHUGEBLUR) {
+        loadUnitPlacement(map, pos, 10, 10, value, &diagBLUR);
+    }
     else{
+        
         printf("UNSUPPORTED ID %s\n", UnitTypeToName(unit_type));
     }
 }

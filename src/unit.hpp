@@ -719,6 +719,25 @@ namespace UnitManager {
         return UnitWrappers();
     }
 
+    UnitWrappers getMulti(vector<UnitTypeID> types) {
+        int total = 0;
+        for (UnitTypeID type : types) {
+            if (checkExist(type)) {
+                total += units[type].size();
+            }
+        }
+        UnitWrappers wraps;
+        wraps.reserve(total);
+        for (UnitTypeID type : types) {
+            if (checkExist(type)) {
+                for (UnitWrapper* wrap : units[type]) {
+                    wraps.push_back(wrap);
+                }
+            }
+        }
+        return wraps;
+    }
+
     UnitWrapper* find(UnitTypeID type, Tag tag) {
         UnitWrappers v = get(type);
         for (int i = 0; i < v.size(); i++) {
@@ -740,32 +759,66 @@ namespace UnitManager {
         return UnitWrappers();
     }
 
+    UnitWrappers getNeutralMulti(vector<UnitTypeID> types) {
+        int total = 0;
+        for (UnitTypeID type : types) {
+            if (checkExistNeutral(type)) {
+                total += neutrals[type].size();
+            }
+        }
+        UnitWrappers wraps;
+        wraps.reserve(total);
+        for (UnitTypeID type : types) {
+            if (checkExistNeutral(type)) {
+                for (UnitWrapper* wrap : neutrals[type]) {
+                    wraps.push_back(wrap);
+                }
+            }
+        }
+        return wraps;
+    }
+
     UnitWrappers getVespene() {
-        UnitWrappers v1 = getNeutral(UNIT_TYPEID::NEUTRAL_VESPENEGEYSER);
-        UnitWrappers v2 = getNeutral(UNIT_TYPEID::NEUTRAL_PROTOSSVESPENEGEYSER);
-        UnitWrappers v3 = getNeutral(UNIT_TYPEID::NEUTRAL_PURIFIERVESPENEGEYSER);
-        UnitWrappers v4 = getNeutral(UNIT_TYPEID::NEUTRAL_RICHVESPENEGEYSER);
-        UnitWrappers v5 = getNeutral(UNIT_TYPEID::NEUTRAL_SHAKURASVESPENEGEYSER);
-        UnitWrappers v6 = getNeutral(UNIT_TYPEID::NEUTRAL_SPACEPLATFORMGEYSER);
-        v1.insert(v1.end(), v2.begin(), v2.end());
-        v1.insert(v1.end(), v3.begin(), v3.end());
-        v1.insert(v1.end(), v4.begin(), v4.end());
-        v1.insert(v1.end(), v5.begin(), v5.end());
-        v1.insert(v1.end(), v6.begin(), v6.end());
-        return v1;
+        //UnitWrappers v1 = getNeutral(UNIT_TYPEID::NEUTRAL_VESPENEGEYSER);
+        //UnitWrappers v2 = getNeutral(UNIT_TYPEID::NEUTRAL_PROTOSSVESPENEGEYSER);
+        //UnitWrappers v3 = getNeutral(UNIT_TYPEID::NEUTRAL_PURIFIERVESPENEGEYSER);
+        //UnitWrappers v4 = getNeutral(UNIT_TYPEID::NEUTRAL_RICHVESPENEGEYSER);
+        //UnitWrappers v5 = getNeutral(UNIT_TYPEID::NEUTRAL_SHAKURASVESPENEGEYSER);
+        //UnitWrappers v6 = getNeutral(UNIT_TYPEID::NEUTRAL_SPACEPLATFORMGEYSER);
+        //v1.insert(v1.end(), v2.begin(), v2.end());
+        //v1.insert(v1.end(), v3.begin(), v3.end());
+        //v1.insert(v1.end(), v4.begin(), v4.end());
+        //v1.insert(v1.end(), v5.begin(), v5.end());
+        //v1.insert(v1.end(), v6.begin(), v6.end());
+        //return v1;
+        vector<UnitTypeID> vespenes = {
+            UNIT_TYPEID::NEUTRAL_VESPENEGEYSER,
+            UNIT_TYPEID::NEUTRAL_PROTOSSVESPENEGEYSER,
+            UNIT_TYPEID::NEUTRAL_PURIFIERVESPENEGEYSER,
+            UNIT_TYPEID::NEUTRAL_RICHVESPENEGEYSER,
+            UNIT_TYPEID::NEUTRAL_SHAKURASVESPENEGEYSER,
+            UNIT_TYPEID::NEUTRAL_SPACEPLATFORMGEYSER };
+        return getNeutralMulti(vespenes);
     }
 
     UnitWrappers getMinerals() {
-        UnitWrappers v1 = getNeutral(UNIT_TYPEID::NEUTRAL_MINERALFIELD);
-        UnitWrappers v2 = getNeutral(UNIT_TYPEID::NEUTRAL_LABMINERALFIELD);
-        UnitWrappers v3 = getNeutral(UNIT_TYPEID::NEUTRAL_MINERALFIELD750);
-        UnitWrappers v4 = getNeutral(UNIT_TYPEID::NEUTRAL_LABMINERALFIELD750);
-        UnitWrappers v5 = getNeutral(UNIT_TYPEID::NEUTRAL_MINERALFIELD450);
-        v1.insert(v1.end(), v2.begin(), v2.end());
-        v1.insert(v1.end(), v3.begin(), v3.end());
-        v1.insert(v1.end(), v4.begin(), v4.end());
-        v1.insert(v1.end(), v5.begin(), v5.end());
-        return v1;
+        //UnitWrappers v1 = getNeutral(UNIT_TYPEID::NEUTRAL_MINERALFIELD);
+        //UnitWrappers v2 = getNeutral(UNIT_TYPEID::NEUTRAL_LABMINERALFIELD);
+        //UnitWrappers v3 = getNeutral(UNIT_TYPEID::NEUTRAL_MINERALFIELD750);
+        //UnitWrappers v4 = getNeutral(UNIT_TYPEID::NEUTRAL_LABMINERALFIELD750);
+        //UnitWrappers v5 = getNeutral(UNIT_TYPEID::NEUTRAL_MINERALFIELD450);
+        //v1.insert(v1.end(), v2.begin(), v2.end());
+        //v1.insert(v1.end(), v3.begin(), v3.end());
+        //v1.insert(v1.end(), v4.begin(), v4.end());
+        //v1.insert(v1.end(), v5.begin(), v5.end());
+        //return v1;
+        vector<UnitTypeID> minerals = {
+            UNIT_TYPEID::NEUTRAL_MINERALFIELD,
+            UNIT_TYPEID::NEUTRAL_LABMINERALFIELD,
+            UNIT_TYPEID::NEUTRAL_MINERALFIELD750,
+            UNIT_TYPEID::NEUTRAL_LABMINERALFIELD750,
+            UNIT_TYPEID::NEUTRAL_MINERALFIELD450};
+        return getNeutralMulti(minerals);
     }
 
     UnitWrapper *findNeutral(UnitTypeID type, Tag tag) {
@@ -787,6 +840,25 @@ namespace UnitManager {
             return enemies[type];
         }
         return UnitWrappers();
+    }
+
+    UnitWrappers getEnemyMulti(vector<UnitTypeID> types) {
+        int total = 0;
+        for (UnitTypeID type : types) {
+            if (checkExistEnemy(type)) {
+                total += enemies[type].size();
+            }
+        }
+        UnitWrappers wraps;
+        wraps.reserve(total);
+        for (UnitTypeID type : types) {
+            if (checkExistEnemy(type)) {
+                for (UnitWrapper* wrap : enemies[type]) {
+                    wraps.push_back(wrap);
+                }
+            }
+        }
+        return wraps;
     }
 
     UnitWrapper *findEnemy(UnitTypeID type, Tag tag) {
@@ -899,25 +971,6 @@ bool UnitWrapper::equals(UnitWrapper *wrapper) {
 
 void UnitWrapper::loadAbilities(Agent *agent) {
     Units all = agent->Observation()->GetUnits(Unit::Alliance::Self);
-    //Units u;
-    //vector<UnitWrapper *> probes = UnitManager::get(UNIT_TYPEID::PROTOSS_PROBE);
-    // for (int i = 0; i < probes.size(); i++) {
-    //     const Unit *unit = agent->Observation()->GetUnit(probes[i]->self);
-    //     if (unit != nullptr) {
-    //         u.push_back(unit);
-    //     } else {
-    //         probes.erase(probes.begin() + i);
-    //         i --;
-    //     }
-    // }
-    //vector<AvailableAbilities> allAb = agent->Query()->GetAbilitiesForUnits(u);
-    //for (int i = 0; i < allAb.size(); i++) {
-    //    if (probes[i]->self == allAb[i].unit_tag) {
-    //        ((Probe *)probes[i])->abilities = allAb[i];
-    //    } else {
-    //        printf("ABILITY ASSIGNMENT ERROR\n");
-    //    }
-    //}
     vector<AvailableAbilities> allAb = agent->Query()->GetAbilitiesForUnits(all);
     for (AvailableAbilities abil : allAb) {
         if (abil.unit_tag != NullTag) {
@@ -931,26 +984,26 @@ void UnitWrapper::loadAbilities(Agent *agent) {
     }
 }
 
-void UnitWrapper::loadAbilitiesEnemy(Agent* agent) {
-    Units all = agent->Observation()->GetUnits(Unit::Alliance::Enemy);
-    vector<AvailableAbilities> allAb = agent->Query()->GetAbilitiesForUnits(all);
-    for (AvailableAbilities abil : allAb) {
-        if (abil.unit_tag != NullTag) {
-            UnitWrapper* u = UnitManager::findEnemy(abil.unit_type_id, abil.unit_tag);
-            if (u == nullptr) {
-                continue;
-            }
-            u->abilities = abil;
-            if (abil.abilities.size() != 0) {
-                printf("ABIL:%d %s\n", abil.abilities.size(), UnitTypeToName(abil.unit_tag));
-                for (auto a : abil.abilities) {
-                    printf("%s\n", AbilityTypeToName(a.ability_id));
-                }
-            }
-        }
-
-    }
-}
+//void UnitWrapper::loadAbilitiesEnemy(Agent* agent) {
+//    Units all = agent->Observation()->GetUnits(Unit::Alliance::Enemy);
+//    vector<AvailableAbilities> allAb = agent->Query()->GetAbilitiesForUnits(all);
+//    for (AvailableAbilities abil : allAb) {
+//        if (abil.unit_tag != NullTag) {
+//            UnitWrapper* u = UnitManager::findEnemy(abil.unit_type_id, abil.unit_tag);
+//            if (u == nullptr) {
+//                continue;
+//            }
+//            u->abilities = abil;
+//            if (abil.abilities.size() != 0) {
+//                printf("ABIL:%d %s\n", abil.abilities.size(), UnitTypeToName(abil.unit_tag));
+//                for (auto a : abil.abilities) {
+//                    printf("%s\n", AbilityTypeToName(a.ability_id));
+//                }
+//            }
+//        }
+//
+//    }
+//}
 
 UnitWrapper::~UnitWrapper() {
     if (team == Unit::Alliance::Self) {

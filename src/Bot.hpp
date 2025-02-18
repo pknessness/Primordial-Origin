@@ -41,9 +41,10 @@ public:
     std::vector<Point3D> rankedExpansions;
     std::vector<double> expansionDistance;
     std::vector<double> rankedExpansionDistance;
-    Point2DI staging_location;
+
+    //Point2DI staging_location;
     Point2D rally_point;
-    Point2D enemy;
+    //Point2D enemy;
 
     map2d<int8_t>* path_zhang_suen;
 
@@ -58,16 +59,18 @@ public:
     void initializeStartings() {
         GameInfo game_info = Observation()->GetGameInfo();
         if (Observation()->GetStartLocation().x > game_info.width / 2) {
-            staging_location.x = Observation()->GetStartLocation().x - 6;
+            Aux::staging_location.x = Observation()->GetStartLocation().x - 6;
         } else {
-            staging_location.x = Observation()->GetStartLocation().x + 6;
+            Aux::staging_location.x = Observation()->GetStartLocation().x + 6;
         }
 
         if (Observation()->GetStartLocation().y > game_info.height / 2) {
-            staging_location.y = Observation()->GetStartLocation().y - 6;
+            Aux::staging_location.y = Observation()->GetStartLocation().y - 6;
         } else {
-            staging_location.y = Observation()->GetStartLocation().y + 6;
+            Aux::staging_location.y = Observation()->GetStartLocation().y + 6;
         }
+        Aux::startLoc = Observation()->GetStartLocation();
+        Aux::enemyLoc = Observation()->GetGameInfo().enemy_start_locations[0];
     }
 
     void initializeExpansions() {
@@ -89,7 +92,7 @@ public:
             //}
             //printf("{%.1f}\n\n", length);
 
-            float length = PrimordialStar::getPathLength(P2D(staging_location), P2D(point), 0.2, this);
+            float length = PrimordialStar::getPathLength(P2D(Aux::staging_location), P2D(point), 0.2, this);
 
             constexpr int numsteps = 6;
             Units neut = Observation()->GetUnits(Unit::Alliance::Neutral, Aux::isMineral);
@@ -919,8 +922,6 @@ public:
         SpacialHash::initGrid(this);
         SpacialHash::initGridEnemy(this);
 
-        enemy = Observation()->GetGameInfo().enemy_start_locations[0];
-
         for (int i = 0; i < path_zhang_suen->width(); i++) {
             for (int j = 0; j < path_zhang_suen->height(); j++) {
                 imRef(path_zhang_suen, i, j) = Observation()->IsPathable(Point2D{i+0.5F,j+0.5F});
@@ -1076,7 +1077,7 @@ public:
                 DebugLine(this, P3D(node->rawPos()) + Point3D{ 0,0,1 }, P3D(node2->rawPos()) + Point3D{ 0,0,1 }, Colors::Blue);
             }
         }
-        pathVerification();
+        //pathVerification();
 
         #if MICRO_TEST == 0
             for (int i = -4; i <= 4; i++) {
@@ -1272,6 +1273,11 @@ public:
                 }
             }
         }
+        else {
+            UnitWrapper* u = UnitManager::findNeutral(unit->unit_type, unit->tag);
+            delete u;
+            printf("NEUTRAL %s %Ix DEAD %p\n", UnitTypeToName(unit->unit_type), unit->tag, UnitManager::findNeutral(unit->unit_type, unit->tag));
+        }
         if (unit->is_building) {
             Aux::loadUnitPlacement(Aux::buildingBlocked, unit->pos, unit->unit_type, 0);
             Aux::loadUnitPlacement(Aux::pathingMap, unit->pos, unit->unit_type, 0);
@@ -1336,9 +1342,10 @@ public:
 
         onStepProfiler.midLog("LoadAbilities");
 
-        UnitWrapper::loadAbilitiesEnemy(this);
+        //UnitWrapper::loadAbilitiesEnemy(this);
+        Aux::loadEffects(this);
 
-        onStepProfiler.midLog("LoadAbilitiesEnemy");
+        onStepProfiler.midLog("LoadEffects");
 
         auto probes = UnitManager::get(UNIT_TYPEID::PROTOSS_PROBE);
         for (auto it = probes.begin(); it != probes.end(); it++) {
@@ -1362,6 +1369,19 @@ public:
 
         //manageArmy();
         ArmyControl::step(this, rally_point);
+
+        //for (UnitWrapper* wrap : UnitManager::units[UNIT_TYPEID::PROTOSS_STALKER]) {
+        //    float theta = ((float)std::rand()) * 2 * M_PI / RAND_MAX;
+        //    float magnitude = 8;//((float)std::rand()) * 8 / RAND_MAX;
+
+        //    Point2D displace{ cos(theta) * magnitude, sin(theta) * magnitude };
+
+        //    Point3D upos = wrap->pos3D(this);
+        //    Point3D blinkPos{ upos.x + displace.x, upos.y + displace.y, upos.z };
+        //    DebugLine(this, upos, blinkPos, { 240, 73, 250 });
+        //    printf("TELEPORT STALKER {%.1f, %.1f}\n", displace.x, displace.y);
+        //    Actions()->UnitCommand(wrap->self, ABILITY_ID::EFFECT_BLINK_STALKER, blinkPos);
+        //}
 
         onStepProfiler.midLog("ArmyControl");
 
@@ -1455,11 +1475,11 @@ public:
                 //Macro::addAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER);
                 //Macro::addBuilding(ABILITY_ID::BUILD_STARGATE, P2D(staging_location) - Point2D{-0.5, 3});
 
-                Macro::addBuilding(ABILITY_ID::BUILD_PYLON, P2D(staging_location));
+                Macro::addBuilding(ABILITY_ID::BUILD_PYLON, P2D(Aux::staging_location));
 
                 Macro::addBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1});
 
-                Macro::addBuilding(ABILITY_ID::GENERAL_MOVE, enemy);
+                Macro::addBuilding(ABILITY_ID::GENERAL_MOVE, Aux::enemyLoc);
 
                 Macro::addBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1});
 
@@ -1745,7 +1765,7 @@ public:
 
         buildingDisplay();
 
-        enemiesDisplay();
+        //enemiesDisplay();
 
         onStepProfiler.midLog("Debug");
 
@@ -1861,9 +1881,9 @@ public:
 //-check max num of paths from nodes and max length of a path to optimize
 //-modify max dist to not include rocks
 
-//rework enemy squads code
+//-rework enemy squads code
 
-//add scout to initial probe
+//-add scout to initial probe
 
 //fix probe creation logic (currently hardcoded)
 
@@ -1871,7 +1891,7 @@ public:
 
 //units should still retreat when no targets nearby
 
-//every check, random find N positions to search, smallest of all, (slowly gets me a best position)
+//-every check, random find N positions to search, smallest of all, (slowly gets me a best position)
 
 //better stalker teleporting with new damagenet
 
