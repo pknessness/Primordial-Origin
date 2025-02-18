@@ -1908,7 +1908,7 @@ public:
 
 //weapon net, 8x precision
 
-//tag on units that defines whether they are being individual controlled or group-controlled
+//-tag on units that defines whether they are being individual controlled or group-controlled
 
 //minute micro
 
@@ -1922,7 +1922,7 @@ public:
 //have nexus stop checking when it has two vespenes
 //fix probe build-check
 
-//fix assimilator condition
+//?fix assimilator condition
 
 //add generator to global variables
 

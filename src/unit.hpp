@@ -969,8 +969,58 @@ bool UnitWrapper::equals(UnitWrapper *wrapper) {
     return (wrapper->self == self) && (wrapper->type == type);
 }
 
+//We only care about nexus, probe, gateway, ?zealot?, forge, cybercore, sentry, stalker, adept, shield battery, twilight council, stargate, pheonix, oracle, void ray, robotics facility, observer, warp prism, templar, high templar, archon, dark shrine, dark templar, fleet beacon, ?carrier, mothership, robotics bay, disruptor
 void UnitWrapper::loadAbilities(Agent *agent) {
-    Units all = agent->Observation()->GetUnits(Unit::Alliance::Self);
+    //Units all = agent->Observation()->GetUnits(Unit::Alliance::Self);
+    //vector<AvailableAbilities> allAb = agent->Query()->GetAbilitiesForUnits(all);
+    //for (AvailableAbilities abil : allAb) {
+    //    if (abil.unit_tag != NullTag) {
+    //        UnitWrapper* u = UnitManager::find(abil.unit_type_id, abil.unit_tag);
+    //        if (u == nullptr) {
+    //            continue;
+    //        }
+    //        u->abilities = abil;
+    //    }
+    //}
+    Units all;
+    vector<UnitTypeID> types = {
+        UNIT_TYPEID::PROTOSS_NEXUS,
+        UNIT_TYPEID::PROTOSS_PROBE,
+        UNIT_TYPEID::PROTOSS_GATEWAY,
+        UNIT_TYPEID::PROTOSS_ZEALOT,
+        UNIT_TYPEID::PROTOSS_FORGE,
+        UNIT_TYPEID::PROTOSS_CYBERNETICSCORE,
+        UNIT_TYPEID::PROTOSS_SENTRY,
+        UNIT_TYPEID::PROTOSS_STALKER,
+        UNIT_TYPEID::PROTOSS_ADEPT,
+        UNIT_TYPEID::PROTOSS_SHIELDBATTERY,
+        UNIT_TYPEID::PROTOSS_TWILIGHTCOUNCIL,
+        UNIT_TYPEID::PROTOSS_STARGATE,
+        UNIT_TYPEID::PROTOSS_PHOENIX,
+        UNIT_TYPEID::PROTOSS_ORACLE,
+        UNIT_TYPEID::PROTOSS_VOIDRAY,
+        UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY,
+        UNIT_TYPEID::PROTOSS_OBSERVER,
+        UNIT_TYPEID::PROTOSS_WARPPRISM,
+        UNIT_TYPEID::PROTOSS_TEMPLARARCHIVE,
+        UNIT_TYPEID::PROTOSS_HIGHTEMPLAR,
+        UNIT_TYPEID::PROTOSS_ARCHON,
+        UNIT_TYPEID::PROTOSS_DARKSHRINE,
+        UNIT_TYPEID::PROTOSS_DARKTEMPLAR,
+        UNIT_TYPEID::PROTOSS_FLEETBEACON,
+        UNIT_TYPEID::PROTOSS_CARRIER,
+        UNIT_TYPEID::PROTOSS_MOTHERSHIP,
+        UNIT_TYPEID::PROTOSS_ROBOTICSBAY,
+        UNIT_TYPEID::PROTOSS_DISRUPTOR
+    };
+    UnitWrappers unitsWithAbilities = UnitManager::getMulti(types);
+    all.reserve(unitsWithAbilities.size());
+    for (UnitWrapper* wrapper : unitsWithAbilities) {
+        const Unit* unit = wrapper->get(agent);
+        if (unit != nullptr) {
+            all.push_back(unit);
+        }
+    }
     vector<AvailableAbilities> allAb = agent->Query()->GetAbilitiesForUnits(all);
     for (AvailableAbilities abil : allAb) {
         if (abil.unit_tag != NullTag) {
@@ -980,7 +1030,6 @@ void UnitWrapper::loadAbilities(Agent *agent) {
             }
             u->abilities = abil;
         }
-            
     }
 }
 
