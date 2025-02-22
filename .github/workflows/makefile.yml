@@ -10,12 +10,12 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    container: aiarena/arenaclient
+    container: debian:bookworm #aiarena/arenaclient
     steps:
     - uses: actions/checkout@v4
 
-#    - name: Install dependencies
-#      run: apt-get update && apt-get upgrade --assume-yes --quiet=2 && apt-get install --assume-yes --no-install-recommends --no-show-upgraded gnupg2 wget git procps g++ ffmpeg libsm6 libxext6 unzip && rm -rf /var/lib/apt/lists/*
+    - name: Install dependencies
+      run: apt-get update && apt-get upgrade --assume-yes --quiet=2 && apt-get install --assume-yes --no-install-recommends --no-show-upgraded gnupg2 wget make git procps g++ ffmpeg libsm6 libxext6 unzip && rm -rf /var/lib/apt/lists/*
 
     - name: Build
       run: make ladder-config
