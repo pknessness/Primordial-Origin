@@ -1,5 +1,6 @@
 //PRIMORDIAL STAR IS A HOMEBREW PATHFINDING BASED ON TAUT PATHS
 //I LEARNED LATER IT IS EQUIVALENT TO VISIBILITY GRAPHS
+//BUT ITS PRETTY OPTIMIZED AND IM SUPER PROUD OF IT 
 
 #pragma once
 #include <cfloat>
@@ -662,27 +663,27 @@ namespace PrimordialStar {
 	}
 
 	vector<Point2D> getPath(Point2D start, Point2D end, float radius, Agent* agent) {
+		Profiler profiler("getPath");
 		PathNode* startNode = new PathNode(start, INVALID, agent);
-		
-		//calculateNewConnection(startNode, agent);
+		profiler.midLog("getPath.startN");
 
 		PathNode* operatingNode = startNode;
 		PathNode* endNode = new PathNode(end, INVALID, agent);
-		
-		//calculateNewConnection(endNode, agent);
+		profiler.midLog("getPath.endN");
 
 		bool* visited = new bool[basePathNodes.size()];
 		memset(visited, 0, basePathNodes.size() * sizeof(bool));
 
 		vector<Point2D> points;
 		map<int, int> backpath;
+		profiler.midLog("getPath.init");
 
 		if (startNode->connected.size() == 0) {
 			Point2D loc = basePathNodes[0]->rawPos();
 			float mindist = DistanceSquared2D(loc, start);
 			for (int i = 1; i < basePathNodes.size() - 2; i++) {
 				float dist = DistanceSquared2D(basePathNodes[i]->rawPos(), start);
-				if (dist < mindist) {
+				if (dist < mindist || (dist == mindist && (DistanceSquared2D(loc, end) > DistanceSquared2D(basePathNodes[i]->rawPos(), end)))) {
 					mindist = dist;
 					loc = basePathNodes[i]->rawPos();
 				}
@@ -695,7 +696,7 @@ namespace PrimordialStar {
 			float mindist = DistanceSquared2D(loc, end);
 			for (int i = 1; i < basePathNodes.size() - 2; i++) {
 				float dist = DistanceSquared2D(basePathNodes[i]->rawPos(), end);
-				if (dist < mindist) {
+				if (dist < mindist || (dist == mindist && (DistanceSquared2D(loc, start) > DistanceSquared2D(basePathNodes[i]->rawPos(), start)))) {
 					mindist = dist;
 					loc = basePathNodes[i]->rawPos();
 				}
@@ -703,49 +704,60 @@ namespace PrimordialStar {
 			endNode->updatePos(loc);
 			calculateNewConnection(endNode, agent);
 		}
+		profiler.midLog("getPath.correction");
 
-		priority_queue<StarNode, vector<StarNode>, AStarCompare> starNodes;
-		starNodes.push(StarNode(operatingNode->id, 0, Distance2D(start, end)));
-		visited[operatingNode->id] = true;
-		bool found = false;
-		for (int cycles = 0; cycles < 10000; cycles++) {
-			if (starNodes.size() == 0) {
-				break;
-			}
-			StarNode star = starNodes.top();
-			starNodes.pop();
-			operatingNode = basePathNodes[star.pathNode];
-			Point2D currentPos = operatingNode->position(radius);
-			for (int i = 0; i < operatingNode->connected.size(); i++) {
-				int subNodeID = operatingNode->connected[i];
-				if (visited[subNodeID]) {
-					continue;
+		if (std::find(startNode->connected.begin(), startNode->connected.end(), endNode->id) != startNode->connected.end()) {
+			profiler.subScope();
+			points.push_back(startNode->rawPos());
+			points.push_back(endNode->rawPos());
+			profiler.midLog("getPath.skip");
+		}
+		else {
+			profiler.subScope();
+			priority_queue<StarNode, vector<StarNode>, AStarCompare> starNodes;
+			starNodes.push(StarNode(operatingNode->id, 0, Distance2D(start, end)));
+			visited[operatingNode->id] = true;
+			bool found = false;
+			for (int cycles = 0; cycles < 10000; cycles++) {
+				if (starNodes.size() == 0) {
+					break;
 				}
-				Point2D nextPos = basePathNodes[subNodeID]->position(radius);
-				backpath[subNodeID] = operatingNode->id;
-				starNodes.push(StarNode(subNodeID, star.g + Distance2D(currentPos, nextPos), Distance2D(nextPos, end)));
-				visited[subNodeID] = true;
+				StarNode star = starNodes.top();
+				starNodes.pop();
+				operatingNode = basePathNodes[star.pathNode];
+				Point2D currentPos = operatingNode->position(radius);
+				for (int i = 0; i < operatingNode->connected.size(); i++) {
+					int subNodeID = operatingNode->connected[i];
+					if (visited[subNodeID]) {
+						continue;
+					}
+					Point2D nextPos = basePathNodes[subNodeID]->position(radius);
+					backpath[subNodeID] = operatingNode->id;
+					starNodes.push(StarNode(subNodeID, star.g + Distance2D(currentPos, nextPos), Distance2D(nextPos, end)));
+					visited[subNodeID] = true;
 
-				//DebugText(agent, strprintf("%.1f,%.1f", star.g + Distance2D(currentPos, nextPos), Distance2D(nextPos, end)), AP3D(nextPos));
+					//DebugText(agent, strprintf("%.1f,%.1f", star.g + Distance2D(currentPos, nextPos), Distance2D(nextPos, end)), AP3D(nextPos));
 
-				if (operatingNode->connected[i] == endNode->id) {
-					found = true;
+					if (operatingNode->connected[i] == endNode->id) {
+						found = true;
+						break;
+					}
+				}
+				if (found) {
 					break;
 				}
 			}
-			if (found) {
-				break;
+			profiler.midLog("getPath.source");
+			operatingNode = endNode;
+			points.push_back(basePathNodes[operatingNode->id]->rawPos());
+			for (int i = 0; i < starNodes.size(); i++) {
+				operatingNode = basePathNodes[backpath[operatingNode->id]];
+				points.insert(points.begin(), basePathNodes[operatingNode->id]->position(radius));
+				if (operatingNode->id == startNode->id) {
+					break;
+				}
 			}
-		}
-
-		operatingNode = endNode;
-		points.push_back(basePathNodes[operatingNode->id]->rawPos());
-		for (int i = 0; i < starNodes.size(); i++) {
-			operatingNode = basePathNodes[backpath[operatingNode->id]];
-			points.insert(points.begin(), basePathNodes[operatingNode->id]->position(radius));
-			if (operatingNode->id == startNode->id) {
-				break;
-			}
+			profiler.midLog("getPath.backtrack");
 		}
 
 		delete[] visited;
@@ -756,6 +768,7 @@ namespace PrimordialStar {
 		delete endNode;
 		
 		//printf("SOMETHING WENT WRONG\n");
+		profiler.midLog("getPath.end");
 		return points;
 	}
 
@@ -823,6 +836,7 @@ namespace PrimordialStar {
 	}
 
 	vector<Point2D> getPathDijkstra(Point2D start, Point2D end, float radius, Agent* agent) {
+		Profiler profiler("getDijkstra");
 		PathNode* startNode = new PathNode(start, INVALID, agent);
 
 		PathNode* endNode = new PathNode(end, INVALID, agent);
@@ -831,7 +845,7 @@ namespace PrimordialStar {
 		//memset(visited, 0, basePathNodes.size() * sizeof(bool));
 
 		vector<Point2D> points;
-
+		profiler.midLog("getDijkstra.init");
 		if (startNode->connected.size() == 0 || endNode->connected.size() == 0) {
 
 		}

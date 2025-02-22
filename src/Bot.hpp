@@ -1077,7 +1077,7 @@ public:
                 DebugLine(this, P3D(node->rawPos()) + Point3D{ 0,0,1 }, P3D(node2->rawPos()) + Point3D{ 0,0,1 }, Colors::Blue);
             }
         }
-        //pathVerification();
+        pathVerification();
 
         #if MICRO_TEST == 0
             for (int i = -4; i <= 4; i++) {
@@ -1770,25 +1770,33 @@ public:
         onStepProfiler.midLog("Debug");
 
         string profilestr = "";
+        static int max1 = 0;
+        static int max2 = 0;
+        static int max3 = 0;
+        static int max4 = 0;
         for (auto itr = profilerMap.begin(); itr != profilerMap.end(); itr ++) {
             string name = itr->first;
             int strlen = name.size();
-            for (int i = 0; i < (20 - strlen); i++) {
+            max1 = max(strlen + 1, max1);
+            for (int i = 0; i < (max1 - strlen); i++) {
                 name += " ";
             }
-            string dtstr = strprintf("AVG:%.2f", ((double)itr->second) / profilerCoumt[itr->first]);
+            string dtstr = strprintf("AVG:%.3f", ((double)itr->second) / profilerCoumt[itr->first] / 1000.0);
             strlen = dtstr.size();
-            for (int i = 0; i < (15 - strlen); i++) {
+            max2 = max(strlen + 1, max2);
+            for (int i = 0; i < (max2 - strlen); i++) {
                 dtstr += " ";
             }
-            string totstr = strprintf("TOT:%lld/%d", itr->second, profilerCoumt[itr->first]);
+            string totstr = strprintf("TOT:%.3f/%d", itr->second / 1000.0, profilerCoumt[itr->first]);
             strlen = totstr.size();
-            for (int i = 0; i < (15 - strlen); i++) {
+            max3 = max(strlen + 1, max3);
+            for (int i = 0; i < (max3 - strlen); i++) {
                 totstr += " ";
             }
             string lateststr = strprintf("LAT:%.3f", profilerLast[itr->first].time()/1000.0);
             strlen = lateststr.size();
-            for (int i = 0; i < (15 - strlen); i++) {
+            max4 = max(strlen + 1, max4);
+            for (int i = 0; i < (max4 - strlen); i++) {
                 lateststr += " ";
             }
             profilestr += (name + lateststr + dtstr + totstr + "\n");

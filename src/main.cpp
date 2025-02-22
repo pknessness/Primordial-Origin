@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
     Options Options;
     ParseArguments(argc, argv, &Options);
 
-    printf("PARSED OPTIONS: GamePort:%d StartPort:%d OppID:%s Server:%s\n", Options.GamePort, Options.StartPort, Options.OpponentId, Options.ServerAddress);
+    printf("PARSED OPTIONS: GamePort:%d StartPort:%d OppID:%s Server:%s\n", Options.GamePort, Options.StartPort, Options.OpponentId.c_str(), Options.ServerAddress.c_str());
 
     sc2::Coordinator coordinator;
     Bot bot;
