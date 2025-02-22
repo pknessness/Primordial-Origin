@@ -10,12 +10,16 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    container: debian:bookworm #aiarena/arenaclient
+    container: aiarena/arenaclient #debian:bookworm #aiarena/arenaclient
     steps:
     - uses: actions/checkout@v4
 
+#    - name: Install dependencies
+#      run: apt-get update && apt-get upgrade --assume-yes --quiet=2 && apt-get install --assume-yes --no-install-recommends --no-show-upgraded cmake gnupg2 wget make git procps g++ ffmpeg libsm6 libxext6 unzip && rm -rf /var/lib/apt/lists/* && update-ca-certificates
+
     - name: Install dependencies
-      run: apt-get update && apt-get upgrade --assume-yes --quiet=2 && apt-get install --assume-yes --no-install-recommends --no-show-upgraded cmake gnupg2 wget make git procps g++ ffmpeg libsm6 libxext6 unzip && rm -rf /var/lib/apt/lists/* && update-ca-certificates
+      run: apt-get update && apt-get upgrade --assume-yes --quiet=2 && apt-get install --assume-yes --no-install-recommends --no-show-upgraded cmake make && apt-get install apt-transport-https ca-certificates -y && update-ca-certificates
+
 
     - name: Build
       run: make ladder-config
