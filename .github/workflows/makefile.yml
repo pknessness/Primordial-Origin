@@ -9,8 +9,8 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-24.04
-    container: debian:bookworm
+    runs-on: ubuntu-latest
+    container: aiarena/arenaclient
     steps:
     - uses: actions/checkout@v4
 
