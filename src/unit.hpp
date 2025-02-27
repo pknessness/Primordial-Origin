@@ -10,7 +10,13 @@ using namespace std;
 class UnitWrapper {
 private:
     Composition c;
+    
 public:
+    float health;
+    float healthMax;
+    float shields;
+    float shieldsMax;
+
     Tag self;
     UnitTypeID type;
     Point3D lastPos;
@@ -43,6 +49,16 @@ public:
         if (selfUnit->is_flying)
             return Composition::Air;
         return Composition::Ground;
+    }
+
+    void loadHealth(Agent* agent) {
+        const Unit* selfUnit = get(agent);
+        if (selfUnit != nullptr) {
+            health = selfUnit->health;
+            healthMax = selfUnit->health_max;
+            shields = selfUnit->shield;
+            shieldsMax = selfUnit->shield_max;
+        }
     }
 
     Point2D pos(Agent *agent);
@@ -215,6 +231,7 @@ namespace UnitManager {
     constexpr int damageNetPrecision = 3;
     #define blockSize 1.0F/UnitManager::damageNetPrecision
 
+    map2d<int8_t>* enemyDamageNetReal;
     map2d<DamageLocation>* enemyDamageNet;
     map2d<int8_t>* enemyDamageNetModify;
     map2d<float>* enemyDamageNetTemp;
@@ -226,8 +243,28 @@ namespace UnitManager {
     //map2d<int16_t>* enemyDamageNetAirLight;
     //map2d<int16_t>* enemyDamageNetAirArmored;
 
-    #define damageNetEnemy(p) imRef(UnitManager::enemyDamageNet, int(p.x * UnitManager::damageNetPrecision), int(p.y * UnitManager::damageNetPrecision))
+    //#define damageNetEnemy(p) imRef(UnitManager::enemyDamageNet, int(p.x * UnitManager::damageNetPrecision), int(p.y * UnitManager::damageNetPrecision))
 
+    DamageLocation damageNetEnemy(Point2D p) {
+        int x = int(p.x * damageNetPrecision);
+        int y = int(p.y * damageNetPrecision);
+        if (imRef(enemyDamageNetReal, x, y)) {
+            return imRef(enemyDamageNet, x, y);
+        }
+        return DamageLocation{};
+    }
+
+    DamageLocation getDamageNetEnemyUnscaled(int x, int y) {
+        if (imRef(enemyDamageNetReal, x, y)) {
+            return imRef(enemyDamageNet, x, y);
+        }
+        return DamageLocation{};
+    }
+
+    void setDamageNetEnemyUnscaled(int x, int y, DamageLocation d) {
+        imRef(enemyDamageNet, x, y) = d;
+        imRef(enemyDamageNetReal, x, y) = 1;
+    }
     
     void setEnemyDamageRadius2(Point2D pos, float radius, DamageLocation damage, Agent* agent) {
         int x = (pos.x - radius) * damageNetPrecision;
@@ -253,11 +290,9 @@ namespace UnitManager {
                 }
                 if (activate) {
                     if (i > 1 && j > 1) {
-                        DamageLocation d = imRef(enemyDamageNet, i - 1, j - 1);
-                        //printf("pre %.1f,%.1f  %.1f,%.1f  %.1f,%.1f\n", d.ground, d.air, d.groundlight, d.airlight, d.groundarmored, d.airarmored);
-                        imRef(enemyDamageNet, i - 1, j - 1) += damage;
-                        d = imRef(enemyDamageNet, i - 1, j - 1);
-                        //printf("post %.1f,%.1f  %.1f,%.1f  %.1f,%.1f\n", d.ground, d.air, d.groundlight, d.airlight, d.groundarmored, d.airarmored);
+                        //DamageLocation d = getDamageNetEnemyUnscaled( i - 1, j - 1);
+                        setDamageNetEnemyUnscaled(i - 1, j - 1, getDamageNetEnemyUnscaled(i - 1, j - 1) + damage);
+                        //d = imRef(enemyDamageNet, i - 1, j - 1);
                     }
                     //DamageLocation();
                     //DamageLocation d = getDamageRaw(i - 1, j - 1) + damage;
@@ -294,7 +329,7 @@ namespace UnitManager {
             for (int j = y-1; j <= ymax+1; j++) {
                 //DebugLine(agent,Point3D{ (float)(i) / damageNetPrecision, (float)(j) / damageNetPrecision, 0.0F }, Point3D{ (float)(i) / damageNetPrecision, (float)(j) / damageNetPrecision, 13.0F });
                 if (i > 1 && i < enemyDamageNetModify->width() && j > 1 && j < enemyDamageNetModify->height() && imRef(enemyDamageNetModify, i, j)) {
-                    imRef(enemyDamageNet, i, j) += damage;
+                    setDamageNetEnemyUnscaled(i - 1, j - 1, getDamageNetEnemyUnscaled(i - 1, j - 1) + damage);
                 }
             }
         }
@@ -438,7 +473,7 @@ namespace UnitManager {
             for (int j = ymin; j <= ymax; j++) {
                 //DebugLine(agent,Point3D{ (float)(i) / damageNetPrecision, (float)(j) / damageNetPrecision, 0.0F }, Point3D{ (float)(i) / damageNetPrecision, (float)(j) / damageNetPrecision, 13.0F });
                 if (imRef(enemyDamageNetModify, i, j)) {
-                    imRef(enemyDamageNet, i, j) += damage;
+                    setDamageNetEnemyUnscaled(i, j, getDamageNetEnemyUnscaled(i, j) + damage);
                 }
             }
         }
@@ -462,7 +497,7 @@ namespace UnitManager {
                 //DebugLine(agent,Point3D{ (float)(i) / damageNetPrecision, (float)(j) / damageNetPrecision, 0.0F }, Point3D{ (float)(i) / damageNetPrecision, (float)(j) / damageNetPrecision, 13.0F });
                 if (imRef(enemyDamageNetModify, i, j)) {
                     //DamageLocation pointDmag = imRef(enemyDamageNet, i, j);
-                    d.updateHighest(imRef(enemyDamageNet, i, j));
+                    d.updateHighest(getDamageNetEnemyUnscaled(i, j));
                 }
             }
         }
@@ -488,7 +523,7 @@ namespace UnitManager {
                 if (imRef(enemyDamageNetModify, i, j)) {
                     //DamageLocation pointDmag = imRef(enemyDamageNet, i, j);
                     //d.updateHighest(imRef(enemyDamageNet, i, j));
-                    d += imRef(enemyDamageNet, i, j);
+                    d += getDamageNetEnemyUnscaled(i, j);
                     count++;
                 }
             }
@@ -597,7 +632,7 @@ namespace UnitManager {
     }
     
     float getPointDamage(int i, int j, UnitWrapper* unitWrap, Agent* agent) {
-        return getRelevantDamage(unitWrap, imRef(enemyDamageNet, i, j), agent);
+        return getRelevantDamage(unitWrap, getDamageNetEnemyUnscaled(i, j), agent);
     }
 
     Point2D findMinimumDamage(UnitWrapper* unitWrap, float radius, Agent* agent) {
@@ -885,7 +920,7 @@ namespace UnitManager {
 //    UnitManager::units[type].push_back(this);
 //}
 
-UnitWrapper::UnitWrapper(const Unit *unit) : self(unit->tag), type(unit->unit_type), lastPos{0, 0, 0}, radius(unit->radius), team(unit->alliance), isBuilding(unit->is_building) {
+UnitWrapper::UnitWrapper(const Unit *unit) : self(unit->tag), type(unit->unit_type), lastPos{0, 0, 0}, radius(unit->radius), team(unit->alliance), isBuilding(unit->is_building), health(0), healthMax(0), shields(0), shieldsMax(0) {
     if (unit->alliance == Unit::Alliance::Self) {
         if (!UnitManager::checkExist(type)) {
             UnitManager::units[type] = UnitWrappers();

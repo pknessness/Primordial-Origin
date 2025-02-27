@@ -165,6 +165,8 @@ int main(int argc, char* argv[])
         Race race = (Race)(std::rand() % 4);  // Race::Random;
         coordinator.SetParticipants({ CreateParticipant(Race::Protoss, &bot), CreateComputer(race, diff) });
 
+        
+
         coordinator.LaunchStarcraft();
         //std::string maps[6] = { "5_13/Oceanborn513AIE.SC2Map",  "5_13/Equilibrium513AIE.SC2Map",
         //                       "5_13/GoldenAura513AIE.SC2Map", "5_13/Gresvan513AIE.SC2Map",

@@ -259,7 +259,7 @@ namespace PrimordialStar {
 		return (int)(in + 0.1);
 	}
 
-	float checkWallDistance(Point2D origin, Point2D dir, Agent* agent, int maxSteps = 255) {
+	Point2D getWall(Point2D origin, Point2D dir, Agent* agent, int maxSteps = 255) {
 		//var delta = Vector2.Normalize(direction - origin);
 		Point2D delta = dir;
 
@@ -360,7 +360,15 @@ namespace PrimordialStar {
 				yRayLength = rayLengthWhenMovingInY;
 			}
 		}
-		return Distance2D(origin, lastIntersection);
+		return lastIntersection;
+	}
+
+	float checkWallDistance(Point2D origin, Point2D dir, Agent* agent, int maxSteps = 255) {
+		return Distance2D(origin, getWall(origin, dir, agent, maxSteps));
+	}
+
+	float checkWallDistanceSquared(Point2D origin, Point2D dir, Agent* agent, int maxSteps = 255) {
+		return DistanceSquared2D(origin, getWall(origin, dir, agent, maxSteps));
 	}
 
 	float generateMaxDistanceGrid(Agent* agent) {
@@ -664,6 +672,15 @@ namespace PrimordialStar {
 
 	vector<Point2D> getPath(Point2D start, Point2D end, float radius, Agent* agent) {
 		Profiler profiler("getPath");
+
+		if (checkWallDistanceSquared(start, (start - end), agent) >= DistanceSquared2D(start, end)) {
+			vector<Point2D> p;
+			p.push_back(start);
+			p.push_back(end);
+			profiler.midLog("getPath.quickEnd");
+			return p;
+		}
+
 		PathNode* startNode = new PathNode(start, INVALID, agent);
 		profiler.midLog("getPath.startN");
 
@@ -922,62 +939,10 @@ namespace PrimordialStar {
 
 	float getPathLength(Point2D start, Point2D end, float radius, Agent* agent) {
 		return getPathLength(getPath(start, end, radius, agent));
+	}
 
-		//PathNode* startNode = new PathNode(start, INVALID);
-		//PathNode* operatingNode = startNode;
-		//PathNode* endNode = new PathNode(end, INVALID);
-
-		//calculateConnection(startNode, agent);
-		//calculateConnection(endNode, agent);
-
-		//bool* visited = new bool[basePathNodes.size()];
-		//memset(visited, 0, basePathNodes.size() * sizeof(bool));
-
-		//float length = FLT_MAX;
-
-		//if (startNode->connected.size() == 0 || endNode->connected.size() == 0) {
-		//	//length = -1;
-		//}
-		//else {
-		//	std::priority_queue<StarNode, vector<StarNode>, greater<float>> starNodes;
-		//	starNodes.push(StarNode(operatingNode->id, 0, Distance2D(start, end)));
-		//	visited[operatingNode->id] = true;
-		//	bool found = false;
-		//	for (int cycles = 0; cycles < 10000; cycles++) {
-		//		if (starNodes.size() == 0) {
-		//			break;
-		//		}
-		//		StarNode star = starNodes.top();
-		//		starNodes.pop();
-		//		operatingNode = basePathNodes[star.pathNode];
-		//		Point2D currentPos = operatingNode->position(radius);
-		//		for (int i = 0; i < operatingNode->connected.size(); i++) {
-		//			int subNodeID = operatingNode->connected[i];
-		//			if (visited[subNodeID]) {
-		//				continue;
-		//			}
-		//			Point2D nextPos = basePathNodes[subNodeID]->position(radius);
-		//			starNodes.push(StarNode(subNodeID, star.g + Distance2D(currentPos, nextPos), Distance2D(nextPos, end)));
-		//			visited[subNodeID] = true;
-
-		//			//DebugText(agent, strprintf("%.1f,%.1f", star.g + Distance2D(currentPos, nextPos), Distance2D(nextPos, end)), AP3D(nextPos));
-
-		//			if (operatingNode->connected[i] == endNode->id) {
-		//				length = star.g + Distance2D(currentPos, nextPos);
-		//				found = true;
-		//				break;
-		//			}
-		//		}
-		//		if (found) {
-		//			break;
-		//		}
-		//	}
-		//}
-		//delete[] visited;
-		//basePathNodes.pop_back();
-		//basePathNodes.pop_back();
-
-		//return length;
+	float getPathLengthDijkstra(Point2D start, Point2D end, float radius, Agent* agent) {
+		return getPathLength(getPathDijkstra(start, end, radius, agent));
 	}
 
 	Point2D distanceAlongPath(vector<Point2D> path, float distance) {

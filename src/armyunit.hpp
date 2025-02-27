@@ -133,7 +133,7 @@ public:
             UnitWrapper* newCore = nullptr;
             float dist2 = -1;
             for (auto wrap : army) {
-                if (c == Composition::Air || !wrap->get(agent)->is_flying) {
+                if (c == Composition::Air || (wrap->get(agent) != nullptr && !wrap->get(agent)->is_flying)) {
                     Point2D pos = wrap->pos(agent);
                     float distWrap = DistanceSquared2D(pos, numCenter);
                     if (dist2 == -1 || distWrap < dist2) {
@@ -319,7 +319,7 @@ public:
 
     float priorityAttack(Weapon w, UnitWrapper* op, Agent *agent) {  // HIGHER IS MORE DESIRABLE TO ATTACK
         if (Army::hitsUnit(w.type, op->getComposition(agent))) {
-            return Army::Priority(type, op->type); //include health
+            return Army::Priority(type, op->type) + 1 - ((op->health + op->shields)/(op->healthMax + op->shieldsMax)); //include health
         }
         //if (Army::hitsUnit(w.type, Army::unitTypeTargetComposition(op->type))) {
         //    return Army::Priority(type, op->type); //include health

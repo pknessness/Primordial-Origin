@@ -126,6 +126,7 @@ map2d<int8_t> *influenceMapEnemy;
 Point2D startLoc;
 Point2D enemyLoc;
 Point2D staging_location;
+std::vector<Point3D> rankedExpansions;
 
 constexpr int visionMax = 1344 * 4;
 map2d<int16_t>* visionMap;

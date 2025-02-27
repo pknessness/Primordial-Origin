@@ -30,7 +30,7 @@ struct MacroAction {
     float dist_cache;
     Tag unit_cache;
 
-    MacroAction(UnitTypeID unit_type_, AbilityID ability_, Point2D pos_)
+    MacroAction(UnitTypeID unit_type_, AbilityID ability_, Point2D pos_ = {0,0})
         : unit_type(unit_type_),
           ability(ability_),
           pos(pos_),
@@ -49,7 +49,6 @@ struct MacroAction {
           lastChecked(0),
           dist_cache(-1),
           unit_cache(NullTag) {
-        globalIndex++;
     }
 
     Cost cost(Agent *agent) {
@@ -66,6 +65,13 @@ namespace Macro {
     int lastChecked = 0;
     string diagnostics = "";
 
+    void addAction(MacroAction m) {
+        if (actions.find(m.unit_type) == actions.end()) {
+            actions[m.unit_type] = vector<MacroAction>();
+        }
+        actions[m.unit_type].push_back(m);
+    }
+
     void addAction(UnitTypeID unit_type_, AbilityID ability_, Point2D pos_ = Point2D{0,0}) {
         if (actions.find(unit_type_) == actions.end()) {
             actions[unit_type_] = vector<MacroAction>();
@@ -81,7 +87,7 @@ namespace Macro {
     }
 
     void addProbe() {
-        addAction(UNIT_TYPEID::PROTOSS_NEXUS, ABILITY_ID::TRAIN_PROBE, {0, 0});
+        addActionTop(UNIT_TYPEID::PROTOSS_NEXUS, ABILITY_ID::TRAIN_PROBE, {0, 0}, 0);
     }
 
     void addBuilding(AbilityID ability_, Point2D pos_) {
