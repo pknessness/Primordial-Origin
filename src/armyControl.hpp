@@ -123,7 +123,7 @@ namespace ArmyControl {
             }
         }
         else if (enemyBuildingCount > 0) {
-            if (squads[0].army.size() > 12) {
+            if (squads[0].coreCount() > 12) {
                 if (squads[0].getCore(agent) != nullptr) {
                     float mindist = 400;
                     UnitWrapper* min = nullptr;

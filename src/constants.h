@@ -574,6 +574,8 @@ static int structureDiameter(UnitTypeID type) {
             return 3;
         case (uint32_t(UNIT_TYPEID::PROTOSS_TWILIGHTCOUNCIL)):
             return 3;
+        case (uint32_t(UNIT_TYPEID::PROTOSS_CYBERNETICSCORE)):
+            return 3;
 
         case (uint32_t(UNIT_TYPEID::NEUTRAL_DESTRUCTIBLECITYDEBRIS6X6)):
             return 6;
@@ -592,6 +594,8 @@ static int structureDiameter(UnitTypeID type) {
         case (uint32_t(UNIT_TYPEID::DESTRUCTIBLEROCKEX16X6)):
             return 6;
         case (uint32_t(UNIT_TYPEID::DESTRUCTIBLEROCKEX14X4)):
+            return 4;
+        case (uint32_t(UNIT_TYPEID::DESTRUCTIBLEDEBRIS4X4)):
             return 4;
 
         case (uint32_t(UNIT_TYPEID::NEUTRAL_DESTRUCTIBLEDEBRISRAMPDIAGONALHUGEBLUR)):

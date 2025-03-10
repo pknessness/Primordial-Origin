@@ -45,7 +45,7 @@ struct DamageNet {
     Weapon weapon;
 };
 
-constexpr int escapePointChecks = 2;
+constexpr int escapePointChecks = 5;
 constexpr float escapePointWeight = 10.0;
 constexpr float escapePointRadius = 8.0;
 
@@ -268,6 +268,16 @@ public:
         location = location_;
         return false;
     }
+
+    int coreCount() {
+        int c = 0;
+        for (int i = 0; i < army.size(); i++) {
+            if (squadStates[army[i]->self] != 'u') {
+                c++;
+            }
+        }
+        return c;
+    }
 };
 
 std::vector<Squad> squads = std::vector<Squad>();
@@ -281,7 +291,7 @@ private:
     
     
     float escapeCost;
-    float escapeDist;
+    float distToTarget;
 
 public:
     Point2D escapeLoc;
@@ -302,7 +312,7 @@ public:
         squad->subSquadStates[self] = '.';
         escapeLoc = { 0,0 };
         escapeCost = -1;
-        escapeDist = -1;
+        distToTarget = -1;
     }
 
     UnitTypeData getStats(Agent *agent) {
@@ -319,7 +329,7 @@ public:
 
     float priorityAttack(Weapon w, UnitWrapper* op, Agent *agent) {  // HIGHER IS MORE DESIRABLE TO ATTACK
         if (Army::hitsUnit(w.type, op->getComposition(agent))) {
-            return Army::Priority(type, op->type) + 1 - ((op->health + op->shields)/(op->healthMax + op->shieldsMax)); //include health
+            return Army::Priority(type, op->type) - 3 * ((op->health + op->shields)/(op->healthMax + op->shieldsMax)); //include health
         }
         //if (Army::hitsUnit(w.type, Army::unitTypeTargetComposition(op->type))) {
         //    return Army::Priority(type, op->type); //include health
@@ -401,14 +411,14 @@ public:
             float l2 = 0;
             for (int i = 0; i < fullpath.size() - 1; i++) {
                 l2 += Distance2D(fullpath[i], fullpath[i + 1]);
-                DebugLine(agent, AP3D(fullpath[i]) + Point3D{ 0,0,1 }, AP3D(fullpath[i + 1]) + Point3D{ 0,0,1 }, Colors::Green);
+                //DebugLine(agent, AP3D(fullpath[i]) + Point3D{ 0,0,1 }, AP3D(fullpath[i + 1]) + Point3D{ 0,0,1 }, Colors::Green);
             }
             for (Point2D p : stepPoints) {
                 DamageLocation d = UnitManager::getRadiusAvgDamage(P2D(p) + Point2D{ 0.5F,0.5F }, radius, agent);
                 damageCost += UnitManager::getRelevantDamage(this, d, agent) * 0.2;
 
-                DebugSphere(agent, AP3D(p), 0.5, { 21,42,220 });
-                DebugText(agent, strprintf("%.2f", damageCost), AP3D(p) + Point3D{ 0,0,1 });
+                //DebugSphere(agent, AP3D(p), 0.5, { 21,42,220 });
+                //DebugText(agent, strprintf("%.2f", damageCost), AP3D(p) + Point3D{ 0,0,1 });
             }
             //DebugSphere(this, P3D(PrimordialStar::distanceAlongPath(path, 5.5)), 0.5, {21,42,120});
         }
@@ -417,81 +427,90 @@ public:
         return damageCost;
     }
 
-    void updateRandomMinDamagePoint(Point2D position, float rad, int numChecks, Point2D posTarget, Agent* agent) {
-        for (int i = 0; i < escapePointChecks; i++) {
-            Profiler profil("escapePoint");
-            
-            float theta = ((float)std::rand()) * 2 * 3.1415926 / RAND_MAX;
-            float r = ((float)std::rand()) * rad / RAND_MAX;
-            float x = std::cos(theta) * r;
-            float y = std::sin(theta) * r;
+    Point2D randomPointRadius(Point2D center, float rad) {
+        float theta = ((float)std::rand()) * 2 * 3.1415926 / RAND_MAX;
+        float r = ((float)std::rand()) * rad / RAND_MAX;
+        float x = std::cos(theta) * r;
+        float y = std::sin(theta) * r;
 
-            Point2DI escapePoint{ int(position.x + x), int(position.y + y) };
-            Point2D escapePointF{ position.x + x, position.y + y };
-            if (!Aux::checkPathable(escapePointF, agent)) {
-                i--;
-                continue;
-            }
-            profil.midLog("escapePoint-setup");
-            //auto came_from = jps(gridmap, position, escapePoint, Tool::euclidean, agent);
-            //vector<Location> pat = Tool::reconstruct_path(Location(position), escapePoint, came_from);
-            //profil.midLog("escapePoint-pathing");
-            //if (pat.size() == 0) {
-            //    i--;
-            //    continue;
-            //}
-            //vector<Point2DI> path = fullPath(pat);
-            //profil.midLog("escapePoint-fullPath");
-
-            float damageCost = calculatePathDamage(position, escapePointF, agent);
-
-            //vector<Point2D> fullpath = PrimordialStar::getPath(position, escapePointF, radius, agent);
-            //vector<Point2D> stepPoints = PrimordialStar::stepPointsAlongPath(fullpath, 1.0F);
-
-            //if (fullpath.size() != 0) {
-            //    float l2 = 0;
-            //    for (int i = 0; i < fullpath.size() - 1; i++) {
-            //        l2 += Distance2D(fullpath[i], fullpath[i + 1]);
-            //        DebugLine(agent, AP3D(fullpath[i]) + Point3D{ 0,0,1 }, AP3D(fullpath[i + 1]) + Point3D{ 0,0,1 }, Colors::Green);
-            //    }
-            //    for (Point2D p : stepPoints) {
-            //        DamageLocation d = UnitManager::getRadiusAvgDamage(P2D(p) + Point2D{ 0.5F,0.5F }, radius, agent);
-            //        damageCost += UnitManager::getRelevantDamage(this, d, agent) * 0.2;
-
-            //        DebugSphere(agent, AP3D(p), 0.5, { 21,42,220 });
-            //        DebugText(agent, strprintf("%.2f", damageCost), AP3D(p) + Point3D{0,0,1});
-            //    }
-            //    //DebugSphere(this, P3D(PrimordialStar::distanceAlongPath(path, 5.5)), 0.5, {21,42,120});
-            //}
-            //damageCost /= (PrimordialStar::getPathLength(fullpath) + 4.0F);
-            //damageCost += UnitManager::getRelevantDamage(this, UnitManager::getRadiusAvgDamage(escapePointF, radius + 2.0F, agent), agent);
-
-            //printf("%.1f,%.1f eC:%.1f dC:%.1fPRE\n",x ,y , escapeCost, damageCost);
-            DebugLine(agent,Point3D{ escapePointF.x,escapePointF.y,0 }, Point3D{ escapePointF.x,escapePointF.y, 53.0F });
-
-            if (escapeCost == -1 || damageCost < escapeCost) {
-                escapeCost = damageCost;
-                escapeLoc = escapePointF;
-                escapeDist = -1;
-            }
-            else {
-                //if (escapeDist == -1) {
-                //    //escapeDist = agent->Query()->PathingDistance(escapeLoc, posTarget);
-                //    escapeDist = PrimordialStar::getPathLength(escapeLoc, posTarget, radius, agent);
-                //}
-                escapeDist = PrimordialStar::getPathLength(escapeLoc, posTarget, radius, agent);
-                //float damageDist = agent->Query()->PathingDistance(escapePointF, posTarget);
-                float damageDist = PrimordialStar::getPathLength(escapePointF, posTarget, radius, agent);
-                if (damageCost == escapeCost && damageDist < escapeDist) {
-                    escapeCost = damageCost;
-                    escapeLoc = escapePointF;
-                    escapeDist = -1;
-                }
-            }
-            //printf("eC:%.1f dC:%.1fPOST\n", escapeCost, damageCost);
-            profil.midLog("escapePoint-endcheck");
-        }
+        return Point2D { center.x + x, center.y + y };
     }
+
+    //void updateRandomMinDamagePoint(Point2D position, float rad, int numChecks, Point2D posTarget, Agent* agent) {
+    //    for (int i = 0; i < escapePointChecks; i++) {
+    //        Profiler profil("escapePoint");
+    //        
+    //        float theta = ((float)std::rand()) * 2 * 3.1415926 / RAND_MAX;
+    //        float r = ((float)std::rand()) * rad / RAND_MAX;
+    //        float x = std::cos(theta) * r;
+    //        float y = std::sin(theta) * r;
+
+    //        Point2DI escapePoint{ int(position.x + x), int(position.y + y) };
+    //        Point2D escapePointF{ position.x + x, position.y + y };
+    //        if (!Aux::checkPathable(escapePointF, agent)) {
+    //            i--;
+    //            continue;
+    //        }
+    //        profil.midLog("escapePoint-setup");
+    //        //auto came_from = jps(gridmap, position, escapePoint, Tool::euclidean, agent);
+    //        //vector<Location> pat = Tool::reconstruct_path(Location(position), escapePoint, came_from);
+    //        //profil.midLog("escapePoint-pathing");
+    //        //if (pat.size() == 0) {
+    //        //    i--;
+    //        //    continue;
+    //        //}
+    //        //vector<Point2DI> path = fullPath(pat);
+    //        //profil.midLog("escapePoint-fullPath");
+
+    //        float damageCost = calculatePathDamage(position, escapePointF, agent);
+
+    //        //vector<Point2D> fullpath = PrimordialStar::getPath(position, escapePointF, radius, agent);
+    //        //vector<Point2D> stepPoints = PrimordialStar::stepPointsAlongPath(fullpath, 1.0F);
+
+    //        //if (fullpath.size() != 0) {
+    //        //    float l2 = 0;
+    //        //    for (int i = 0; i < fullpath.size() - 1; i++) {
+    //        //        l2 += Distance2D(fullpath[i], fullpath[i + 1]);
+    //        //        DebugLine(agent, AP3D(fullpath[i]) + Point3D{ 0,0,1 }, AP3D(fullpath[i + 1]) + Point3D{ 0,0,1 }, Colors::Green);
+    //        //    }
+    //        //    for (Point2D p : stepPoints) {
+    //        //        DamageLocation d = UnitManager::getRadiusAvgDamage(P2D(p) + Point2D{ 0.5F,0.5F }, radius, agent);
+    //        //        damageCost += UnitManager::getRelevantDamage(this, d, agent) * 0.2;
+
+    //        //        DebugSphere(agent, AP3D(p), 0.5, { 21,42,220 });
+    //        //        DebugText(agent, strprintf("%.2f", damageCost), AP3D(p) + Point3D{0,0,1});
+    //        //    }
+    //        //    //DebugSphere(this, P3D(PrimordialStar::distanceAlongPath(path, 5.5)), 0.5, {21,42,120});
+    //        //}
+    //        //damageCost /= (PrimordialStar::getPathLength(fullpath) + 4.0F);
+    //        //damageCost += UnitManager::getRelevantDamage(this, UnitManager::getRadiusAvgDamage(escapePointF, radius + 2.0F, agent), agent);
+
+    //        //printf("%.1f,%.1f eC:%.1f dC:%.1fPRE\n",x ,y , escapeCost, damageCost);
+    //        DebugLine(agent,Point3D{ escapePointF.x,escapePointF.y,0 }, Point3D{ escapePointF.x,escapePointF.y, 53.0F });
+
+    //        if (escapeCost == -1 || damageCost < escapeCost) {
+    //            escapeCost = damageCost;
+    //            escapeLoc = escapePointF;
+    //            escapeDist = -1;
+    //        }
+    //        else {
+    //            //if (escapeDist == -1) {
+    //            //    //escapeDist = agent->Query()->PathingDistance(escapeLoc, posTarget);
+    //            //    escapeDist = PrimordialStar::getPathLength(escapeLoc, posTarget, radius, agent);
+    //            //}
+    //            escapeDist = PrimordialStar::getPathLength(escapeLoc, posTarget, radius, agent);
+    //            //float damageDist = agent->Query()->PathingDistance(escapePointF, posTarget);
+    //            float damageDist = PrimordialStar::getPathLength(escapePointF, posTarget, radius, agent);
+    //            if (damageCost == escapeCost && damageDist < escapeDist) {
+    //                escapeCost = damageCost;
+    //                escapeLoc = escapePointF;
+    //                escapeDist = -1;
+    //            }
+    //        }
+    //        //printf("eC:%.1f dC:%.1fPOST\n", escapeCost, damageCost);
+    //        profil.midLog("escapePoint-endcheck");
+    //    }
+    //}
 
     virtual bool executeAttack(Agent *agent) {
         if (ignoreFrames > 0) {
@@ -511,6 +530,7 @@ public:
             targetWrap = nullptr;
             Point2D position = pos(agent);
             posTarget = { 0,0 };
+            distToTarget = -1;
             if (squad->squadStates[self] == 'u') {
                 if (withSquad(agent)) {
                     squad->squadStates[self] = 'n';
@@ -600,179 +620,57 @@ public:
                 escapeLoc = posTarget;
             }
             else if (squad->subSquadStates[self] == 'j' || squad->subSquadStates[self] == 'r' || squad->subSquadStates[self] == 'c') {
-                //Point2D direction = UnitManager::weightedVector(this, 1, agent);
-                //Point2D location = position - direction * 2;
-                //escapeLoc = position;
                 if (!Aux::isWithin(escapeLoc,agent)) {
                     escapeLoc = position;
                 }
-
-                //escapeCost = UnitManager::getRelevantDamage(this, UnitManager::getRadiusDamage(escapeLoc, radius, agent), agent);
                 escapeCost = calculatePathDamage(position, escapeLoc, agent);
+                distToTarget = PrimordialStar::getPathLength(escapeLoc, posTarget, radius, agent);
 
-                //for (int i = 0; i < escapePointChecks; i++) {
-                //    Profiler profil("escapePoint");
-                //    float damageCost = 0;
-                //    float theta = ((float)std::rand()) * 2 * 3.1415926 / RAND_MAX;
-                //    float r = ((float)std::rand()) * escapePointRadius / RAND_MAX;
-                //    float x = std::cos(theta) * r;
-                //    float y = std::sin(theta) * r;
-
-                //    Point2DI escapePoint{ int(position.x + x), int(position.y + y) };
-                //    Point2D escapePointF{ position.x + x, position.y + y };
-                //    if (!agent->Observation()->IsPathable(escapePointF)) {
-                //        i--;
-                //        continue;
-                //    }
-                //    profil.midLog("escapePoint-setup");
-                //    //auto came_from = jps(gridmap, position, escapePoint, Tool::euclidean, agent);
-                //    //vector<Location> pat = Tool::reconstruct_path(Location(position), escapePoint, came_from);
-                //    //profil.midLog("escapePoint-pathing");
-                //    //if (pat.size() == 0) {
-                //    //    i--;
-                //    //    continue;
-                //    //}
-                //    //vector<Point2DI> path = fullPath(pat);
-                //    //profil.midLog("escapePoint-fullPath");
-                //    //for (Point2DI l : path) {
-                //    //    //profil.subScope();
-                //    //    DamageLocation d = UnitManager::getRadiusDamage(P2D(l) + Point2D{ 0.5F,0.5F }, radius, agent);
-                //    //    damageCost += UnitManager::getRelevantDamage(this, d, agent);
-                //    //    //profil.midLog("escapePoint-dmagCircle"); 
-                //    //}
-                //    //profil.midLog("escapePoint-dmagCircles");
-                //    
-                //    damageCost = UnitManager::getRelevantDamage(this, UnitManager::getRadiusDamage(escapePointF, radius, agent), agent);
-                //    //printf("%.1f,%.1f eC:%.1f dC:%.1fPRE\n",x,y, escapeCost, damageCost);
-                //    DebugLine(agent,Point3D{ escapePointF.x,escapePointF.y,0 }, Point3D{ escapePointF.x,escapePointF.y, 53.0F });
-                //    if (escapeCost == -1 || damageCost < escapeCost) {
-                //        escapeCost = damageCost;
-                //        escapeLoc = escapePointF;
-                //    }
-                //    else if (damageCost == escapeCost && DistanceSquared2D(escapePointF, posTarget) < DistanceSquared2D(escapeLoc, posTarget)) {
-                //        escapeCost = damageCost;
-                //        escapeLoc = escapePointF;
-                //    }
-                //    //printf("eC:%.1f dC:%.1fPOST\n", escapeCost, damageCost);
-                //    profil.midLog("escapePoint-endcheck");
-                //}
-                updateRandomMinDamagePoint(position, escapePointRadius, escapePointChecks, posTarget, agent);
-                if (escapeLoc == posTarget) {
-                    updateRandomMinDamagePoint(position, escapePointRadius*2, escapePointChecks, posTarget, agent);
+                if (calculatePathDamage(position, posTarget, agent) == 0) {
+                    escapeLoc = posTarget;
+                    escapeCost = 0;
+                    distToTarget = 0;
                 }
+                else {
+                    vector<Point2D> checkPoints;
+                    checkPoints.reserve(escapePointChecks);
+                    for (int i = 0; i < escapePointChecks; i++) {
+                        Point2D checkPoint = randomPointRadius(position, escapePointRadius);
+                        if (!Aux::checkPathable(checkPoint, agent)) {
+                            i--;
+                            continue;
+                        }
+                        checkPoints.push_back(checkPoint);
+                    }
+
+                    for (int i = 0; i < escapePointChecks; i++) {
+                        Point2D checkPoint = checkPoints[i];
+                        float checkCost = calculatePathDamage(position, checkPoint, agent);
+                        if (escapeCost > checkCost) {
+                            escapeLoc = checkPoint;
+                            escapeCost = checkCost;
+                            distToTarget = -1;
+                        }
+                        else if (escapeCost == checkCost) {
+                            if (distToTarget == -1) {
+                                distToTarget = PrimordialStar::getPathLength(escapeLoc, posTarget, radius, agent);
+                            }
+                            float checkDistToTarget = PrimordialStar::getPathLength(checkPoint, posTarget, radius, agent);
+                            if (distToTarget > checkDistToTarget) {
+                                escapeLoc = checkPoint;
+                                escapeCost = checkCost;
+                                distToTarget = checkDistToTarget;
+                            }
+                        }
+                    }
+                }
+
                 agent->Actions()->UnitCommand(self, ABILITY_ID::MOVE_MOVE, escapeLoc);
                 DebugLine(agent,Point3D{ escapeLoc.x,escapeLoc.y, pos3D(agent).z}, Point3D{escapeLoc.x,escapeLoc.y, pos3D(agent).z + 1.5F}, Colors::Purple);
             }
             //statTargetPos = posTarget;
             ignoreFrames = 5;
         }
-        //constexpr float extraRadius = 2.0F;
-        //if (ignoreFrames > 0) {
-        //    if (targetWrap != nullptr && UnitManager::findEnemy(targetWrap->type, targetWrap->self) == nullptr) {
-        //        //targetFrames = 0;
-        //        targetWrap = nullptr;
-        //        ignoreFrames = 0;
-        //    }
-        //    else {
-        //        ignoreFrames--;
-        //    }
-        //}
-        //Point2D position = pos(agent);
-
-        //if (ignoreFrames == 0) {
-        //    targetWrap = nullptr;
-        //    UnitWrappers potentialTargets = UnitWrappers();
-        //    std::vector<float> potentialPriority = std::vector<float>();
-        //    for (Weapon w : getStats(agent).weapons) {
-
-        //        for (UnitWrapper* enemy : SpacialHash::findInRadiusEnemy(position, w.range + radius + extraRadius, agent)) {
-        //            float weaponRadius = w.range + radius + enemy->radius;
-        //            float enemyRadius = Distance2D(position, enemy->pos(agent));
-        //            if (Army::hitsUnit(w.type, Army::unitTypeTargetComposition(enemy->type))) {
-        //                bool inserted = false;
-        //                float priority = priorityAttack(w, enemy, agent);
-        //                if (enemyRadius > weaponRadius) {
-        //                    priority += (weaponRadius - enemyRadius) * 0.1F;
-        //                }
-        //                if (potentialTargets.size() == 0) {
-        //                    inserted = true;
-        //                    potentialTargets.push_back(enemy);
-        //                    potentialPriority.push_back(priority);
-        //                }
-        //                for (int d = 0; d < potentialTargets.size(); d++) {
-        //                    if (potentialPriority[d] < priority) {
-        //                        potentialTargets.insert(potentialTargets.begin() + d, enemy);
-        //                        potentialPriority.insert(potentialPriority.begin() + d, priority);
-        //                        inserted = true;
-        //                        break;
-        //                    }
-        //                }
-        //                if (inserted == false) {
-        //                    potentialTargets.push_back(enemy);
-        //                    potentialPriority.push_back(priority);
-        //                }
-        //                break;
-        //            }
-        //        }
-        //    }
-        //    if (potentialTargets.size() != 0) {
-        //        targetWrap = potentialTargets.front();
-        //    }
-
-        //    if (targetWrap == nullptr) {
-        //        if (!withSquad(agent)) {
-        //            agent->Actions()->UnitCommand(self, ABILITY_ID::ATTACK, squad->center(agent));
-        //        } else {
-        //            agent->Actions()->UnitCommand(self, ABILITY_ID::ATTACK, squad->location);
-        //        }
-        //    }
-        //    else {
-        //        float dTtoEnemy = Distance2D(pos(agent), targetWrap->pos(agent)) / getStats(agent).movement_speed;
-        //        if (dTtoEnemy >= get(agent)->weapon_cooldown) {
-        //            agent->Actions()->UnitCommand(self, ABILITY_ID::ATTACK, targetWrap->self);
-        //        }
-        //        else {
-        //            
-        //            //Point2D direction = UnitManager::weightedVector(this, 1, agent);
-
-        //            //Point2D location = position - direction * 2;
-
-        //            for (int i = 0; i < escapePointChecks; i++) {
-        //                float damageCost = 0;
-
-        //                float theta = ((float)std::rand()) * 2 * 3.1415926 / RAND_MAX;
-        //                float radius = ((float)std::rand()) * escapePointRadius / RAND_MAX;
-
-        //                float x = std::cos(theta) * radius;
-        //                float y = std::sin(theta) * radius;
-
-        //                Point2DI escapePoint{ int(position.x + x), int(position.y + y) };
-
-        //                auto came_from = jps(gridmap, position, escapePoint, Tool::euclidean, agent);
-        //                vector<Location> pat = Tool::reconstruct_path(Location(position), escapePoint, came_from);
-        //                if (pat.size() == 0) {
-        //                    i--;
-        //                    continue;
-        //                }
-        //                vector<Point2DI> path = fullPath(pat);
-
-        //                for (Point2DI l : path) {
-        //                    damageCost += UnitManager::getRelevantDamage(this, UnitManager::getRadiusDamage(P2D(l) + Point2D{ 0.5F,0.5F }, radius, agent), agent);
-        //                }
-
-        //                if (escapeCost == -1 || damageCost < escapeCost) {
-        //                    escapeCost = damageCost;
-        //                    escapeLoc = { position.x + x, position.y + y };
-        //                }
-        //            }
-
-        //            agent->Actions()->UnitCommand(self, ABILITY_ID::MOVE_MOVE, escapeLoc);
-
-        //            DebugLine(agent,Point3D{ escapeLoc.x,escapeLoc.y,0 }, Point3D{ escapeLoc.x,escapeLoc.y, 53.0F });
-        //        }
-        //    }
-        //    ignoreFrames = 10;
-        //}
         return false;
     }
 

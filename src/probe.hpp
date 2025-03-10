@@ -154,16 +154,16 @@ public:
                     probeTargetting[targWrap->self] = 0;
                 }
                 if (mineralDistance.find(targWrap->self) == mineralDistance.end()) {
-                    mineralDistance[targWrap->self] = PrimordialStar::getPathLength(Aux::startLoc, targPos, radius, agent);
+                    mineralDistance[targWrap->self] = PrimordialStar::getPathLengthDijkstra(Aux::startLoc, targPos, radius, agent);
                 }
                 if (nexusNearby.find(targWrap->self) == nexusNearby.end()) {
                     nexusNearby[targWrap->self] = false;
-                    for (UnitWrapper* nexus : nexuses) {
-                        if (DistanceSquared2D(targPos, nexus->pos(agent)) < 100) {
-                            nexusNearby[targWrap->self] = false;
-                            break;
-                        }
-                    }
+                    //for (UnitWrapper* nexus : nexuses) {
+                    //    if (DistanceSquared2D(targPos, nexus->pos(agent)) < 100) {
+                    //        nexusNearby[targWrap->self] = true;
+                    //        break;
+                    //    }
+                    //}
                 }
                 int limit = 3;
                 if (Aux::isMineralType(targWrap->type)) {

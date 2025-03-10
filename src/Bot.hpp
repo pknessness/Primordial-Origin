@@ -46,6 +46,9 @@ public:
     Point2D rally_point;
     //Point2D enemy;
 
+    UnitTypeID lastUnitSpawner;
+    int lastUnitIndex;
+
     map2d<int8_t>* path_zhang_suen;
 
     clock_t last_time;
@@ -76,9 +79,11 @@ public:
     void initializeExpansions() {
         // staging_location = Point2DI(startLocation.x + ;
         expansions = sc2::search::CalculateExpansionLocations(Observation(), Query());
+        printf("Expansions: ");
         for (auto point : expansions) {
             if (point.x == 0 && point.y == 0)
                 continue;
+            printf("{%.1f, %.1f}", point.x, point.y);
             // auto path = generator.findPath(staging_location, (Point2DI)point);
             // expansionDistance.push_back(path.size());
             //auto came_from = jps(gridmap, staging_location, {int(point.x),int(point.y)}, Tool::euclidean, this);
@@ -92,7 +97,7 @@ public:
             //}
             //printf("{%.1f}\n\n", length);
 
-            float length = PrimordialStar::getPathLength(P2D(Aux::staging_location), P2D(point), 0.2, this);
+            float length = PrimordialStar::getPathLengthDijkstra(P2D(Aux::staging_location), P2D(point), 0.2, this);
 
             constexpr int numsteps = 6;
             Units neut = Observation()->GetUnits(Unit::Alliance::Neutral, Aux::isMineral);
@@ -123,6 +128,7 @@ public:
             }
             
         }
+        printf("\n");
         //Debug()->SendDebug();
     }
 
@@ -903,7 +909,8 @@ public:
         int mapWidth = Observation()->GetGameInfo().width;
         int mapHeight = Observation()->GetGameInfo().height;
 
-        
+        lastUnitIndex = 0;
+        lastUnitSpawner = UNIT_TYPEID::PROTOSS_GATEWAY;
 
         SpacialHash::grid = new map2d<UnitWrappers>(mapWidth, mapHeight, true);
         SpacialHash::gridEnemy = new map2d<UnitWrappers>(mapWidth, mapHeight, true);
@@ -1210,7 +1217,11 @@ public:
             }
         } else if (unit->unit_type == UNIT_TYPEID::PROTOSS_NEXUS) {
             Nexus *n = new Nexus(unit);
-            //n->initVesp(this);
+            n->nexusNearbyUpdate(this);
+        }
+        else if (unit->unit_type == UNIT_TYPEID::PROTOSS_ASSIMILATOR) {
+            Assimilator* n = new Assimilator(unit);
+            n->nexusNearbyUpdate(this);
         }
         else{
             UnitWrapper* u = new UnitWrapper(unit);
@@ -1429,165 +1440,15 @@ public:
 
         onStepProfiler.midLog("SquadExecute");
         #if MICRO_TEST == 0
-        Strategem::Strategy strat = Strategem::shit_stalker_colossus;
+        Strategem::Strategy strat = Strategem::pig_stalker_colossus;
             if (Observation()->GetGameLoop() == 2) {
                 for (int i = 0; i < 32; i++) {
                     Macro::addProbe();
-                    printf("probeGI:%d\n", MacroAction::globalIndex);
                 }
-                for (int i = 0; i < strat.size(); i++) {
-                    Macro::addAction(strat[i]);
-                    printf("GI:%d\n", MacroAction::globalIndex);
+                for (int i = 0; i < strat.build_order.size(); i++) {
+                    Macro::addAction(strat.build_order[i]);
                 }
             }
-            //if (Observation()->GetGameLoop() == 2) {
-            //    //HOME BASE MINERALS
-            //    Macro::addProbe();
-            //    Macro::addProbe();
-            //    Macro::addProbe();
-            //    Macro::addProbe();
-
-            //    //HOME BASE VESPENE 1
-            //    Macro::addProbe();
-            //    Macro::addProbe();
-            //    Macro::addProbe();
-
-            //    //HOME BASE VESPENE 2
-            //    Macro::addProbe();
-            //    Macro::addProbe();
-            //    Macro::addProbe();
-
-            //    //NATURAL MINERALS
-            //    Macro::addProbe();
-            //    Macro::addProbe();
-            //    Macro::addProbe();
-            //    Macro::addProbe();//
-            //    Macro::addProbe();
-            //    Macro::addProbe();
-            //    Macro::addProbe();
-            //    Macro::addProbe();//
-            //    Macro::addProbe();
-            //    Macro::addProbe();
-            //    Macro::addProbe();
-            //    Macro::addProbe();//
-            //    Macro::addProbe();
-            //    Macro::addProbe();
-            //    Macro::addProbe();
-            //    Macro::addProbe();//
-
-            //    //NATURAL GAS 1
-            //    Macro::addProbe();
-            //    Macro::addProbe();
-            //    Macro::addProbe();
-
-            //    //NATURAL GAS 2
-            //    Macro::addProbe();
-            //    Macro::addProbe();
-            //    Macro::addProbe();
-
-            //    //Macro::addBuilding(ABILITY_ID::BUILD_PYLON, P2D(staging_location));
-            //    //Macro::addBuilding(ABILITY_ID::BUILD_GATEWAY, P2D(staging_location) - Point2D{-2.5, 0.5});
-            //    //Macro::addBuilding(ABILITY_ID::BUILD_ASSIMILATOR,
-            //    //                   Observation()->GetUnit(UnitManager::getVespene()[0]->self)->pos);
-            //    //Macro::addBuilding(ABILITY_ID::BUILD_NEXUS, P2D(rankedExpansions[0]));
-            //    //Macro::addBuilding(ABILITY_ID::BUILD_CYBERNETICSCORE, P2D(staging_location) - Point2D{2.5, -0.5});
-            //    //Macro::addBuilding(ABILITY_ID::BUILD_ASSIMILATOR,
-            //    //                   Observation()->GetUnit(UnitManager::getVespene()[1]->self)->pos);
-            //    //Macro::addBuilding(ABILITY_ID::BUILD_PYLON, P2D(staging_location) - Point2D{0.5, -2.5});
-            //    //Macro::addAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER);
-            //    //Macro::addAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER);
-            //    //Macro::addAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER);
-            //    //Macro::addBuilding(ABILITY_ID::BUILD_STARGATE, P2D(staging_location) - Point2D{-0.5, 3});
-
-            //    Macro::addBuilding(ABILITY_ID::BUILD_PYLON, P2D(Aux::staging_location));
-
-            //    Macro::addBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1});
-
-            //    Macro::addBuilding(ABILITY_ID::GENERAL_MOVE, Aux::enemyLoc);
-
-            //    Macro::addBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1});
-
-            //    //Macro::addBuilding(ABILITY_ID::BUILD_ASSIMILATOR,
-            //    //                   Observation()->GetUnit(UnitManager::getVespene()[0]->self)->pos);
-
-            //    Macro::addBuilding(ABILITY_ID::BUILD_CYBERNETICSCORE, {-1, -1});
-
-            //    Macro::addAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER);
-
-            //    Macro::addAction(UNIT_TYPEID::PROTOSS_CYBERNETICSCORE, ABILITY_ID::RESEARCH_WARPGATE);
-            //    Macro::addAction(UNIT_TYPEID::PROTOSS_ROBOTICSBAY, ABILITY_ID::RESEARCH_EXTENDEDTHERMALLANCE);
-
-            //    Macro::addBuilding(ABILITY_ID::BUILD_NEXUS, P2D(Aux::rankedExpansions[0]));
-
-            //    Macro::addBuilding(ABILITY_ID::BUILD_ASSIMILATOR, { -1,-1 });
-
-            //    //Macro::addBuilding(ABILITY_ID::BUILD_ASSIMILATOR,
-            //    //                   Observation()->GetUnit(UnitManager::getVespene()[1]->self)->pos);
-
-            //    Macro::addBuilding(ABILITY_ID::BUILD_PYLON, {-1, -1});
-            //    Macro::addAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER);
-            //    Macro::addAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER);
-
-            //    Macro::addBuilding(ABILITY_ID::BUILD_ROBOTICSFACILITY, {-1, -1});
-            //    Macro::addAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_OBSERVER);
-            //    Macro::addAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_IMMORTAL);
-
-            //    Macro::addBuilding(ABILITY_ID::BUILD_GATEWAY, {-1, -1});
-            //    Macro::addBuilding(ABILITY_ID::BUILD_GATEWAY, {-1, -1});
-            //    Macro::addBuilding(ABILITY_ID::BUILD_TWILIGHTCOUNCIL, {-1, -1});
-
-            //    Macro::addAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER);
-            //    Macro::addAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER);
-            //    Macro::addAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER);
-
-
-            //    //GameRequestPtr request = Control()->Proto().MakeRequest();
-            //    //SC2APIProtocol::RequestQuickSave request_join_game = request->quick_save();
-            //} 
-            //else if (Observation()->GetGameLoop() == int(3.00 * 60 * 22.4)) {
-            //    //GameRequestPtr request = Control()->Proto().MakeRequest();
-            //    //SC2APIProtocol::RequestQuickLoad request_join_game = request->quick_load();
-
-            //    Macro::addAction(UNIT_TYPEID::PROTOSS_TWILIGHTCOUNCIL, ABILITY_ID::RESEARCH_BLINK);
-
-            //    Macro::addBuilding(ABILITY_ID::BUILD_ASSIMILATOR, { -1,-1 });
-
-            //    Macro::addBuilding(ABILITY_ID::BUILD_ROBOTICSBAY, {-1, -1});
-
-            //    Macro::addBuilding(ABILITY_ID::BUILD_ASSIMILATOR, { -1,-1 });
-
-            //    Macro::addAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_COLOSSUS);
-            //    Macro::addAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_COLOSSUS);
-            //    Macro::addAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_IMMORTAL);
-
-            //    //Macro::addBuilding(ABILITY_ID::BUILD_ASSIMILATOR,
-            //    //                   Observation()->GetUnit(UnitManager::getVespene()[2]->self)->pos);
-            //    //Macro::addBuilding(ABILITY_ID::BUILD_ASSIMILATOR,
-            //    //                   Observation()->GetUnit(UnitManager::getVespene()[3]->self)->pos);
-            //    Macro::addBuilding(ABILITY_ID::BUILD_GATEWAY, {-1, -1});
-            //    Macro::addBuilding(ABILITY_ID::BUILD_GATEWAY, {-1, -1});
-            //    Macro::addBuilding(ABILITY_ID::BUILD_GATEWAY, {-1, -1});
-            //    Macro::addBuilding(ABILITY_ID::BUILD_GATEWAY, {-1, -1});
-            //    Macro::addBuilding(ABILITY_ID::BUILD_GATEWAY, {-1, -1});
-            //    Macro::addBuilding(ABILITY_ID::BUILD_GATEWAY, {-1, -1});
-            //    Macro::addBuilding(ABILITY_ID::BUILD_PYLON, {-1, -1});
-            //    Macro::addBuilding(ABILITY_ID::BUILD_PYLON, {-1, -1});
-            //    Macro::addBuilding(ABILITY_ID::BUILD_PYLON, {-1, -1});
-            //    Macro::addBuilding(ABILITY_ID::BUILD_PYLON, {-1, -1});
-            //    Macro::addBuilding(ABILITY_ID::BUILD_PYLON, {-1, -1});
-
-            //    Macro::addAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT);
-            //    Macro::addAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT);
-            //    Macro::addAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT);
-            //    Macro::addAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT);
-            //    Macro::addAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT);
-            //    Macro::addAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT);
-            //    Macro::addAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT);
-            //    Macro::addAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT);
-            //    Macro::addAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT);
-            //
-            //    Macro::addAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_WARPPRISM);
-            //}
         #endif
 
         if (Observation()->GetGameLoop() % 200 == 0) { //1344
@@ -1645,11 +1506,80 @@ public:
                 spareVespene -= c.vespene;
             }
         }
+
+        if (Observation()->GetGameLoop() > 20) {
+            bool found = false;
+            for (int i = 0; i < Macro::actions[lastUnitSpawner].size(); i++) {
+                if (Macro::actions[lastUnitSpawner][i].index == lastUnitIndex) {
+                    found = true;
+                }
+            }
+            if (!found) {
+                Strategem::UnitRatio numUnits;
+                Strategem::UnitRatioFloat percentageUnits;
+
+                Strategem::UnitRatioFloat percentageUnitsStrategy;
+
+                numUnits.zealot = UnitManager::get(UNIT_TYPEID::PROTOSS_ZEALOT).size();
+                numUnits.stalker = UnitManager::get(UNIT_TYPEID::PROTOSS_STALKER).size();
+                numUnits.sentry = UnitManager::get(UNIT_TYPEID::PROTOSS_SENTRY).size();
+                numUnits.adept = UnitManager::get(UNIT_TYPEID::PROTOSS_ADEPT).size();
+                numUnits.darktemplar = UnitManager::get(UNIT_TYPEID::PROTOSS_DARKTEMPLAR).size();
+                numUnits.hightemplar = UnitManager::get(UNIT_TYPEID::PROTOSS_HIGHTEMPLAR).size();
+                numUnits.archon = UnitManager::get(UNIT_TYPEID::PROTOSS_ARCHON).size();
+
+                numUnits.observer = UnitManager::get(UNIT_TYPEID::PROTOSS_OBSERVER).size();
+                numUnits.immortal = UnitManager::get(UNIT_TYPEID::PROTOSS_IMMORTAL).size();
+                numUnits.warpprism = UnitManager::get(UNIT_TYPEID::PROTOSS_WARPPRISM).size();
+                numUnits.colossus = UnitManager::get(UNIT_TYPEID::PROTOSS_COLOSSUS).size();
+                numUnits.disruptor = UnitManager::get(UNIT_TYPEID::PROTOSS_DISRUPTOR).size();
+
+                numUnits.pheonix = UnitManager::get(UNIT_TYPEID::PROTOSS_PHOENIX).size();
+                numUnits.oracle = UnitManager::get(UNIT_TYPEID::PROTOSS_ORACLE).size();
+                numUnits.voidray = UnitManager::get(UNIT_TYPEID::PROTOSS_VOIDRAY).size();
+                numUnits.tempest = UnitManager::get(UNIT_TYPEID::PROTOSS_TEMPEST).size();
+                numUnits.carrier = UnitManager::get(UNIT_TYPEID::PROTOSS_CARRIER).size();
+                numUnits.mothership = UnitManager::get(UNIT_TYPEID::PROTOSS_MOTHERSHIP).size();
+
+                int8_t* numPtr = (int8_t*)&numUnits;
+                int8_t* numPtrStrategy = (int8_t*)&strat.unitRatio;
+                float* percentPtr = (float*)&percentageUnits;
+                float* percentPtrStrategy = (float*)&percentageUnitsStrategy;
+
+                int totalUnits = 0;
+                int totalUnitsStrategy = 0;
+                for (int i = 0; i < 18; i++) {
+                    totalUnits += numPtr[i];
+                    totalUnitsStrategy += numPtrStrategy[i];
+                }
+
+                for (int i = 0; i < 18; i++) {
+                    percentPtr[i] = ((float)numPtr[i]) / totalUnits;
+                    percentPtrStrategy[i] = ((float)numPtrStrategy[i]) / totalUnitsStrategy;
+                }
+
+                printf("Strategy Profile:\n");
+                for (int i = 0; i < 18; i++) {
+                    printf("%s   \t%.1f\%\t%.1f\%\n", UnitTypeToName(Strategem::UnitOrder[i]), percentPtrStrategy[i] * 100, percentPtr[i] * 100);
+                }
+
+                int mindex = 1;
+                for (int i = 0; i < 18; i++) {
+                    if ((percentPtrStrategy[i] - percentPtr[i]) > (percentPtrStrategy[mindex] - percentPtr[mindex])) {
+                        mindex = i;
+                    }
+                }
+
+                MacroAction* m = Macro::addAction(Strategem::UnitCreators[mindex], Strategem::UnitCreationAbility[mindex]);
+                lastUnitSpawner = m->unit_type;
+                lastUnitIndex = m->index;
+            }
+        }
+        
         if (spareMinerals > 150 && spareVespene > 75) {
-            //if (squads[0].has(UNIT_TYPEID::PROTOSS_WARPPRISM)) {
-            //    Macro::addAction(UNIT_TYPEID::PROTOSS_WARPPRISM, ABILITY_ID::MORPH_WARPPRISMPHASINGMODE);
-            //}
-            Macro::addAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER, squads[0].coreCenter(this));
+            
+
+
         }
 
         onStepProfiler.midLog("StalkerCreation");
@@ -1712,6 +1642,7 @@ public:
                 // add abilities, oracle, baneling
                 // add psi storm (more damage the more time it has left, prioritzed more since its constant dmag)
                 // add helion line, lurker line
+                // add ravager artillery, tank
                 for (Weapon w : weapons) {
 
                     //TODO: REPLACE WITH WEAPON TO DAMAGELOCATION FUNCTION

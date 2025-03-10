@@ -72,11 +72,12 @@ namespace Macro {
         actions[m.unit_type].push_back(m);
     }
 
-    void addAction(UnitTypeID unit_type_, AbilityID ability_, Point2D pos_ = Point2D{0,0}) {
+    MacroAction* addAction(UnitTypeID unit_type_, AbilityID ability_, Point2D pos_ = Point2D{0,0}) {
         if (actions.find(unit_type_) == actions.end()) {
             actions[unit_type_] = vector<MacroAction>();
         }
         actions[unit_type_].push_back(MacroAction(unit_type_, ability_, pos_));
+        return &(actions[unit_type_].back());
     }
 
     void addActionTop(UnitTypeID unit_type_, AbilityID ability_, Point2D pos_, int index_) {
