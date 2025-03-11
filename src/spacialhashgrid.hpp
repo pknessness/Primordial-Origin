@@ -215,10 +215,10 @@ UnitWrappers findInRadii(Circles c, Agent* agent) {
     }
     gridModify->clear();
 
-    Bounds bound = fillGridModify(c[0].pos, c[0].radius, agent);
+    Bounds bound = fillGridModify(c.at(0).pos, c.at(0).radius, agent);
 
     for (int i = 1; i < c.size(); i++) {
-        bound += fillGridModify(c[i].pos, c[i].radius, agent);
+        bound += fillGridModify(c.at(i).pos, c.at(i).radius, agent);
     }
 
     return findInRadius_INTERNAL(bound, agent);
@@ -322,10 +322,10 @@ UnitWrappers findInRadiiEnemy(Circles c, Agent* agent) {
     }
     gridModify->clear();
 
-    Bounds bound = fillGridModify(c[0].pos, c[0].radius, agent);
+    Bounds bound = fillGridModify(c.at(0).pos, c.at(0).radius, agent);
 
     for (int i = 1; i < c.size(); i++) {
-        bound += fillGridModify(c[i].pos, c[i].radius, agent);
+        bound += fillGridModify(c.at(i).pos, c.at(i).radius, agent);
     }
 
     return findInRadiusEnemy_INTERNAL(bound, agent);

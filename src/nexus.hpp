@@ -31,26 +31,4 @@ public:
             }
         }
     }
-    
-    void initVesp(Agent* agent) {
-        //UnitWrappers vespenes = UnitManager::getVespene();
-        //for (UnitWrapper* vesp : vespenes) {
-        //    if (Distance2D(vesp->pos(agent), pos(agent)) < 12) {
-        //        if (type1 == UNIT_TYPEID::INVALID) {
-        //            type1 = vesp->type;
-        //            vespene1 = vesp->self;
-        //            ((Vespene*)vesp)->taken = 1;
-        //        }
-        //        else if (type2 == UNIT_TYPEID::INVALID) {
-        //            type2 = vesp->type;
-        //            vespene2 = vesp->self;
-        //            ((Vespene*)vesp)->taken = 1;
-        //            //break; //ADD THIS WHEN I KNOW IT WORKS
-        //        }
-        //        else {
-        //            printf("THIRD VESPENE FOUND NEAR NEXUS, HUH??\n");
-        //        }
-        //    }
-        //}
-    }
 };

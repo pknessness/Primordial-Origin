@@ -73,7 +73,7 @@ public:
             Aux::staging_location.y = Observation()->GetStartLocation().y + 6;
         }
         Aux::startLoc = Observation()->GetStartLocation();
-        Aux::enemyLoc = Observation()->GetGameInfo().enemy_start_locations[0];
+        Aux::enemyLoc = Observation()->GetGameInfo().enemy_start_locations.at(0);
     }
 
     void initializeExpansions() {
@@ -93,7 +93,7 @@ public:
             //expansionDistance.push_back(length);
 
             //for (Location l : pathToExpansion) {
-            //    printf("[%d,%d]", l.x, l.y);
+            //    printf(".at(%d,%d)", l.x, l.y);
             //}
             //printf("{%.1f}\n\n", length);
 
@@ -104,10 +104,10 @@ public:
             Units vesp = Observation()->GetUnits(Unit::Alliance::Neutral, Aux::isVespene);
             neut.insert(neut.end(), vesp.begin(), vesp.end());
             for (int i = 0; i < neut.size(); i++) {
-                if (Distance2D(point, neut[i]->pos) < 12) {
-                    Point2D dir = neut[i]->pos - point;
+                if (Distance2D(point, neut.at(i)->pos) < 12) {
+                    Point2D dir = neut.at(i)->pos - point;
                     for (int p = 0; p < numsteps; p++) {
-                        Point3D loc = point + p * (neut[i]->pos - point) / ((float)numsteps);
+                        Point3D loc = point + p * (neut.at(i)->pos - point) / ((float)numsteps);
                         Aux::addPlacement(loc, 2);
                         //DebugSphere(this,loc, 2);
                     }
@@ -120,7 +120,7 @@ public:
                 rankedExpansionDistance.push_back(length);
             }
             for (int i = 0; i < Aux::rankedExpansions.size(); i ++) {
-                if (rankedExpansionDistance[i] > length) {
+                if (rankedExpansionDistance.at(i) > length) {
                     Aux::rankedExpansions.insert(Aux::rankedExpansions.begin() + i, point);
                     rankedExpansionDistance.insert(rankedExpansionDistance.begin() + i, length);
                     break;
@@ -534,12 +534,12 @@ public:
 
     void displayPrimordialStarNodes() {
         for (int i = 0; i < PrimordialStar::basePathNodes.size(); i++) {
-            PrimordialStar::PathNode* node = PrimordialStar::basePathNodes[i];
+            PrimordialStar::PathNode* node = PrimordialStar::basePathNodes.at(i);
             if (Distance2D(node->rawPos(), Observation()->GetCameraPos()) > 15) {
                 continue;
             }
             //for (int c = 0; c < node->connected.size(); c++) {
-            //    PrimordialStar::PathNode* node2 = PrimordialStar::basePathNodes[node->connected[c]];
+            //    PrimordialStar::PathNode* node2 = PrimordialStar::basePathNodes.at(node->connected.at(c));
             //    DebugLine(this, P3D(node->rawPos()) + Point3D{ 0,0,3 }, P3D(node2->rawPos()) + Point3D{ 0,0,3 }, Colors::Blue);
             //}
             DebugSphere(this, P3D(node->rawPos()), 0.5);
@@ -559,8 +559,8 @@ public:
         if (path.size() != 0) {
             float l2 = 0;
             for (int i = 0; i < path.size() - 1; i++) {
-                l2 += Distance2D(path[i], path[i + 1]);
-                DebugLine(this, P3D(path[i]) + Point3D{ 0,0,1 }, P3D(path[i + 1]) + Point3D{ 0,0,1 }, Colors::Green);
+                l2 += Distance2D(path.at(i), path.at(i + 1));
+                DebugLine(this, P3D(path.at(i)) + Point3D{ 0,0,1 }, P3D(path.at(i + 1)) + Point3D{ 0,0,1 }, Colors::Green);
             }
             vector<Point2D> subpoints = PrimordialStar::stepPointsAlongPath(path, 1.0F);
             for (Point2D p : subpoints) {
@@ -589,10 +589,10 @@ public:
 
         timeus startTime = std::chrono::steady_clock::now();
         for (int a = 0; a < NUM_PTS_RT; a++) {
-            Point2D from = pts[a];
+            Point2D from = pts.at(a);
             DebugSphere(this, P3D(from), 0.25, { 61,102,220 });
             for (int b = 0; b < NUM_PTS_RT; b++) {
-                Point2D to = pts[b];
+                Point2D to = pts.at(b);
                 auto path = PrimordialStar::getPathDijkstra(from, to, 0, this);
                 float dist = PrimordialStar::getPathLength(path);
                 float sc2dist = Query()->PathingDistance(from, to);
@@ -611,7 +611,7 @@ public:
                     float z = std::rand() * 2.0F / RAND_MAX;
                     if (path.size() > 0) {
                         for (int i = 0; i < path.size() - 1; i++) {
-                            DebugLine(this, P3D(path[i]) + Point3D{ 0,0,1.5F + z }, P3D(path[i + 1]) + Point3D{ 0,0,1.5F + z }, c);
+                            DebugLine(this, P3D(path.at(i)) + Point3D{ 0,0,1.5F + z }, P3D(path.at(i + 1)) + Point3D{ 0,0,1.5F + z }, c);
                         }
                     }
                     else {
@@ -716,19 +716,19 @@ public:
                 continue;
             #define LETTER_DISP -0.07F
             string s = "";
-            if (unit->orders[0].target_unit_tag != NullTag && unit->orders[0].target_pos.x != 0 && unit->orders[0].target_pos.y != 0){
-                s += strprintf("%s [%lx] [%.1f, %.1f]", AbilityTypeToName(unit->orders[0].ability_id),
-                                     unit->orders[0].target_unit_tag, unit->orders[0].target_pos.x,
-                                     unit->orders[0].target_pos.y);
+            if (unit->orders.at(0).target_unit_tag != NullTag && unit->orders.at(0).target_pos.x != 0 && unit->orders.at(0).target_pos.y != 0){
+                s += strprintf("%s [%lx] [%.1f, %.1f]", AbilityTypeToName(unit->orders.at(0).ability_id),
+                                     unit->orders.at(0).target_unit_tag, unit->orders.at(0).target_pos.x,
+                                     unit->orders.at(0).target_pos.y);
                 
-            }else if (unit->orders[0].target_pos.x != 0 && unit->orders[0].target_pos.y != 0) {
-                s += strprintf("%s [%.1f, %.1f]", AbilityTypeToName(unit->orders[0].ability_id),
-                                      unit->orders[0].target_pos.x, unit->orders[0].target_pos.y);
-            } else if (unit->orders[0].target_unit_tag != NullTag) {
-                s += strprintf("%s [%lx]", AbilityTypeToName(unit->orders[0].ability_id),
-                                     unit->orders[0].target_unit_tag);
+            }else if (unit->orders.at(0).target_pos.x != 0 && unit->orders.at(0).target_pos.y != 0) {
+                s += strprintf("%s [%.1f, %.1f]", AbilityTypeToName(unit->orders.at(0).ability_id),
+                                      unit->orders.at(0).target_pos.x, unit->orders.at(0).target_pos.y);
+            } else if (unit->orders.at(0).target_unit_tag != NullTag) {
+                s += strprintf("%s [%lx]", AbilityTypeToName(unit->orders.at(0).ability_id),
+                                     unit->orders.at(0).target_unit_tag);
             } else {
-                s += strprintf("%s", AbilityTypeToName(unit->orders[0].ability_id));
+                s += strprintf("%s", AbilityTypeToName(unit->orders.at(0).ability_id));
             }
 
             if (unit->weapon_cooldown != 0) {
@@ -767,8 +767,8 @@ public:
             Probe* probe = ((Probe*)*it);
             if (probe->buildings.size() == 0)
                 continue;
-            DebugText(this,strprintf("%s %d,%d", AbilityTypeToName(probe->buildings[0].build),
-                                            probe->buildings[0].pos.x, probe->buildings[0].pos.y),
+            DebugText(this,strprintf("%s %d,%d", AbilityTypeToName(probe->buildings.at(0).build),
+                                            probe->buildings.at(0).pos.x, probe->buildings.at(0).pos.y),
                                   Observation()->GetUnit(probe->self)->pos + Point3D{0, 0, 0}, Color(100, 30, 55),
                                   8);
         }
@@ -792,19 +792,19 @@ public:
 
     void expansionsLoc() {
         for (int i = 0; i < Aux::rankedExpansions.size(); i++) {
-            Point3D p = P3D(Aux::rankedExpansions[i]);
+            Point3D p = P3D(Aux::rankedExpansions.at(i));
             DebugSphere(this,p, 12, {253, 216, 53});
-            DebugText(this,strprintf("%.1f", rankedExpansionDistance[i]), p + Point3D{0, 0, 0.5});
+            DebugText(this,strprintf("%.1f", rankedExpansionDistance.at(i)), p + Point3D{0, 0, 0.5});
         }
     }
 
     void pylonBuildingLoc() {
         for (int i = 0; i < Aux::pylonLocations.size(); i++) {
-            Point3D p = P3D(Aux::pylonLocations[i]);
+            Point3D p = P3D(Aux::pylonLocations.at(i));
             DebugBox(this,p + Point3D{-1, -1, 0}, p + Point3D{1, 1, 2});
         }
         for (int i = 0; i < Aux::buildingLocations.size(); i++) {
-            Point3D p = P3D(Aux::buildingLocations[i]);
+            Point3D p = P3D(Aux::buildingLocations.at(i));
             DebugBox(this,p + Point3D{-1.5, -1.5, 0}, p + Point3D{1.5, 1.5, 3});
         }
     }
@@ -816,71 +816,6 @@ public:
             }
         }
     }
-
-    //void manageArmy() {
-    //    EnemySquads danger = checkDangerAtHome();
-    //    if (danger.size() == 0) {
-    //        #if MICRO_TEST
-    //            squads[0].attack(START_OP);
-    //        #elif MICRO_TEST_2
-    //            squads[0].attack(Observation()->GetGameInfo().enemy_start_locations[0]);
-    //        #else
-    //            if (squads[0].army.size() > 11) {
-    //                squads[0].attack(Observation()->GetGameInfo().enemy_start_locations[0]);
-    //            } else {
-    //                squads[0].attack(rally_point);
-    //            }
-    //        #endif
-    //    } else {
-    //        for (int i = 0; i < danger.size(); i++) {
-    //            if (danger[i].unitComp.size() == 1 && (danger[i].unitComp[0] == UNIT_TYPEID::PROTOSS_PROBE ||
-    //                                                   danger[i].unitComp[0] == UNIT_TYPEID::ZERG_DRONE ||
-    //                                                   danger[i].unitComp[0] == UNIT_TYPEID::TERRAN_SCV)) {
-    //                UnitWrappers probes = UnitManager::get(UNIT_TYPEID::PROTOSS_PROBE);
-    //                UnitWrapper* closest = nullptr;
-    //                for (UnitWrapper* probeWrap : probes) {
-    //                    if (closest == nullptr || Distance2D(probeWrap->pos(this), danger[i].center) <
-    //                                                  Distance2D(closest->pos(this), danger[i].center)) {
-    //                        closest = probeWrap;
-    //                    }
-    //                }
-    //                Actions()->UnitCommand(closest->self, ABILITY_ID::ATTACK, danger[i].center);
-    //            } else {
-    //                squads[0].attack(danger[0].center);
-    //            }
-    //        }
-    //    }
-    //}
-
-    //EnemySquads checkDangerAtHome() {
-    //    //UnitWrappers danger = UnitWrappers();
-    //    EnemySquads danger = EnemySquads();
-    //    for (auto it = UnitManager::enemies.begin(); it != UnitManager::enemies.end(); it++) {
-    //        auto all = it->second;
-    //        for (auto it2 = all.begin(); it2 != all.end(); it2++) {
-    //            Point2D pos = (*it2)->pos(this);
-    //            if (pos == Point2D{0, 0}) {
-    //                continue;
-    //            }
-    //            if (imRef(Aux::influenceMap, int(pos.x), int(pos.y)) != 0) {
-    //                //danger.push_back((*it2));
-    //                bool added = false;
-    //                for (int i = 0; i < danger.size(); i++) {
-    //                    if (Distance2D(danger[i].center, pos) < ENEMY_SQUAD_RADIUS) {
-    //                        danger[i].add(*it2, this);
-    //                        added = true;
-    //                        break;
-    //                    }
-    //                }
-    //                if (added == false) {
-    //                    danger.emplace_back();
-    //                    danger.back().add(*it2, this);
-    //                }
-    //            }
-    //        }
-    //    }
-    //    return danger;
-    //}
 
     Color pathingMapToColor(int8_t map) {
         switch (map) {
@@ -1085,13 +1020,13 @@ public:
 
 
         for (int i = 0; i < PrimordialStar::basePathNodes.size(); i++) {
-            PrimordialStar::PathNode* node = PrimordialStar::basePathNodes[i];
+            PrimordialStar::PathNode* node = PrimordialStar::basePathNodes.at(i);
             if (Distance2D(node->rawPos(), Observation()->GetCameraPos()) > 300) {
                 continue;
             }
             DebugSphere(this, P3D(node->rawPos()), 0.5, {250,50,100});
             for (int c = 0; c < node->connected.size(); c++) {
-                PrimordialStar::PathNode* node2 = PrimordialStar::basePathNodes[node->connected[c]];
+                PrimordialStar::PathNode* node2 = PrimordialStar::basePathNodes.at(node->connected.at(c));
                 DebugLine(this, P3D(node->rawPos()) + Point3D{ 0,0,1 }, P3D(node2->rawPos()) + Point3D{ 0,0,1 }, Colors::Blue);
             }
         }
@@ -1113,7 +1048,7 @@ public:
 
         //const ObservationInterface* observe = Observation();
         //PathFinder pf(observe->GetGameInfo().width, observe->GetGameInfo().height);
-        //cout << pf.findPath(observe->GetGameInfo().start_locations[0], observe->GetGameInfo().enemy_start_locations[0], this) << endl;
+        //cout << pf.findPath(observe->GetGameInfo().start_locations.at(0), observe->GetGameInfo().enemy_start_locations.at(0), this) << endl;
         //unordered_set<Location> walls{{5, 0}, {5, 1}, {2, 2}, {5, 2}, {2, 3}, {5, 3}, {2, 4}, {5, 4},
         //                              {2, 5}, {4, 5}, {5, 5}, {6, 5}, {7, 5}, {2, 6}, {2, 7}};
 
@@ -1140,9 +1075,9 @@ public:
         for (int i = -12; i <= 12; i++) {
             for (int j = -12; j <= 12; j++) {
                 float d = Distance2D(Point2D{i + 0.5F, j + 0.5F}, {0,0});
-                if (imRef(path_zhang_suen, int(Aux::rankedExpansions[0].x) + i, int(Aux::rankedExpansions[0].y) + j) == 1 &&
+                if (imRef(path_zhang_suen, int(Aux::rankedExpansions.at(0).x) + i, int(Aux::rankedExpansions.at(0).y) + j) == 1 &&
                     d > 10 && d < 12) {
-                    possiblePoints.push_back({i + (int)Aux::rankedExpansions[0].x, j + (int)Aux::rankedExpansions[0].y});
+                    possiblePoints.push_back({i + (int)Aux::rankedExpansions.at(0).x, j + (int)Aux::rankedExpansions.at(0).y});
                 }
             }
         }
@@ -1153,27 +1088,27 @@ public:
         for (int i = 0; i < possiblePoints.size(); i++) {
             auto came_from =
                 jps(gridmap, middle,
-                                 {int(possiblePoints[i].x), int(possiblePoints[i].y)}, Tool::euclidean, this);
+                                 {int(possiblePoints.at(i).x), int(possiblePoints.at(i).y)}, Tool::euclidean, this);
             auto pathToExpansion = Tool::reconstruct_path(Location(middle),
-                                       {int(possiblePoints[i].x), int(possiblePoints[i].y)}, came_from);
+                                       {int(possiblePoints.at(i).x), int(possiblePoints.at(i).y)}, came_from);
 
             double length = fullDist(pathToExpansion);
             if (min == -1 || min > length) {
                 min = length;
-                rally_point = P2D(possiblePoints[i]) + Point2D{0.5F, 0.5F};
+                rally_point = P2D(possiblePoints.at(i)) + Point2D{0.5F, 0.5F};
             }
         }
 
         squads.emplace_back();
         #if MICRO_TEST
-            squads[0].attack(START_OP);
+            squads.at(0).attack(START_OP);
         #else
-            squads[0].attack(rally_point);
+            squads.at(0).attack(rally_point);
         #endif
 
         //Debug()->DebugShowMap();
         //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_STALKER, middle, 2, 9);
-        //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_VOIDRAY, Observation()->GetGameInfo().enemy_start_locations[0], 2, 9);
+        //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_VOIDRAY, Observation()->GetGameInfo().enemy_start_locations.at(0), 2, 9);
 
         #if MICRO_TEST_2
 
@@ -1181,13 +1116,13 @@ public:
             //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_IMMORTAL, middle, 1, 2);
             ////Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_OBSERVER, middle, 1, 12);
             //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_COLOSSUS, middle, 1, 2);
-            //Debug()->DebugCreateUnit(UNIT_TYPEID::ZERG_ZERGLING, Observation()->GetGameInfo().enemy_start_locations[0], 2, 16);
-            //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_ADEPT, Observation()->GetGameInfo().enemy_start_locations[0], 2, 6);
-            //Debug()->DebugCreateUnit(UNIT_TYPEID::TERRAN_MARINE, Observation()->GetGameInfo().enemy_start_locations[0], 2, 14);
+            //Debug()->DebugCreateUnit(UNIT_TYPEID::ZERG_ZERGLING, Observation()->GetGameInfo().enemy_start_locations.at(0), 2, 16);
+            //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_ADEPT, Observation()->GetGameInfo().enemy_start_locations.at(0), 2, 6);
+            //Debug()->DebugCreateUnit(UNIT_TYPEID::TERRAN_MARINE, Observation()->GetGameInfo().enemy_start_locations.at(0), 2, 14);
 
             //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_OBSERVER, middle, 1, 1);
             //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_STALKER, middle, 1, 1);
-            //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_ADEPT, Observation()->GetGameInfo().enemy_start_locations[0], 2, 2);
+            //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_ADEPT, Observation()->GetGameInfo().enemy_start_locations.at(0), 2, 2);
         #endif
     }
 
@@ -1394,7 +1329,7 @@ public:
         //manageArmy();
         ArmyControl::step(this, rally_point);
 
-        //for (UnitWrapper* wrap : UnitManager::units[UNIT_TYPEID::PROTOSS_STALKER]) {
+        //for (UnitWrapper* wrap : UnitManager::units.at(UNIT_TYPEID::PROTOSS_STALKER)) {
         //    float theta = ((float)std::rand()) * 2 * M_PI / RAND_MAX;
         //    float magnitude = 8;//((float)std::rand()) * 8 / RAND_MAX;
 
@@ -1411,21 +1346,21 @@ public:
 
         string s = "";
         for (int i = 0; i < squads.size(); i ++) {
-            squads[i].execute(this);
-            s += strprintf("SQUAD%d %s %.1f,%.1f int[%.1f,%.1f]:\n", i, SquadModeToString(squads[i].mode),
-                           squads[i].location.x, squads[i].location.y, squads[i].intermediateLoc.x,
-                           squads[i].intermediateLoc.y);
-            Point2D c = squads[i].coreCenter(this);
-            //Point2D cg = squads[i].center(this);
-            s += strprintf("C:%.1f,%.1f S:%d\n", c.x, c.y, squads[i].army.size());
-            for (int a = 0; a < squads[i].army.size(); a++) {
-                ArmyUnit* unit = (ArmyUnit*)squads[i].army[a];
+            squads.at(i).execute(this);
+            s += strprintf("SQUAD%d %s %.1f,%.1f int[%.1f,%.1f]:\n", i, SquadModeToString(squads.at(i).mode),
+                           squads.at(i).location.x, squads.at(i).location.y, squads.at(i).intermediateLoc.x,
+                           squads.at(i).intermediateLoc.y);
+            Point2D c = squads.at(i).coreCenter(this);
+            //Point2D cg = squads.at(i).center(this);
+            s += strprintf("C:%.1f,%.1f S:%d\n", c.x, c.y, squads.at(i).army.size());
+            for (int a = 0; a < squads.at(i).army.size(); a++) {
+                ArmyUnit* unit = (ArmyUnit*)squads.at(i).army.at(a);
                 unit->execute(this);
                 Point3D pos = unit->pos3D(this);
                 s += strprintf("%s %.1fs %Ix %c {%.1f,%.1f}\n", UnitTypeToName(unit->type),
                     unit->get(this)->weapon_cooldown,
-                               ((ArmyUnit*)(unit))->targetWrap, squads[i].squadStates[unit->self], unit->posTarget.x, unit->posTarget.y);
-                DebugText(this,strprintf("%c:%c", squads[i].squadStates[unit->self], squads[i].subSquadStates[unit->self]),
+                               ((ArmyUnit*)(unit))->targetWrap, squads.at(i).squadStates.at(unit->self), unit->posTarget.x, unit->posTarget.y);
+                DebugText(this,strprintf("%c:%c", squads.at(i).squadStates.at(unit->self), squads.at(i).subSquadStates.at(unit->self)),
                                       pos,
                                       Color(210, 55, 55), 8);
                 
@@ -1433,8 +1368,8 @@ public:
                 DebugLine(this, pos + Point3D{ 0,0,1 }, P3D(unit->escapeLoc) + Point3D{ 0,0,1 }, { 10, 150, 255 });
             }
             s += '\n';
-            DebugSphere(this,P3D(squads[i].coreCenter(this)), squads[i].armyballRadius());
-            DebugSphere(this,P3D(squads[i].intermediateLoc), 0.5, {30,230, 210});
+            DebugSphere(this,P3D(squads.at(i).coreCenter(this)), squads.at(i).armyballRadius());
+            DebugSphere(this,P3D(squads.at(i).intermediateLoc), 0.5, {30,230, 210});
         }
         DebugText(this, s, Point2D(0.71, 0.11), Color(1, 42, 212), 8);
 
@@ -1446,7 +1381,7 @@ public:
                     Macro::addProbe();
                 }
                 for (int i = 0; i < strat.build_order.size(); i++) {
-                    Macro::addAction(strat.build_order[i]);
+                    Macro::addAction(strat.build_order.at(i));
                 }
             }
         #endif
@@ -1509,8 +1444,8 @@ public:
 
         if (Observation()->GetGameLoop() > 20) {
             bool found = false;
-            for (int i = 0; i < Macro::actions[lastUnitSpawner].size(); i++) {
-                if (Macro::actions[lastUnitSpawner][i].index == lastUnitIndex) {
+            for (int i = 0; i < Macro::actions.at(lastUnitSpawner).size(); i++) {
+                if (Macro::actions.at(lastUnitSpawner).at(i).index == lastUnitIndex) {
                     found = true;
                 }
             }
@@ -1745,19 +1680,19 @@ public:
             for (int i = 0; i < (max1 - strlen); i++) {
                 name += " ";
             }
-            string dtstr = strprintf("AVG:%.3f", ((double)itr->second) / profilerCoumt[itr->first] / 1000.0);
+            string dtstr = strprintf("AVG:%.3f", ((double)itr->second) / profilerCoumt.at(itr->first) / 1000.0);
             strlen = dtstr.size();
             max2 = max(strlen + 1, max2);
             for (int i = 0; i < (max2 - strlen); i++) {
                 dtstr += " ";
             }
-            string totstr = strprintf("TOT:%.3f/%d", itr->second / 1000.0, profilerCoumt[itr->first]);
+            string totstr = strprintf("TOT:%.3f/%d", itr->second / 1000.0, profilerCoumt.at(itr->first));
             strlen = totstr.size();
             max3 = max(strlen + 1, max3);
             for (int i = 0; i < (max3 - strlen); i++) {
                 totstr += " ";
             }
-            string lateststr = strprintf("LAT:%.3f", profilerLast[itr->first].time()/1000.0);
+            string lateststr = strprintf("LAT:%.3f", profilerLast.at(itr->first).time()/1000.0);
             strlen = lateststr.size();
             max4 = max(strlen + 1, max4);
             for (int i = 0; i < (max4 - strlen); i++) {

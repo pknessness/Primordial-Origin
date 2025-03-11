@@ -78,5 +78,19 @@ void SendDebug(Agent* agent) {
 #define CONSOLE_PRINT_ERROR(errorText) ConsolePrintError(errorText, FILE_NAME, FUNCTION_NAME, LINE_NUM)
 
 void ConsolePrintError(const std::string& errorText, const char* fileName, const char* functionName, int lineNum) {
-    printf("CRASH [%s]@%d %s() %s", fileName, lineNum, functionName, errorText.c_str());
+    printf("CRASH: %s@%d, %s(), %s", fileName, lineNum, functionName, errorText.c_str());
 }
+
+#define FUNC_START FuncStart(FILE_NAME, FUNCTION_NAME, LINE_NUM)
+#define FUNC_END FuncEnd(FILE_NAME, FUNCTION_NAME, LINE_NUM)
+
+void FuncStart(const char* fileName, const char* functionName, int lineNum) {
+    printf("Entered %s(), %s@%d", fileName, lineNum, functionName);
+}
+
+void FuncEnd(const char* fileName, const char* functionName, int lineNum) {
+    printf("Exited %s(), %s@%d", fileName, lineNum, functionName);
+}
+
+//#define { {FUNC_START
+//#define } FUNC_END}

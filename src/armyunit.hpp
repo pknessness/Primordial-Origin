@@ -115,13 +115,13 @@ public:
             return center;
         int cnt = 0;
         for (int i = 0; i < army.size(); i++) {
-            if (squadStates[army[i]->self] == 'n') {
-                center += army[i]->pos(agent);
+            if (squadStates.at(army.at(i)->self) == 'n') {
+                center += army.at(i)->pos(agent);
                 cnt++;
             }
         }
         if (cnt == 0) {
-            return army[std::rand() % army.size()]->pos(agent);
+            return army.at(std::rand() % army.size())->pos(agent);
         }
         return (center / cnt);
     }
@@ -161,7 +161,7 @@ public:
         bool air = false, gnd = false;
         for (int i = 0; i < army.size(); i++) {
             if (comp != Composition::Any) {
-                singleUnitComp(army[i], agent);
+                singleUnitComp(army.at(i), agent);
             } else {
                 break;
             }
@@ -210,8 +210,8 @@ public:
             if (coreCenter(agent) != Point2D{ 0,0 }) {
                 Circles c;
                 for (int i = 0; i < army.size(); i++) {
-                    if (squadStates[army[i]->self] != 'u') {
-                        c.push_back(Circle{ army[i]->pos(agent), Army::maxWeaponRadius(army[i]->type) });
+                    if (squadStates.at(army.at(i)->self) != 'u') {
+                        c.push_back(Circle{ army.at(i)->pos(agent), Army::maxWeaponRadius(army.at(i)->type) });
                     }
                 }
                 targets = SpacialHash::findInRadiiEnemy(c, agent);//SpacialHash::findInRadiusEnemy(coreCenter(agent), armyballRadius() + squadExtraRadius, agent);
@@ -231,7 +231,7 @@ public:
         }
 
         //for (auto wrap : army) {
-        //    if (squadStates[wrap->self] == 'u' && Distance2D(wrap->pos(agent), coreCenter(agent)) < armyballRadius()) {
+        //    if (squadStates.at(wrap->self) == 'u' && Distance2D(wrap->pos(agent), coreCenter(agent)) < armyballRadius()) {
         //        squadStates[wrap->self] = 'n';
         //    }
         //}
@@ -272,7 +272,7 @@ public:
     int coreCount() {
         int c = 0;
         for (int i = 0; i < army.size(); i++) {
-            if (squadStates[army[i]->self] != 'u') {
+            if (squadStates.at(army.at(i)->self) != 'u') {
                 c++;
             }
         }
@@ -305,8 +305,8 @@ public:
         if (squads.size() == 0) {
             squads.emplace_back();
         }
-        squads[0].army.push_back(this);
-        squad = &squads[0];
+        squads.at(0).army.push_back(this);
+        squad = &squads.at(0);
         //is_flying = unit->is_flying; 
         squad->squadStates[self] = 'u';
         squad->subSquadStates[self] = '.';
@@ -383,7 +383,7 @@ public:
                         potentialPriority.push_back(priority);
                     }
                     for (int d = 0; d < potentialTargets.size(); d++) {
-                        if (potentialPriority[d] < priority) {
+                        if (potentialPriority.at(d) < priority) {
                             potentialTargets.insert(potentialTargets.begin() + d, enemy);
                             potentialPriority.insert(potentialPriority.begin() + d, priority);
                             inserted = true;
@@ -410,8 +410,8 @@ public:
         if (fullpath.size() != 0) {
             float l2 = 0;
             for (int i = 0; i < fullpath.size() - 1; i++) {
-                l2 += Distance2D(fullpath[i], fullpath[i + 1]);
-                //DebugLine(agent, AP3D(fullpath[i]) + Point3D{ 0,0,1 }, AP3D(fullpath[i + 1]) + Point3D{ 0,0,1 }, Colors::Green);
+                l2 += Distance2D(fullpath.at(i), fullpath.at(i + 1));
+                //DebugLine(agent, AP3D(fullpath.at(i)) + Point3D{ 0,0,1 }, AP3D(fullpath.at(i + 1)) + Point3D{ 0,0,1 }, Colors::Green);
             }
             for (Point2D p : stepPoints) {
                 DamageLocation d = UnitManager::getRadiusAvgDamage(P2D(p) + Point2D{ 0.5F,0.5F }, radius, agent);
@@ -470,8 +470,8 @@ public:
     //        //if (fullpath.size() != 0) {
     //        //    float l2 = 0;
     //        //    for (int i = 0; i < fullpath.size() - 1; i++) {
-    //        //        l2 += Distance2D(fullpath[i], fullpath[i + 1]);
-    //        //        DebugLine(agent, AP3D(fullpath[i]) + Point3D{ 0,0,1 }, AP3D(fullpath[i + 1]) + Point3D{ 0,0,1 }, Colors::Green);
+    //        //        l2 += Distance2D(fullpath.at(i), fullpath.at(i + 1));
+    //        //        DebugLine(agent, AP3D(fullpath.at(i)) + Point3D{ 0,0,1 }, AP3D(fullpath.at(i + 1)) + Point3D{ 0,0,1 }, Colors::Green);
     //        //    }
     //        //    for (Point2D p : stepPoints) {
     //        //        DamageLocation d = UnitManager::getRadiusAvgDamage(P2D(p) + Point2D{ 0.5F,0.5F }, radius, agent);
@@ -531,13 +531,13 @@ public:
             Point2D position = pos(agent);
             posTarget = { 0,0 };
             distToTarget = -1;
-            if (squad->squadStates[self] == 'u') {
+            if (squad->squadStates.at(self) == 'u') {
                 if (withSquad(agent)) {
                     squad->squadStates[self] = 'n';
                 }
             }
 
-            if (squad->squadStates[self] == 'u') {
+            if (squad->squadStates.at(self) == 'u') {
                 //UnitWrappers potentialTargets = getTargetEnemy(SpacialHash::findInRadiusEnemy(position, Army::maxWeaponRadius(self) + radius, agent), agent);
                 //if(position)
                 posTarget = squad->coreCenter(agent);
@@ -554,8 +554,8 @@ public:
 
                 //UnitWrappers personalTargets = SpacialHash::findInRadiusEnemy(position, Army::maxWeaponRadius(type), agent);
                 //for (int i = 0; i < squad->targets.size(); i++) {
-                //    if (std::find(personalTargets.begin(), personalTargets.end(), squad->targets[i]) == personalTargets.end()) {
-                //        personalTargets.push_back(squad->targets[i]);
+                //    if (std::find(personalTargets.begin(), personalTargets.end(), squad->targets.at(i)) == personalTargets.end()) {
+                //        personalTargets.push_back(squad->targets.at(i));
                 //    }
                 //}
 
@@ -566,13 +566,13 @@ public:
                 if (potentialTargets.size() != 0) {
                     targetWrap = potentialTargets.front();
 
-                    Weapon weap = getStats(agent).weapons[0];
+                    Weapon weap = getStats(agent).weapons.at(0);
                     float damage = UnitManager::getRelevantDamage(targetWrap, weap, agent);
                     for (int w = 1; w < getStats(agent).weapons.size(); w++) {
-                        float dmag = UnitManager::getRelevantDamage(targetWrap, getStats(agent).weapons[w], agent);
+                        float dmag = UnitManager::getRelevantDamage(targetWrap, getStats(agent).weapons.at(w), agent);
                         if (dmag > damage) {
                             damage = dmag;
-                            weap = getStats(agent).weapons[w];
+                            weap = getStats(agent).weapons.at(w);
                         }
                     }
 
@@ -611,15 +611,15 @@ public:
                 }
             }
 
-            if (squad->subSquadStates[self] == 'a') {
+            if (squad->subSquadStates.at(self) == 'a') {
                 agent->Actions()->UnitCommand(self, ABILITY_ID::ATTACK, targetWrap->self);
                 escapeLoc = posTarget;
             }
-            else if (squad->subSquadStates[self] == 'k') {
+            else if (squad->subSquadStates.at(self) == 'k') {
                 agent->Actions()->UnitCommand(self, ABILITY_ID::ATTACK, posTarget);
                 escapeLoc = posTarget;
             }
-            else if (squad->subSquadStates[self] == 'j' || squad->subSquadStates[self] == 'r' || squad->subSquadStates[self] == 'c') {
+            else if (squad->subSquadStates.at(self) == 'j' || squad->subSquadStates.at(self) == 'r' || squad->subSquadStates.at(self) == 'c') {
                 if (!Aux::isWithin(escapeLoc,agent)) {
                     escapeLoc = position;
                 }
@@ -644,7 +644,7 @@ public:
                     }
 
                     for (int i = 0; i < escapePointChecks; i++) {
-                        Point2D checkPoint = checkPoints[i];
+                        Point2D checkPoint = checkPoints.at(i);
                         float checkCost = calculatePathDamage(position, checkPoint, agent);
                         if (escapeCost > checkCost) {
                             escapeLoc = checkPoint;
@@ -683,7 +683,7 @@ public:
         Units enemies = agent->Observation()->GetUnits(Unit::Alliance::Enemy);
         float dist = Distance2D(squad->location, pos(agent));
         //printf("%s %.1f\n", UnitTypeToName(type), dist);
-        if ((get(agent)->orders.size() == 0 || get(agent)->orders[0].target_pos != squad->location) &&
+        if ((get(agent)->orders.size() == 0 || get(agent)->orders.at(0).target_pos != squad->location) &&
             dist > squad->armyballRadius()) {
             agent->Actions()->UnitCommand(self, ABILITY_ID::ATTACK, squad->location);
         }

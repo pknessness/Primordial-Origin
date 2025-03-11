@@ -76,7 +76,7 @@ public:
 
     bool checkAbility(AbilityID ability) {
         for (int i = 0; i < abilities.abilities.size(); i++) {
-            if (ability == abilities.abilities[i].ability_id) {
+            if (ability == abilities.abilities.at(i).ability_id) {
                 return true;
             }
         }
@@ -105,7 +105,6 @@ public:
 };
 
 using UnitWrappers = vector<UnitWrapper*>;
-using UnitWrapperSet = set<UnitWrapper*>;
 using damageval = uint16_t;
 
 struct Damage {
@@ -749,7 +748,7 @@ namespace UnitManager {
 
     UnitWrappers get(UnitTypeID type) {
         if (checkExist(type)) {
-            return units[type];
+            return units.at(type);
         }
         return UnitWrappers();
     }
@@ -758,14 +757,14 @@ namespace UnitManager {
         int total = 0;
         for (UnitTypeID type : types) {
             if (checkExist(type)) {
-                total += units[type].size();
+                total += units.at(type).size();
             }
         }
         UnitWrappers wraps;
         wraps.reserve(total);
         for (UnitTypeID type : types) {
             if (checkExist(type)) {
-                for (UnitWrapper* wrap : units[type]) {
+                for (UnitWrapper* wrap : units.at(type)) {
                     wraps.push_back(wrap);
                 }
             }
@@ -776,8 +775,8 @@ namespace UnitManager {
     UnitWrapper* find(UnitTypeID type, Tag tag) {
         UnitWrappers v = get(type);
         for (int i = 0; i < v.size(); i++) {
-            if (v[i]->self == tag) {
-                return v[i];
+            if (v.at(i)->self == tag) {
+                return v.at(i);
             }
         }
         return nullptr;
@@ -789,7 +788,7 @@ namespace UnitManager {
 
     UnitWrappers getNeutral(UnitTypeID type) {
         if (checkExistNeutral(type)) {
-            return neutrals[type];
+            return neutrals.at(type);
         }
         return UnitWrappers();
     }
@@ -798,14 +797,14 @@ namespace UnitManager {
         int total = 0;
         for (UnitTypeID type : types) {
             if (checkExistNeutral(type)) {
-                total += neutrals[type].size();
+                total += neutrals.at(type).size();
             }
         }
         UnitWrappers wraps;
         wraps.reserve(total);
         for (UnitTypeID type : types) {
             if (checkExistNeutral(type)) {
-                for (UnitWrapper* wrap : neutrals[type]) {
+                for (UnitWrapper* wrap : neutrals.at(type)) {
                     wraps.push_back(wrap);
                 }
             }
@@ -859,8 +858,8 @@ namespace UnitManager {
     UnitWrapper *findNeutral(UnitTypeID type, Tag tag) {
         UnitWrappers v = getNeutral(type);
         for (int i = 0; i < v.size(); i++) {
-            if (v[i]->self == tag) {
-                return v[i];
+            if (v.at(i)->self == tag) {
+                return v.at(i);
             }
         }
         return nullptr;
@@ -872,7 +871,7 @@ namespace UnitManager {
 
     UnitWrappers getEnemy(UnitTypeID type) {
         if (checkExistEnemy(type)) {
-            return enemies[type];
+            return enemies.at(type);
         }
         return UnitWrappers();
     }
@@ -881,14 +880,14 @@ namespace UnitManager {
         int total = 0;
         for (UnitTypeID type : types) {
             if (checkExistEnemy(type)) {
-                total += enemies[type].size();
+                total += enemies.at(type).size();
             }
         }
         UnitWrappers wraps;
         wraps.reserve(total);
         for (UnitTypeID type : types) {
             if (checkExistEnemy(type)) {
-                for (UnitWrapper* wrap : enemies[type]) {
+                for (UnitWrapper* wrap : enemies.at(type)) {
                     wraps.push_back(wrap);
                 }
             }
@@ -899,8 +898,8 @@ namespace UnitManager {
     UnitWrapper *findEnemy(UnitTypeID type, Tag tag) {
         UnitWrappers v = getEnemy(type);
         for (int i = 0; i < v.size(); i++) {
-            if (v[i]->self == tag) {
-                return v[i];
+            if (v.at(i)->self == tag) {
+                return v.at(i);
             }
         }
         return nullptr;
@@ -917,7 +916,7 @@ namespace UnitManager {
 //    if (!UnitManager::checkExist(type)) {
 //            UnitManager::units[type] = UnitWrappers();
 //    }
-//    UnitManager::units[type].push_back(this);
+//    UnitManager::units.at(type).push_back(this);
 //}
 
 UnitWrapper::UnitWrapper(const Unit *unit) : self(unit->tag), type(unit->unit_type), lastPos{0, 0, 0}, radius(unit->radius), team(unit->alliance), isBuilding(unit->is_building), health(0), healthMax(0), shields(0), shieldsMax(0) {
@@ -925,9 +924,9 @@ UnitWrapper::UnitWrapper(const Unit *unit) : self(unit->tag), type(unit->unit_ty
         if (!UnitManager::checkExist(type)) {
             UnitManager::units[type] = UnitWrappers();
         }
-        UnitManager::units[type].push_back(this);
-        //if (std::find(UnitManager::units[type].begin(), UnitManager::units[type].end(), this) == UnitManager::units[type].end()) {
-        //    UnitManager::units[type].push_back(this);
+        UnitManager::units.at(type).push_back(this);
+        //if (std::find(UnitManager::units.at(type).begin(), UnitManager::units.at(type).end(), this) == UnitManager::units.at(type).end()) {
+        //    UnitManager::units.at(type).push_back(this);
         //}
         //else {
         //    printf("DuplicateUnit\n");
@@ -936,9 +935,9 @@ UnitWrapper::UnitWrapper(const Unit *unit) : self(unit->tag), type(unit->unit_ty
         if (!UnitManager::checkExistNeutral(type)) {
             UnitManager::neutrals[type] = UnitWrappers();
         }
-        UnitManager::neutrals[type].push_back(this);
-        //if (std::find(UnitManager::neutrals[type].begin(), UnitManager::neutrals[type].end(), this) == UnitManager::neutrals[type].end()) {
-        //    UnitManager::neutrals[type].push_back(this);
+        UnitManager::neutrals.at(type).push_back(this);
+        //if (std::find(UnitManager::neutrals.at(type).begin(), UnitManager::neutrals.at(type).end(), this) == UnitManager::neutrals.at(type).end()) {
+        //    UnitManager::neutrals.at(type).push_back(this);
         //}
         //else {
         //    printf("DuplicateNeutral\n");
@@ -947,9 +946,9 @@ UnitWrapper::UnitWrapper(const Unit *unit) : self(unit->tag), type(unit->unit_ty
         if (!UnitManager::checkExistEnemy(type)) {
             UnitManager::enemies[type] = UnitWrappers();
         }
-        //UnitManager::enemies[type].push_back(this);
+        //UnitManager::enemies.at(type).push_back(this);
         bool found = false;
-        for (UnitWrapper* wrap : UnitManager::enemies[type]) {
+        for (UnitWrapper* wrap : UnitManager::enemies.at(type)) {
             if (unit->tag == wrap->self) {
                 found = true;
                 //printf("DuplicateEnemy O:%s N:%s\n", UnitTypeToName(wrap->type), UnitTypeToName(unit->unit_type));
@@ -959,10 +958,10 @@ UnitWrapper::UnitWrapper(const Unit *unit) : self(unit->tag), type(unit->unit_ty
         if (found) {
             //printf("DuplicateEnemy\n", UnitTypeToName());
         } else {
-            UnitManager::enemies[type].push_back(this);
+            UnitManager::enemies.at(type).push_back(this);
         }
-        //if (std::find(UnitManager::enemies[type].begin(), UnitManager::enemies[type].end(), this) == UnitManager::enemies[type].end()) {
-        //    UnitManager::enemies[type].push_back(this);
+        //if (std::find(UnitManager::enemies.at(type).begin(), UnitManager::enemies.at(type).end(), this) == UnitManager::enemies.at(type).end()) {
+        //    UnitManager::enemies.at(type).push_back(this);
         //}
         //else {
         //    printf("DuplicateEnemy\n");
@@ -1091,23 +1090,23 @@ void UnitWrapper::loadAbilities(Agent *agent) {
 
 UnitWrapper::~UnitWrapper() {
     if (team == Unit::Alliance::Self) {
-        for (auto it = UnitManager::units[type].begin(); it != UnitManager::units[type].end(); it++) {
+        for (auto it = UnitManager::units.at(type).begin(); it != UnitManager::units.at(type).end(); it++) {
             if ((*it)->self == self) {
-                UnitManager::units[type].erase(it);
+                UnitManager::units.at(type).erase(it);
                 break;
             }
         }
     } else if (team == Unit::Alliance::Neutral) {
-        for (auto it = UnitManager::neutrals[type].begin(); it != UnitManager::neutrals[type].end(); it++) {
+        for (auto it = UnitManager::neutrals.at(type).begin(); it != UnitManager::neutrals.at(type).end(); it++) {
             if ((*it)->self == self) {
-                UnitManager::neutrals[type].erase(it);
+                UnitManager::neutrals.at(type).erase(it);
                 break;
             }
         }
     } else if (team == Unit::Alliance::Enemy) {
-        for (auto it = UnitManager::enemies[type].begin(); it != UnitManager::enemies[type].end(); it++) {
+        for (auto it = UnitManager::enemies.at(type).begin(); it != UnitManager::enemies.at(type).end(); it++) {
             if ((*it)->self == self) {
-                UnitManager::enemies[type].erase(it);
+                UnitManager::enemies.at(type).erase(it);
                 break;
             }
         }

@@ -23,7 +23,7 @@ namespace ArmyControl {
             Point2D center;
             int count = 0;
             for (int i = 0; i < army.size(); i++) {
-                center += army[i]->pos(agent);
+                center += army.at(i)->pos(agent);
                 count++;
             }
             return center / count;
@@ -49,19 +49,19 @@ namespace ArmyControl {
         }
         if (allEnemies.size() > 0) {
             enemySquads.emplace_back();
-            enemySquads[0].add(allEnemies.back());
+            enemySquads.at(0).add(allEnemies.back());
             allEnemies.pop_back();
             int squadPointer = 0;
             while (allEnemies.size() > 0){
-                for (int i = 0; i < enemySquads[squadPointer].army.size(); i ++) {
-                    UnitWrappers found = SpacialHash::findInRadiusEnemy(enemySquads[squadPointer].army[i]->pos(agent), enemyRadius, agent);
+                for (int i = 0; i < enemySquads.at(squadPointer).army.size(); i ++) {
+                    UnitWrappers found = SpacialHash::findInRadiusEnemy(enemySquads.at(squadPointer).army.at(i)->pos(agent), enemyRadius, agent);
                     bool added = false;
                     if (found.size() != 0) {
                         for (UnitWrapper* enemy : found) {
                             auto find = std::find(allEnemies.begin(), allEnemies.end(), enemy);
                             if (find != allEnemies.end() &&
-                                std::find(enemySquads[squadPointer].army.begin(), enemySquads[squadPointer].army.end(), enemy) == enemySquads[squadPointer].army.end()) {
-                                enemySquads[squadPointer].army.push_back(enemy);
+                                std::find(enemySquads.at(squadPointer).army.begin(), enemySquads.at(squadPointer).army.end(), enemy) == enemySquads.at(squadPointer).army.end()) {
+                                enemySquads.at(squadPointer).army.push_back(enemy);
                                 allEnemies.erase(find);
                                 added = true;
                             }
@@ -70,7 +70,7 @@ namespace ArmyControl {
                     if(!added && allEnemies.size() > 0) {
                         enemySquads.emplace_back();
                         squadPointer += 1;
-                        enemySquads[squadPointer].add(allEnemies.back());
+                        enemySquads.at(squadPointer).add(allEnemies.back());
                         allEnemies.pop_back();
                     }
                 }
@@ -78,8 +78,8 @@ namespace ArmyControl {
             //printf("\n");
             //for (int i = 0; i < enemySquads.size(); i++) {
             //    printf("%d:\n", i);
-            //    for (int e = 0; e < enemySquads[i].army.size(); e++) {
-            //        printf("%s:\n", UnitTypeToName(enemySquads[i].army[e]->type));
+            //    for (int e = 0; e < enemySquads.at(i).army.size(); e++) {
+            //        printf("%s:\n", UnitTypeToName(enemySquads.at(i).army.at(e)->type));
             //    }
             //}
             
@@ -109,40 +109,40 @@ namespace ArmyControl {
         EnemySquads dangerous;
 
         for (int i = 0; i < enemySquads.size(); i++) {
-            Point2D pos = enemySquads[i].center(agent);
+            Point2D pos = enemySquads.at(i).center(agent);
             if (imRef(Aux::influenceMap, int(pos.x), int(pos.y)) > 0) {
-                dangerous.push_back(enemySquads[i]);
+                dangerous.push_back(enemySquads.at(i));
             }
         }
         if (dangerous.size() > 0) {
             if (unitCount == 0) {
-                squads[0].attack(dangerous[0].center(agent)); //probe defense
+                squads.at(0).attack(dangerous.at(0).center(agent)); //probe defense
             }
             else {
-                squads[0].attack(dangerous[0].center(agent));
+                squads.at(0).attack(dangerous.at(0).center(agent));
             }
         }
         else if (enemyBuildingCount > 0) {
-            if (squads[0].coreCount() > 12) {
-                if (squads[0].getCore(agent) != nullptr) {
+            if (squads.at(0).coreCount() > 12) {
+                if (squads.at(0).getCore(agent) != nullptr) {
                     float mindist = 400;
                     UnitWrapper* min = nullptr;
                     for (UnitWrapper* wrap : buildings) {
-                        float dist = PrimordialStar::getPathLength(squads[0].coreCenter(agent), wrap->pos(agent), squads[0].getCore(agent)->radius, agent);
+                        float dist = PrimordialStar::getPathLength(squads.at(0).coreCenter(agent), wrap->pos(agent), squads.at(0).getCore(agent)->radius, agent);
                         if (dist < mindist) {
                             min = wrap;
                             mindist = dist;
                         }
                     }
-                    squads[0].attack(min->pos(agent));
+                    squads.at(0).attack(min->pos(agent));
                 }
             }
             else {
-                squads[0].attack(rally);
+                squads.at(0).attack(rally);
             }
         }
         else {
-            squads[0].search(Point2D{ 0,0 });
+            squads.at(0).search(Point2D{ 0,0 });
         }
 
 	}
