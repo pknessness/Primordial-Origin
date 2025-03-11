@@ -204,9 +204,18 @@ public:
                 ignoreFrames--;
             } else {
                 if (get(agent)->orders.size() == 0) {
-                    agent->Actions()->UnitCommand(self, ABILITY_ID::HARVEST_GATHER, getTargetTag(agent));
                     if (checkAbility(ABILITY_ID::HARVEST_RETURN)) {
                         agent->Actions()->UnitCommand(self, ABILITY_ID::HARVEST_RETURN);
+                    }
+                    else {
+                        Tag harvest = getTargetTag(agent);
+                        if (harvest == NullTag) {
+                            printf("NF1\n");
+                            ignoreFrames = 100;
+                        }
+                        else {
+                            agent->Actions()->UnitCommand(self, ABILITY_ID::HARVEST_GATHER, harvest);
+                        }
                     }
                 } else {
                     if (get(agent)->orders.at(0).ability_id == ABILITY_ID::HARVEST_GATHER &&
@@ -216,7 +225,7 @@ public:
                         //    printf("%Ix compare %Ix\n", get(agent)->orders.at(0).target_unit_tag, target);
                         Tag harvest = getTargetTag(agent);
                         if (harvest == NullTag) {
-                            printf("NOT FOUND ANY MINERALS");
+                            printf("NF2\n");
                             ignoreFrames = 100;
                         } else {
                             agent->Actions()->UnitCommand(self, ABILITY_ID::HARVEST_GATHER, harvest);

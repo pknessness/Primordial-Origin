@@ -1030,8 +1030,10 @@ public:
                 DebugLine(this, P3D(node->rawPos()) + Point3D{ 0,0,1 }, P3D(node2->rawPos()) + Point3D{ 0,0,1 }, Colors::Blue);
             }
         }
-        pathVerification();
 
+#ifndef BUILD_FOR_LADDER
+        pathVerification();
+#endif
         #if MICRO_TEST == 0
             for (int i = -4; i <= 4; i++) {
                 for (int j = -4; j <= 4; j++) {
