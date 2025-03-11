@@ -1357,8 +1357,6 @@ public:
         Profiler onStepProfiler("onStep");
         //onStepProfiler.disable();
 
-        throw std::runtime_error("DIE");
-
         Macro::execute(this);
 
         onStepProfiler.midLog("MacroExecute");
