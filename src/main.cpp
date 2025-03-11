@@ -139,6 +139,7 @@ int main(int argc, char* argv[])
         while (coordinator.Update()) {
         }
     } CPPTRACE_CATCH(const std::exception& e) {
+        printf("CAUGHT");
         std::cout << "Exception: " << e.what() << std::endl;
         cpptrace::from_current_exception().print();
     }
@@ -217,6 +218,7 @@ int main(int argc, char* argv[])
             while (coordinator.Update()) {
             }
         } CPPTRACE_CATCH(const std::exception& e) {
+            printf("CAUGHT");
             std::cout << "Exception: " << e.what() << std::endl;
             cpptrace::from_current_exception().print();
         }
