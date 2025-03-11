@@ -8,6 +8,9 @@
 #include <sc2api/sc2_gametypes.h>
 #include <sc2utils/sc2_arg_parser.h>
 
+#include <cpptrace/cpptrace.hpp>
+#include <cpptrace/from_current.hpp>
+
 #include <iostream>
 
 #define MICRO_TEST 0
@@ -106,18 +109,38 @@ int main(int argc, char* argv[])
     sc2::FeatureLayerSettings settings;
     coordinator.SetFeatureLayers(settings);
     // Connect to the game client
-    std::cout << "Connecting to port " << Options.GamePort << std::endl;
-    coordinator.Connect(Options.GamePort);
-    coordinator.SetupPorts(num_agents, Options.StartPort, false);
-    // Set the unit selection policy
-    // (if true, the selection will jump around everywhere so it can be harder to debug and doesn't allow a human to play at the same time)
-    coordinator.SetRawAffectsSelection(true);
-    // Join the already started game
-    coordinator.JoinGame();
-    coordinator.SetTimeoutMS(120000);	// 2 min
-    std::cout << "Successfully joined game" << std::endl;
-    // Step forward the game simulation.
-    while (coordinator.Update()) {
+    //std::cout << "Connecting to port " << Options.GamePort << std::endl;
+    //coordinator.Connect(Options.GamePort);
+    //coordinator.SetupPorts(num_agents, Options.StartPort, false);
+    //// Set the unit selection policy
+    //// (if true, the selection will jump around everywhere so it can be harder to debug and doesn't allow a human to play at the same time)
+    //coordinator.SetRawAffectsSelection(true);
+    //// Join the already started game
+    //coordinator.JoinGame();
+    //coordinator.SetTimeoutMS(120000);	// 2 min
+    //std::cout << "Successfully joined game" << std::endl;
+    //// Step forward the game simulation.
+    //while (coordinator.Update()) {
+    //}
+
+    CPPTRACE_TRY{
+        // Connect to the game client
+        std::cout << "Connecting to port " << Options.GamePort << std::endl;
+        coordinator.Connect(Options.GamePort);
+        coordinator.SetupPorts(num_agents, Options.StartPort, false);
+        // Set the unit selection policy
+        // (if true, the selection will jump around everywhere so it can be harder to debug and doesn't allow a human to play at the same time)
+        coordinator.SetRawAffectsSelection(true);
+        // Join the already started game
+        coordinator.JoinGame();
+        coordinator.SetTimeoutMS(120000);	// 2 min
+        std::cout << "Successfully joined game" << std::endl;
+        // Step forward the game simulation.
+        while (coordinator.Update()) {
+        }
+    } CPPTRACE_CATCH(const std::exception& e) {
+        std::cout << "Exception: " << e.what() << std::endl;
+        cpptrace::from_current_exception().print();
     }
 
     return 0;
@@ -179,10 +202,25 @@ int main(int argc, char* argv[])
         int r = std::rand() % 6;
         printf("rand %d [%d %d %d %d %d %d] %d\n", r, std::rand(), std::rand(), std::rand(), std::rand(), std::rand(),
             std::rand(), RAND_MAX);
-
-        coordinator.StartGame(maps[r]);
-        while (coordinator.Update()) {
+        //try {
+        //    coordinator.StartGame(maps[r]);
+        //
+        //    while (coordinator.Update()) {
+        //    }
+        //}
+        //catch (...){
+        //    CONSOLE_PRINT_ERROR("UPDATE");
+        //}
+        CPPTRACE_TRY{
+            coordinator.StartGame(maps[r]);
+            
+            while (coordinator.Update()) {
+            }
+        } CPPTRACE_CATCH(const std::exception& e) {
+            std::cout << "Exception: " << e.what() << std::endl;
+            cpptrace::from_current_exception().print();
         }
+        
     }
 
     return 0;
