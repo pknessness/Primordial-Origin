@@ -156,6 +156,7 @@ int main(int argc, char* argv[])
         string stacktr = cpptrace::from_current_exception().to_string();
         fwrite(stacktr.c_str(), 1, stacktr.length(), imageFile);
         cpptrace::from_current_exception().print();
+        throw e;
     }
 
     return 0;
@@ -248,6 +249,7 @@ int main(int argc, char* argv[])
             string stacktr = cpptrace::from_current_exception().to_string();
             fwrite(stacktr.c_str(), 1, stacktr.length(), imageFile);
             cpptrace::from_current_exception().print();
+            throw e;
         }
         
     }

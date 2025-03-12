@@ -892,6 +892,12 @@ public:
         int numWords = sizeof(words) / sizeof(words[0]);
 
         printf("Playing on %s\n", Observation()->GetGameInfo().map_name.c_str());
+#if (defined(_MSVC_LANG))
+        printf("C++ %ld\n", _MSVC_LANG);
+#else
+        printf("C++ %ld\n", __cplusplus);
+#endif
+        
         Actions()->SendChat("My Origin? Its Primordial, baby! (protoss)");
         Actions()->SendChat(strprintf("Feel the %s of my Protoss (pheart)", words[std::rand() % numWords].c_str()));
 
