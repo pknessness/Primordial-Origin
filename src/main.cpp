@@ -141,7 +141,6 @@ int main(int argc, char* argv[])
         }
     } CPPTRACE_CATCH(...) {
         printf("CAUGHT\n");
-        //std::cout << "Exception: " << e.what() << std::endl;
         time_t curr_time;
         tm* curr_tm;
         char time_string[100];
@@ -150,12 +149,15 @@ int main(int argc, char* argv[])
 
         strftime(time_string, 50, "%Y_%d_%m_%H_%M_%S", curr_tm);
         string file = strprintf("data/crash_%s.txt", time_string);
-        const char* imageFileName = file.c_str();
-        FILE* imageFile = fopen(imageFileName, "wb");
+        const char* fileName = file.c_str();
+        FILE* filePtr = fopen(fileName, "wb");
 
-        string stacktr = cpptrace::from_current_exception().to_string();
-        fwrite(stacktr.c_str(), 1, stacktr.length(), imageFile);
-        cpptrace::from_current_exception().print();
+        cpptrace::stacktrace death = cpptrace::from_current_exception();
+
+        string stacktr = death.to_string();
+        fwrite(stacktr.c_str(), 1, stacktr.length(), filePtr);
+        death.print();
+        fclose(filePtr);
         throw -1;
     }
 
@@ -242,12 +244,15 @@ int main(int argc, char* argv[])
 
             strftime(time_string, 50, "%Y_%d_%m_%H_%M_%S", curr_tm);
             string file = strprintf("data/crash_%s.txt", time_string);
-            const char* imageFileName = file.c_str();
-            FILE* imageFile = fopen(imageFileName, "wb");
+            const char* fileName = file.c_str();
+            FILE* filePtr = fopen(fileName, "wb");
 
-            string stacktr = cpptrace::from_current_exception().to_string();
-            fwrite(stacktr.c_str(), 1, stacktr.length(), imageFile);
-            cpptrace::from_current_exception().print();
+            cpptrace::stacktrace death = cpptrace::from_current_exception();
+
+            string stacktr = death.to_string();
+            fwrite(stacktr.c_str(), 1, stacktr.length(), filePtr);
+            death.print();
+            fclose(filePtr);
             throw -1;
         }
         

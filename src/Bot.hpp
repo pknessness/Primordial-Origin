@@ -1334,21 +1334,7 @@ public:
 
         onStepProfiler.midLog("LoadVisionMap");
 
-        //manageArmy();
         ArmyControl::step(this, rally_point);
-
-        //for (UnitWrapper* wrap : UnitManager::units.at(UNIT_TYPEID::PROTOSS_STALKER)) {
-        //    float theta = ((float)std::rand()) * 2 * M_PI / RAND_MAX;
-        //    float magnitude = 8;//((float)std::rand()) * 8 / RAND_MAX;
-
-        //    Point2D displace{ cos(theta) * magnitude, sin(theta) * magnitude };
-
-        //    Point3D upos = wrap->pos3D(this);
-        //    Point3D blinkPos{ upos.x + displace.x, upos.y + displace.y, upos.z };
-        //    DebugLine(this, upos, blinkPos, { 240, 73, 250 });
-        //    printf("TELEPORT STALKER {%.1f, %.1f}\n", displace.x, displace.y);
-        //    Actions()->UnitCommand(wrap->self, ABILITY_ID::EFFECT_BLINK_STALKER, blinkPos);
-        //}
 
         onStepProfiler.midLog("ArmyControl");
 

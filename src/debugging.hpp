@@ -1,5 +1,6 @@
 #pragma once
 #include <sc2api/sc2_api.h>
+#include <ctime>
 
 //! Outputs text at the top, left of the screen.
 //!< \param out The string of text to display.
