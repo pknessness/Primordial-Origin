@@ -1296,7 +1296,7 @@ public:
     //! In realtime this function gets called as often as possible after request/responses are received from the game
     //! gathering observation state.
     virtual void OnStep() final {
-        //printf(" ");
+        printf("Step: %d\n", Observation()->GetGameLoop());
         Profiler onStepProfiler("onStep");
         //onStepProfiler.disable();
 
