@@ -27,7 +27,8 @@ struct Bounds {
     int ymin;
     int ymax;
 
-    Bounds operator+(const Bounds& b) {
+    Bounds operator+(const Bounds& b)  {
+FUNC_START
         Bounds nu = { xmin,xmax,ymin,ymax };
         if (b.xmin < nu.xmin) {
             nu.xmin = b.xmin;
@@ -44,7 +45,8 @@ struct Bounds {
         return nu;
     }
 
-    void operator+=(const Bounds& b) {
+    void operator+=(const Bounds& b)  {
+FUNC_START
         if (b.xmin < xmin) {
             xmin = b.xmin;
         }
@@ -60,7 +62,8 @@ struct Bounds {
     }
 };
 
-void initGrid(Agent *agent) {
+void initGrid(Agent *agent)  {
+FUNC_START
     for (int i = 0; i < grid->width(); i++) {
         for (int j = 0; j < grid->height(); j++) {
             imRef(grid, i, j) = UnitWrappers();
@@ -68,7 +71,8 @@ void initGrid(Agent *agent) {
     }
 }
 
-void resetGrid(Agent *agent) {
+void resetGrid(Agent *agent)  {
+FUNC_START
     for (int i = 0; i < grid->width(); i++) {
         for (int j = 0; j < grid->height(); j++) {
             imRef(grid, i, j).clear();
@@ -76,7 +80,8 @@ void resetGrid(Agent *agent) {
     }
 }
 
-void updateGrid(Agent *agent) {
+void updateGrid(Agent *agent)  {
+FUNC_START
     resetGrid(agent);
     for (auto it = UnitManager::units.begin(); it != UnitManager::units.end(); it++) {
         for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
@@ -119,7 +124,8 @@ void updateGrid(Agent *agent) {
     }
 }
 
-void fillGridModify2(Point2D pos, float radius, Agent *agent) {
+void fillGridModify2(Point2D pos, float radius, Agent *agent)  {
+FUNC_START
     float x = pos.x - radius;
     float y = pos.y - radius;
     for (int i = 0; i < radius * 2 + 1; i++) {
@@ -151,7 +157,8 @@ void fillGridModify2(Point2D pos, float radius, Agent *agent) {
     }
 }
 
-Bounds fillGridModify(Point2D pos, float radius, Agent* agent) {
+Bounds fillGridModify(Point2D pos, float radius, Agent* agent)  {
+FUNC_START
     int x = (pos.x - radius);
     int y = (pos.y - radius);
     int xmax = (pos.x + radius + 1);
@@ -176,7 +183,8 @@ Bounds fillGridModify(Point2D pos, float radius, Agent* agent) {
     return {x, xmax, y, ymax};
 }
 
-static UnitWrappers findInRadius_INTERNAL(Bounds b, Agent *agent) {
+static UnitWrappers findInRadius_INTERNAL(Bounds b, Agent *agent)  {
+FUNC_START
     UnitWrappers found;
     for (int i = b.xmin; i < b.xmax; i++) {
         for (int j = b.ymin; j < b.ymax; j++) {
@@ -198,18 +206,21 @@ static UnitWrappers findInRadius_INTERNAL(Bounds b, Agent *agent) {
     return found;
 }
 
-UnitWrappers findInRadius(Point2D pos, float radius, Agent* agent) {
+UnitWrappers findInRadius(Point2D pos, float radius, Agent* agent)  {
+FUNC_START
     gridModify->clear();
     Bounds b = fillGridModify(pos, radius, agent);
 
     return findInRadius_INTERNAL(b, agent);
 }
 
-UnitWrappers findInRadius(Circle c, Agent* agent) {
+UnitWrappers findInRadius(Circle c, Agent* agent)  {
+FUNC_START
     return findInRadius(c.pos, c.radius, agent);
 }
 
-UnitWrappers findInRadii(Circles c, Agent* agent) {
+UnitWrappers findInRadii(Circles c, Agent* agent)  {
+FUNC_START
     if (c.size() == 0) {
         return UnitWrappers();
     }
@@ -224,7 +235,8 @@ UnitWrappers findInRadii(Circles c, Agent* agent) {
     return findInRadius_INTERNAL(bound, agent);
 }
 
-void initGridEnemy(Agent *agent) {
+void initGridEnemy(Agent *agent)  {
+FUNC_START
     for (int i = 0; i < gridEnemy->width(); i++) {
         for (int j = 0; j < gridEnemy->height(); j++) {
             imRef(gridEnemy, i, j) = UnitWrappers();
@@ -232,7 +244,8 @@ void initGridEnemy(Agent *agent) {
     }
 }
 
-void resetGridEnemy(Agent *agent) {
+void resetGridEnemy(Agent *agent)  {
+FUNC_START
     for (int i = 0; i < gridEnemy->width(); i++) {
         for (int j = 0; j < gridEnemy->height(); j++) {
             imRef(gridEnemy, i, j).clear();
@@ -240,7 +253,8 @@ void resetGridEnemy(Agent *agent) {
     }
 }
 
-void updateGridEnemy(Agent *agent) {
+void updateGridEnemy(Agent *agent)  {
+FUNC_START
     resetGridEnemy(agent);
     for (auto it = UnitManager::enemies.begin(); it != UnitManager::enemies.end(); it++) {
         for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
@@ -268,7 +282,7 @@ void updateGridEnemy(Agent *agent) {
                                 }
                             }
                         }
-                        if (activate) {
+                        if (activate)  {
                             break;
                         }
                     }
@@ -283,7 +297,8 @@ void updateGridEnemy(Agent *agent) {
     }
 }
 
-static UnitWrappers findInRadiusEnemy_INTERNAL(Bounds b, Agent* agent) {
+static UnitWrappers findInRadiusEnemy_INTERNAL(Bounds b, Agent* agent)  {
+FUNC_START
     UnitWrappers found;
     for (int i = b.xmin; i < b.xmax; i++) {
         for (int j = b.ymin; j < b.ymax; j++) {
@@ -305,18 +320,21 @@ static UnitWrappers findInRadiusEnemy_INTERNAL(Bounds b, Agent* agent) {
     return found;
 }
 
-UnitWrappers findInRadiusEnemy(Point2D pos, float radius, Agent* agent) {
+UnitWrappers findInRadiusEnemy(Point2D pos, float radius, Agent* agent)  {
+FUNC_START
     gridModify->clear();
     Bounds b = fillGridModify(pos, radius, agent);
 
     return findInRadiusEnemy_INTERNAL(b, agent);
 }
 
-UnitWrappers findInRadiusEnemy(Circle c, Agent* agent) {
+UnitWrappers findInRadiusEnemy(Circle c, Agent* agent)  {
+FUNC_START
     return findInRadiusEnemy(c.pos, c.radius, agent);
 }
 
-UnitWrappers findInRadiiEnemy(Circles c, Agent* agent) {
+UnitWrappers findInRadiiEnemy(Circles c, Agent* agent)  {
+FUNC_START
     if (c.size() == 0) {
         return UnitWrappers();
     }

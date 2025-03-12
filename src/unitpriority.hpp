@@ -9,7 +9,8 @@
 //CASE(TERRAN_$1) {\n\treturn $2;\n}\n
 
 namespace Army {
-	int Priority(UnitTypeID self, UnitTypeID opponent) {
+	int Priority(UnitTypeID self, UnitTypeID opponent)  {
+FUNC_START
         switch (uint32_t(self)) {
             /*
             CASE(PROTOSS_SENTRY) {
@@ -398,7 +399,8 @@ namespace Army {
         return 0;
 	}
 
-    //Composition unitTargetComposition(const Unit* op) {
+    //Composition unitTargetComposition(const Unit* op)  {
+FUNC_START
     //    if (op->unit_type == UNIT_TYPEID::PROTOSS_COLOSSUS) {
     //        return Composition::Any;
     //    }
@@ -407,7 +409,8 @@ namespace Army {
     //    return Composition::Ground;
     //}
 
-    //Composition unitTypeTargetComposition(UnitTypeID op) {
+    //Composition unitTypeTargetComposition(UnitTypeID op)  {
+FUNC_START
     //    switch (uint32_t(op)) {
     //        //Terran
     //        CASE(TERRAN_WIDOWMINE) { return Composition::Ground; }
@@ -488,7 +491,8 @@ namespace Army {
     //    }
     //}
 
-    bool hitsUnit(Composition weapon, Composition target) {
+    bool hitsUnit(Composition weapon, Composition target)  {
+FUNC_START
         if (weapon == Composition::Invalid || target == Composition::Invalid) {
             printf("HITCHECK ARMY ERROR %d %d\n", weapon, target);
             return false;
@@ -503,7 +507,8 @@ namespace Army {
         return false;
     }
 
-    float maxWeaponRadius(UnitTypeID type) {
+    float maxWeaponRadius(UnitTypeID type)  {
+FUNC_START
         switch (uint32_t(type)) {
             ////Terran
             //CASE(TERRAN_WIDOWMINE) { return 5; }

@@ -38,7 +38,8 @@ public:
 	//optimistic distance to travel
 	float h;
 
-	StarNode(int pathNode, float g, float h) : pathNode(pathNode), g(g), h(h) {
+	StarNode(int pathNode, float g, float h) : pathNode(pathNode), g(g), h(h)  {
+FUNC_START
 
 	}
 
@@ -46,7 +47,8 @@ public:
 	//	return	(g + h) < (b.g + b.h);
 	//}
 
-	operator float() {
+	operator float()  {
+FUNC_START
 		return g + h;
 	}
 };
@@ -68,7 +70,8 @@ public:
 	//distance already travelled
 	float g;
 
-	DijkStarNode(int pathNode, float g) : pathNode(pathNode), g(g) {
+	DijkStarNode(int pathNode, float g) : pathNode(pathNode), g(g)  {
+FUNC_START
 
 	}
 
@@ -76,7 +79,8 @@ public:
 	//	return	(g + h) < (b.g + b.h);
 	//}
 
-	operator float() {
+	operator float()  {
+FUNC_START
 		return g;
 	}
 };
@@ -103,7 +107,8 @@ namespace PrimordialStar {
 		UP_LT
 	};
 
-	Point2D cardinalToDirection(Cardinal &cardinal) {
+	Point2D cardinalToDirection(Cardinal &cardinal)  {
+FUNC_START
 		switch (cardinal) {
 			case(UP): {
 				return { 0,1 };
@@ -135,7 +140,8 @@ namespace PrimordialStar {
 		}
 	}
 
-	Point2D cardinalToNormDirection(Cardinal& cardinal) {
+	Point2D cardinalToNormDirection(Cardinal& cardinal)  {
+FUNC_START
 		switch (cardinal) {
 		case(UP): {
 			return { 0,1 };
@@ -180,15 +186,18 @@ namespace PrimordialStar {
 
 		~PathNode();
 
-		void updatePos(Point2D p) {
+		void updatePos(Point2D p)  {
+FUNC_START
 			pos = p;
 		}
 
-		Point2D rawPos() {
+		Point2D rawPos()  {
+FUNC_START
 			return pos;
 		}
 
-		Point2D position(float radius) {
+		Point2D position(float radius)  {
+FUNC_START
 			if (wall == INVALID) {
 				return pos;
 			}
@@ -205,7 +214,8 @@ namespace PrimordialStar {
 	float maxDistanceConnectionSquared = 0.0F;
 
 	//DDA https://en.wikipedia.org/wiki/Digital_differential_analyzer_(graphics_algorithm)
-	bool checkLinearPath(Point2D start, Point2D end, Agent* agent) {
+	bool checkLinearPath(Point2D start, Point2D end, Agent* agent)  {
+FUNC_START
 		float dx = end.x - start.x;
 		float dy = end.y - start.y;
 		float step = 0;
@@ -255,7 +265,8 @@ namespace PrimordialStar {
 		return maxSteps;
 	}
 
-	float rnd(float in) {
+	float rnd(float in)  {
+FUNC_START
 		return (int)(in + 0.1);
 	}
 
@@ -371,7 +382,8 @@ namespace PrimordialStar {
 		return DistanceSquared2D(origin, getWall(origin, dir, agent, maxSteps));
 	}
 
-	float generateMaxDistanceGrid(Agent* agent) {
+	float generateMaxDistanceGrid(Agent* agent)  {
+FUNC_START
 		int mapWidth = agent->Observation()->GetGameInfo().width;
 		int mapHeight = agent->Observation()->GetGameInfo().height;
 		float maximum = 0;
@@ -413,7 +425,8 @@ namespace PrimordialStar {
 		return maximum;
 	}
 
-	float generateMinDistanceGrid(Agent* agent) {
+	float generateMinDistanceGrid(Agent* agent)  {
+FUNC_START
 		int mapWidth = agent->Observation()->GetGameInfo().width;
 		int mapHeight = agent->Observation()->GetGameInfo().height;
 		float maximum = 0;
@@ -446,7 +459,8 @@ namespace PrimordialStar {
 		return maximum;
 	}
 
-	void calculateNewConnection(PathNode* p, Agent* agent) {
+	void calculateNewConnection(PathNode* p, Agent* agent)  {
+FUNC_START
 		Point2D pos = p->rawPos();
 		for (int i = 0; i < basePathNodes.size(); i++) {
 			if (i == p->id) {
@@ -508,7 +522,8 @@ namespace PrimordialStar {
 		}
 	}
 
-	void breakAllConnections(PathNode* p) {
+	void breakAllConnections(PathNode* p)  {
+FUNC_START
 		for (int i = 0; i < p->connected.size(); i++) {
 			if (p->connected.at(i) >= PrimordialStar::basePathNodes.size()) {
 				continue;
@@ -522,13 +537,15 @@ namespace PrimordialStar {
 		}
 	}
 
-	PathNode::PathNode(Point2D pos, Cardinal wall, Agent *agent) : pos(pos), wall(wall) {
+	PathNode::PathNode(Point2D pos, Cardinal wall, Agent *agent) : pos(pos), wall(wall)  {
+FUNC_START
 		id = basePathNodes.size();
 		basePathNodes.push_back(this);
 		calculateNewConnection(this, agent);
 	}
 
-	PathNode::~PathNode(){
+	PathNode::~PathNode()  {
+FUNC_START
 		breakAllConnections(this);
 	}
 
@@ -540,7 +557,8 @@ namespace PrimordialStar {
 	//	return { 0,0 };
 	//}
 
-	void generateBlobGrid() {
+	void generateBlobGrid()  {
+FUNC_START
 
 	}
 
@@ -556,7 +574,8 @@ namespace PrimordialStar {
 //#define BASIC_LT(i, j) BASIC(i-1,j)
 //#define BASIC_UP_LT(i, j) BASIC(i-1,j+1)
 
-	bool check_UP_RT(int i, int j) {
+	bool check_UP_RT(int i, int j)  {
+FUNC_START
 		bool up = Aux::checkPathable(i, j + 1, nullptr);
 		bool up_rt = Aux::checkPathable(i + 1, j + 1, nullptr);
 		bool rt = Aux::checkPathable(i + 1, j, nullptr);
@@ -568,7 +587,8 @@ namespace PrimordialStar {
 		return up && up_rt && rt && (up_lt || dn_rt);
 	}
 
-	bool check_DN_RT(int i, int j) {
+	bool check_DN_RT(int i, int j)  {
+FUNC_START
 		bool rt = Aux::checkPathable(i + 1, j, nullptr);
 		bool dn_rt = Aux::checkPathable(i + 1, j - 1, nullptr);
 		bool dn = Aux::checkPathable(i, j - 1, nullptr);
@@ -580,7 +600,8 @@ namespace PrimordialStar {
 		return dn && dn_rt && rt && (up_rt || dn_lt);
 	}
 
-	bool check_DN_LT(int i, int j) {
+	bool check_DN_LT(int i, int j)  {
+FUNC_START
 		bool dn = Aux::checkPathable(i, j - 1, nullptr);
 		bool dn_lt = Aux::checkPathable(i - 1, j - 1, nullptr);
 		bool lt = Aux::checkPathable(i - 1, j, nullptr);
@@ -592,7 +613,8 @@ namespace PrimordialStar {
 		return dn && dn_lt && lt && (dn_rt || up_lt);
 	}
 
-	bool check_UP_LT(int i, int j) {
+	bool check_UP_LT(int i, int j)  {
+FUNC_START
 		bool lt = Aux::checkPathable(i - 1, j, nullptr);
 		bool up_lt = Aux::checkPathable(i - 1, j + 1, nullptr);
 		bool up = Aux::checkPathable(i, j + 1, nullptr);
@@ -604,7 +626,8 @@ namespace PrimordialStar {
 		return up && up_lt && lt && (dn_lt || up_rt);
 	}
 
-	void generatePathNodes(Agent *agent) {
+	void generatePathNodes(Agent *agent)  {
+FUNC_START
 		int mapWidth = agent->Observation()->GetGameInfo().width;
 		int mapHeight = agent->Observation()->GetGameInfo().height;
 		for (int i = 1; i < mapWidth - 1; i++) {
@@ -667,7 +690,8 @@ namespace PrimordialStar {
 		printf("MAX CONNECTIONS OF A NODE: %d\t MAX DISTANCE OF A CONNECTION: %.2f\n", maxConnections, sqrt(maxDistanceConnectionSquared));
 	}
 
-	vector<Point2D> getPath(Point2D start, Point2D end, float radius, Agent* agent) {
+	vector<Point2D> getPath(Point2D start, Point2D end, float radius, Agent* agent)  {
+FUNC_START
 		Profiler profiler("getPath");
 
 		if (checkWallDistanceSquared(start, (start - end), agent) >= DistanceSquared2D(start, end)) {
@@ -786,7 +810,8 @@ namespace PrimordialStar {
 		return points;
 	}
 
-	vector<Point2D> getPathDijkstra3(Point2D start, Point2D end, float radius, Agent* agent) {
+	vector<Point2D> getPathDijkstra3(Point2D start, Point2D end, float radius, Agent* agent)  {
+FUNC_START
 		PathNode* startNode = new PathNode(start, INVALID, agent);
 
 		PathNode* endNode = new PathNode(end, INVALID, agent);
@@ -849,7 +874,8 @@ namespace PrimordialStar {
 		return points;
 	}
 
-	vector<Point2D> getPathDijkstra(Point2D start, Point2D end, float radius, Agent* agent) {
+	vector<Point2D> getPathDijkstra(Point2D start, Point2D end, float radius, Agent* agent)  {
+FUNC_START
 		Profiler profiler("getDijkstra");
 		PathNode* startNode = new PathNode(start, INVALID, agent);
 
@@ -925,7 +951,8 @@ namespace PrimordialStar {
 		return points;
 	}
 
-	float getPathLength(vector<Point2D> path) {
+	float getPathLength(vector<Point2D> path)  {
+FUNC_START
 		if (path.size() == 0) return 0.0F;
 		float travelled = 0;
 		for (int i = 0; i < path.size() - 1; i++) {
@@ -934,15 +961,18 @@ namespace PrimordialStar {
 		return travelled;
 	}
 
-	float getPathLength(Point2D start, Point2D end, float radius, Agent* agent) {
+	float getPathLength(Point2D start, Point2D end, float radius, Agent* agent)  {
+FUNC_START
 		return getPathLength(getPath(start, end, radius, agent));
 	}
 
-	float getPathLengthDijkstra(Point2D start, Point2D end, float radius, Agent* agent) {
+	float getPathLengthDijkstra(Point2D start, Point2D end, float radius, Agent* agent)  {
+FUNC_START
 		return getPathLength(getPathDijkstra(start, end, radius, agent));
 	}
 
-	Point2D distanceAlongPath(vector<Point2D> path, float distance) {
+	Point2D distanceAlongPath(vector<Point2D> path, float distance)  {
+FUNC_START
 		if (path.size() == 0) return { 0,0 };
 		float travelled = 0;
 		for (int i = 0; i < path.size() - 1; i++) {
@@ -958,7 +988,8 @@ namespace PrimordialStar {
 		return { 0,0 };
 	}
 
-	vector<Point2D> stepPointsAlongPath(vector<Point2D> path, float distance) {
+	vector<Point2D> stepPointsAlongPath(vector<Point2D> path, float distance)  {
+FUNC_START
 		if (path.size() == 0) return vector<Point2D>();
 		int siz = int(400 / distance);
 		vector<Point2D> midpath;

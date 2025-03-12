@@ -7,11 +7,13 @@ namespace ArmyControl {
         UnitWrappers army;
         std::vector<UnitTypeID> unitComp;
 
-        EnemySquad() {
+        EnemySquad()  {
+FUNC_START
 
         }
 
-        void add(UnitWrapper* unitWrap) {
+        void add(UnitWrapper* unitWrap)  {
+FUNC_START
             army.push_back(unitWrap);
 
             if (std::find(unitComp.begin(), unitComp.end(), unitWrap->type) == unitComp.end()) {
@@ -19,7 +21,8 @@ namespace ArmyControl {
             }
         }
 
-        Point2D center(Agent *agent) {
+        Point2D center(Agent *agent)  {
+FUNC_START
             Point2D center;
             int count = 0;
             for (int i = 0; i < army.size(); i++) {
@@ -35,7 +38,8 @@ namespace ArmyControl {
     EnemySquads enemySquads;
 
 	constexpr float enemyRadius = 5.0F;
-	void collectEnemySquads(Agent *agent){
+	void collectEnemySquads(Agent *agent)  {
+FUNC_START
         enemySquads.clear();
         UnitWrappers allEnemies;
         for (auto it = UnitManager::enemies.begin(); it != UnitManager::enemies.end(); it++) {
@@ -86,7 +90,8 @@ namespace ArmyControl {
         }
 	}
 
-	void step(Agent* agent, Point2D rally) {
+	void step(Agent* agent, Point2D rally)  {
+FUNC_START
         collectEnemySquads(agent);
         int unitCount = 0;
         for (Squad s : squads) {

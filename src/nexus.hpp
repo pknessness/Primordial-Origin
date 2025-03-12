@@ -16,11 +16,13 @@ private:
     Tag vespene2;
     bool taken2;
 public:
-    Nexus(const Unit* unit) : UnitWrapper(unit), type1(UNIT_TYPEID::INVALID), vespene1(NullTag), taken1(false), type2(UNIT_TYPEID::INVALID), vespene2(NullTag), taken2(false) {
+    Nexus(const Unit* unit) : UnitWrapper(unit), type1(UNIT_TYPEID::INVALID), vespene1(NullTag), taken1(false), type2(UNIT_TYPEID::INVALID), vespene2(NullTag), taken2(false)  {
+FUNC_START
 
     }
 
-    void nexusNearbyUpdate(Agent* agent) {
+    void nexusNearbyUpdate(Agent* agent)  {
+FUNC_START
         UnitWrappers mineralWraps = UnitManager::getMinerals();
         UnitWrappers assimilatorWraps = UnitManager::get(UNIT_TYPEID::PROTOSS_ASSIMILATOR);
         mineralWraps.insert(mineralWraps.end(), assimilatorWraps.begin(), assimilatorWraps.end());

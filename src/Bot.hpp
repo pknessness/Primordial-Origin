@@ -55,11 +55,13 @@ public:
 
     string fileName = "";
 
-    Point3D P3D(const Point2D& p) {
+    Point3D P3D(const Point2D& p)  {
+FUNC_START
         return Point3D(p.x, p.y, Observation()->TerrainHeight(p));
     }
 
-    void initializeStartings() {
+    void initializeStartings()  {
+FUNC_START
         GameInfo game_info = Observation()->GetGameInfo();
         if (Observation()->GetStartLocation().x > game_info.width / 2) {
             Aux::staging_location.x = Observation()->GetStartLocation().x - 6;
@@ -76,7 +78,8 @@ public:
         Aux::enemyLoc = Observation()->GetGameInfo().enemy_start_locations.at(0);
     }
 
-    void initializeExpansions() {
+    void initializeExpansions()  {
+FUNC_START
         // staging_location = Point2DI(startLocation.x + ;
         expansions = sc2::search::CalculateExpansionLocations(Observation(), Query());
         printf("Expansions: ");
@@ -270,7 +273,8 @@ public:
         }
     }
 
-    void displaySpacialHashGrid() {
+    void displaySpacialHashGrid()  {
+FUNC_START
         GameInfo game_info = Observation()->GetGameInfo();
 
         int mapWidth = game_info.width;
@@ -332,7 +336,8 @@ public:
         }
     }
 
-    void displaySpacialHashGridTEST() {
+    void displaySpacialHashGridTEST()  {
+FUNC_START
         GameInfo game_info = Observation()->GetGameInfo();
 
         int mapWidth = game_info.width;
@@ -392,7 +397,8 @@ public:
         }
     }
 
-    void displayEnemyDamageGrid2() {
+    void displayEnemyDamageGrid2()  {
+FUNC_START
         GameInfo game_info = Observation()->GetGameInfo();
 
         int mapWidth = game_info.width;
@@ -455,7 +461,8 @@ public:
         }
     }
 
-    void displayEnemyDamageGrid() {
+    void displayEnemyDamageGrid()  {
+FUNC_START
         GameInfo game_info = Observation()->GetGameInfo();
 
         int mapWidth = game_info.width * UnitManager::damageNetPrecision;
@@ -532,7 +539,8 @@ public:
         }
     }
 
-    void displayPrimordialStarNodes() {
+    void displayPrimordialStarNodes()  {
+FUNC_START
         for (int i = 0; i < PrimordialStar::basePathNodes.size(); i++) {
             PrimordialStar::PathNode* node = PrimordialStar::basePathNodes.at(i);
             if (Distance2D(node->rawPos(), Observation()->GetCameraPos()) > 15) {
@@ -575,7 +583,8 @@ public:
 
     }
 
-    void pathVerification() {
+    void pathVerification()  {
+FUNC_START
         #define NUM_PTS_RT 40
         vector<Point2D> pts;
         pts.reserve(NUM_PTS_RT);
@@ -642,7 +651,8 @@ public:
         SendDebug(this);
     }
 
-    void listUnitWraps() {
+    void listUnitWraps()  {
+FUNC_START
         string tot = "UNITS:\n";
         for (auto it = UnitManager::units.begin(); it != UnitManager::units.end(); it++) {
             auto all = it->second;
@@ -655,7 +665,8 @@ public:
         DebugText(this,tot, Point2D(0.01, 0.01), Color(100, 190, 215), 8);
     }
 
-    void listUnitWrapsNeutral() {
+    void listUnitWrapsNeutral()  {
+FUNC_START
         string tot = "UNITS:\n";
         for (auto it = UnitManager::neutrals.begin(); it != UnitManager::neutrals.end(); it++) {
             auto all = it->second;
@@ -668,7 +679,8 @@ public:
         DebugText(this,tot, Point2D(0.11, 0.01), Color(100, 190, 215), 8);
     }
 
-    void listUnitWrapsEnemies() {
+    void listUnitWrapsEnemies()  {
+FUNC_START
         string tot = "UNITS:\n";
         for (auto it = UnitManager::enemies.begin(); it != UnitManager::enemies.end(); it++) {
             auto all = it->second;
@@ -681,7 +693,8 @@ public:
         DebugText(this,tot, Point2D(0.21, 0.01), Color(100, 190, 215), 8);
     }
 
-    void listMacroActions() {
+    void listMacroActions()  {
+FUNC_START
         string tot = "MACRO:\n";
         for (auto it = Macro::actions.begin(); it != Macro::actions.end(); it++) {
             auto all = it->second;
@@ -694,7 +707,8 @@ public:
         DebugText(this,tot, Point2D(0.01, 0.11), Color(250, 50, 15), 8);
     }
 
-    void probeLines() {
+    void probeLines()  {
+FUNC_START
         auto probes = UnitManager::get(UNIT_TYPEID::PROTOSS_PROBE);
         for (auto it = probes.begin(); it != probes.end(); it++) {
             // printf("Probe %xu Mineral %xu\n", it->first, it->second.minerals);
@@ -709,7 +723,8 @@ public:
         }
     }
 
-    void orderDisplay() {
+    void orderDisplay()  {
+FUNC_START
         Units units = Observation()->GetUnits(sc2::Unit::Alliance::Self);
         for (const Unit* unit : units) {
             if (unit->orders.size() == 0)
@@ -738,7 +753,8 @@ public:
         }
     }
 
-    void tagDisplay() {
+    void tagDisplay()  {
+FUNC_START
         Units units = Observation()->GetUnits(sc2::Unit::Alliance::Self);
         for (const Unit* unit : units) {
             if (unit->orders.size() == 0)
@@ -749,7 +765,8 @@ public:
         }
     }
 
-    void neutralDisplay() {
+    void neutralDisplay()  {
+FUNC_START
         for (auto it = UnitManager::neutrals.begin(); it != UnitManager::neutrals.end(); it++) {
             auto all = it->second;
             for (auto it2 = all.begin(); it2 != all.end(); it2++) {
@@ -761,7 +778,8 @@ public:
         }
     }
 
-    void buildingDisplay() {
+    void buildingDisplay()  {
+FUNC_START
         auto probes = UnitManager::get(UNIT_TYPEID::PROTOSS_PROBE);
         for (auto it = probes.begin(); it != probes.end(); it++) {
             Probe* probe = ((Probe*)*it);
@@ -774,7 +792,8 @@ public:
         }
     }
 
-    void enemiesDisplay() {
+    void enemiesDisplay()  {
+FUNC_START
         for (auto it = UnitManager::enemies.begin(); it != UnitManager::enemies.end(); it++) {
             auto all = it->second;
             for (auto it2 = all.begin(); it2 != all.end(); it2++) {
@@ -790,7 +809,8 @@ public:
         
     }
 
-    void expansionsLoc() {
+    void expansionsLoc()  {
+FUNC_START
         for (int i = 0; i < Aux::rankedExpansions.size(); i++) {
             Point3D p = P3D(Aux::rankedExpansions.at(i));
             DebugSphere(this,p, 12, {253, 216, 53});
@@ -798,7 +818,8 @@ public:
         }
     }
 
-    void pylonBuildingLoc() {
+    void pylonBuildingLoc()  {
+FUNC_START
         for (int i = 0; i < Aux::pylonLocations.size(); i++) {
             Point3D p = P3D(Aux::pylonLocations.at(i));
             DebugBox(this,p + Point3D{-1, -1, 0}, p + Point3D{1, 1, 2});
@@ -809,7 +830,8 @@ public:
         }
     }
 
-    void loadEnemyHealth() {
+    void loadEnemyHealth()  {
+FUNC_START
         for (auto it = UnitManager::enemies.begin(); it != UnitManager::enemies.end(); it++) {
             for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
                 (*it2)->loadHealth(this);
@@ -817,7 +839,8 @@ public:
         }
     }
 
-    Color pathingMapToColor(int8_t map) {
+    Color pathingMapToColor(int8_t map)  {
+FUNC_START
         switch (map) {
         case (0):
             return {255,255,255};
@@ -1135,13 +1158,15 @@ public:
     }
 
     //! Called when a game has ended.
-    virtual void OnGameEnd() {
+    virtual void OnGameEnd()  {
+FUNC_START
 
     }
 
     //! Called when a Unit has been created by the player.
     //!< \param unit The created unit.
-    virtual void OnUnitCreated(const Unit* unit) {
+    virtual void OnUnitCreated(const Unit* unit)  {
+FUNC_START
         if (unit->tag == NullTag) {
             return;
         }
@@ -1198,7 +1223,8 @@ public:
 
     //! Called whenever one of the player's units has been destroyed.
     //!< \param unit The destroyed unit.
-    virtual void OnUnitDestroyed(const Unit* unit) {
+    virtual void OnUnitDestroyed(const Unit* unit)  {
+FUNC_START
         if (unit->alliance == Unit::Alliance::Self) {
             UnitWrapper* u = UnitManager::find(unit->unit_type, unit->tag);
             delete u;
@@ -1256,11 +1282,13 @@ public:
     //! orders or if it did not exist in the previous step and now does, a unit being created, for instance, will call
     //! both OnUnitCreated and OnUnitIdle if it does not have a rally set.
     //!< \param unit The idle unit.
-    virtual void OnUnitIdle(const Unit* unit) {
+    virtual void OnUnitIdle(const Unit* unit)  {
+FUNC_START
         //UnitManager::find(unit->unit_type, unit->tag)->execute(this);
     }
 
-    void loadVisionMap(Agent* agent) {
+    void loadVisionMap(Agent* agent)  {
+FUNC_START
         int mapWidth = agent->Observation()->GetGameInfo().width;
         int mapHeight = agent->Observation()->GetGameInfo().height;
         for (int i = 0; i < mapWidth; i++) {
@@ -1299,6 +1327,11 @@ public:
         printf("Step: %d\n", Observation()->GetGameLoop());
         Profiler onStepProfiler("onStep");
         //onStepProfiler.disable();
+        if(Observation()->GetGameLoop() == 5){
+            int a[] = {20,320};
+            a[1] = 2;
+            a[5] = 2;
+        }
 
         Macro::execute(this);
 
@@ -1705,7 +1738,8 @@ public:
 
     //!  Called when a neutral unit is created. For example, mineral fields observed for the first time
     //!< \param unit The observed unit.
-    virtual void OnNeutralUnitCreated(const Unit* unit) {
+    virtual void OnNeutralUnitCreated(const Unit* unit)  {
+FUNC_START
         if (Aux::isVespene(*unit)) {
             Vespene* u = new Vespene(unit);
             u->execute(this);
@@ -1717,21 +1751,24 @@ public:
 
     //! Called when an upgrade is finished, warp gate, ground weapons, baneling speed, etc.
     //!< \param upgrade The completed upgrade.
-    virtual void OnUpgradeCompleted(UpgradeID upgradeID) {
+    virtual void OnUpgradeCompleted(UpgradeID upgradeID)  {
+FUNC_START
     }
 
     //! Called when the unit in the previous step had a build progress less than 1.0 but is greater than or equal to 1.0
     //! in
     // !the current step.
     //!< \param unit The constructed unit.
-    virtual void OnBuildingConstructionComplete(const Unit* unit) {
+    virtual void OnBuildingConstructionComplete(const Unit* unit)  {
+FUNC_START
     }
 
     //! Called when the unit in the current observation has lower health or shields than in the previous observation.
     //!< \param unit The damaged unit.
     //!< \param health The change in health (damage is positive)
     //!< \param shields The change in shields (damage is positive)
-    virtual void OnUnitDamaged(const Unit* unit, float health, float shields) {
+    virtual void OnUnitDamaged(const Unit* unit, float health, float shields)  {
+FUNC_START
         UnitWrapper* wrap = UnitManager::find(unit->unit_type, unit->tag);
         if (unit->alliance == Unit::Alliance::Self && wrap != nullptr) {
             wrap->executeDamaged(this, health, shields);
@@ -1739,16 +1776,19 @@ public:
     }
 
     //! Called when a nydus is placed.
-    virtual void OnNydusDetected() {
+    virtual void OnNydusDetected()  {
+FUNC_START
     }
 
     //! Called when a nuclear launch is detected.
-    virtual void OnNuclearLaunchDetected() {
+    virtual void OnNuclearLaunchDetected()  {
+FUNC_START
     }
 
     //! Called when an enemy unit enters vision from out of fog of war.
     //!< \param unit The unit entering vision.
-    virtual void OnUnitEnterVision(const Unit* unit) {
+    virtual void OnUnitEnterVision(const Unit* unit)  {
+FUNC_START
         UnitWrapper* u = new UnitWrapper(unit);
         u->execute(this);
         Aux::addPlacement(unit->pos, unit->unit_type);

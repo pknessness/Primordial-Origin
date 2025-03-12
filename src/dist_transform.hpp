@@ -31,12 +31,14 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 
 #define INF 1E20
 
-float square(float f) {
+float square(float f)  {
+FUNC_START
     return f * f;
 }
 
 /* dt of 1d function using squared distance */
-static float *dt(float *f, int n) {
+static float *dt(float *f, int n)  {
+FUNC_START
     float *d = new float[n];
     int *v = new int[n];
     float *z = new float[n + 1];
@@ -69,7 +71,8 @@ static float *dt(float *f, int n) {
 }
 
 /* dt of 2d function using squared distance */
-static void dt(map2d<float> *im) {
+static void dt(map2d<float> *im)  {
+FUNC_START
     int width = im->width();
     int height = im->height();
     float *f = new float[std::max(width, height)];
@@ -102,7 +105,8 @@ static void dt(map2d<float> *im) {
 }
 
 /* dt of binary image using squared distance */
-static map2d<float> *dt(Agent *agent, int width, int height) {
+static map2d<float> *dt(Agent *agent, int width, int height)  {
+FUNC_START
     map2d<float> *out = new map2d<float>(width, height, false);
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {

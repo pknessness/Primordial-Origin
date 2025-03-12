@@ -38,7 +38,8 @@ public:
 
     inline const Unit *get(Agent *agent);
 
-    Composition getComposition(Agent* agent) {
+    Composition getComposition(Agent* agent)  {
+FUNC_START
         const Unit* selfUnit = get(agent);
         if (selfUnit == nullptr) {
             return c;
@@ -51,7 +52,8 @@ public:
         return Composition::Ground;
     }
 
-    void loadHealth(Agent* agent) {
+    void loadHealth(Agent* agent)  {
+FUNC_START
         const Unit* selfUnit = get(agent);
         if (selfUnit != nullptr) {
             health = selfUnit->health;
@@ -66,7 +68,8 @@ public:
 
     virtual bool execute(Agent *agent);
 
-    virtual bool executeDamaged(Agent *agent, float health, float shields) {
+    virtual bool executeDamaged(Agent *agent, float health, float shields)  {
+FUNC_START
         return false;
     }
 
@@ -74,7 +77,8 @@ public:
 
     static void loadAbilitiesEnemy(Agent* agent);
 
-    bool checkAbility(AbilityID ability) {
+    bool checkAbility(AbilityID ability)  {
+FUNC_START
         for (int i = 0; i < abilities.abilities.size(); i++) {
             if (ability == abilities.abilities.at(i).ability_id) {
                 return true;
@@ -83,11 +87,13 @@ public:
         return false;
     }
 
-    bool operator==(const UnitWrapper &u) {
+    bool operator==(const UnitWrapper &u)  {
+FUNC_START
         return u.self == self;
     }
 
-    bool operator<(const UnitWrapper &u) {
+    bool operator<(const UnitWrapper &u)  {
+FUNC_START
         return u.self < self;
     }
 
@@ -116,7 +122,8 @@ struct Damage {
     damageval massive;
     damageval psionic;
 
-    Damage() {
+    Damage()  {
+FUNC_START
         normal = 0;
         armored = 0;
         light = 0;
@@ -132,10 +139,12 @@ struct Damage {
     damageval biological,
     damageval mechanical,
     damageval massive,
-    damageval psionic) : normal(normal), armored(armored), light(light), biological(biological), mechanical(mechanical), massive(massive), psionic(psionic){
+    damageval psionic) : normal(normal), armored(armored), light(light), biological(biological), mechanical(mechanical), massive(massive), psionic(psionic)  {
+FUNC_START
     }
 
-    void operator+=(const Damage& u) {
+    void operator+=(const Damage& u)  {
+FUNC_START
         normal += u.normal;
         armored += u.armored;
         light += u.light;
@@ -145,7 +154,8 @@ struct Damage {
         psionic += u.psionic;
     }
 
-    Damage operator+(const Damage& u) {
+    Damage operator+(const Damage& u)  {
+FUNC_START
         return Damage{
             (damageval)(normal + u.normal),
             (damageval)(armored + u.armored),
@@ -156,7 +166,8 @@ struct Damage {
             (damageval)(psionic + u.psionic) };
     }
 
-    Damage operator/(const float& u) {
+    Damage operator/(const float& u)  {
+FUNC_START
         return Damage{
             (damageval)(normal / u),
             (damageval)(armored / u),
@@ -167,7 +178,8 @@ struct Damage {
             (damageval)(psionic / u) };
     }
 
-    void updateHighest(Damage dmag) {
+    void updateHighest(Damage dmag)  {
+FUNC_START
         if (dmag.normal > normal) {
             normal = dmag.normal;
         }
@@ -197,26 +209,30 @@ struct DamageLocation {
     
     Damage air;
 
-    void operator+=(const DamageLocation& u) {
+    void operator+=(const DamageLocation& u)  {
+FUNC_START
         ground += u.ground;
         air += u.air;
     }
 
-    DamageLocation operator+(const DamageLocation& u) {
+    DamageLocation operator+(const DamageLocation& u)  {
+FUNC_START
         return DamageLocation{
             (ground + u.ground),
             (air + u.air) 
         };
     }
 
-    DamageLocation operator/(const float& u) {
+    DamageLocation operator/(const float& u)  {
+FUNC_START
         return DamageLocation{
             (ground / u),
             (air / u)
         };
     }
 
-    void updateHighest(DamageLocation dmagloc) {
+    void updateHighest(DamageLocation dmagloc)  {
+FUNC_START
         ground.updateHighest(dmagloc.ground);
         air.updateHighest(dmagloc.air);
     }
@@ -244,7 +260,8 @@ namespace UnitManager {
 
     //#define damageNetEnemy(p) imRef(UnitManager::enemyDamageNet, int(p.x * UnitManager::damageNetPrecision), int(p.y * UnitManager::damageNetPrecision))
 
-    DamageLocation damageNetEnemy(Point2D p) {
+    DamageLocation damageNetEnemy(Point2D p)  {
+FUNC_START
         int x = int(p.x * damageNetPrecision);
         int y = int(p.y * damageNetPrecision);
         if (imRef(enemyDamageNetReal, x, y)) {
@@ -253,19 +270,22 @@ namespace UnitManager {
         return DamageLocation{};
     }
 
-    DamageLocation getDamageNetEnemyUnscaled(int x, int y) {
+    DamageLocation getDamageNetEnemyUnscaled(int x, int y)  {
+FUNC_START
         if (imRef(enemyDamageNetReal, x, y)) {
             return imRef(enemyDamageNet, x, y);
         }
         return DamageLocation{};
     }
 
-    void setDamageNetEnemyUnscaled(int x, int y, DamageLocation d) {
+    void setDamageNetEnemyUnscaled(int x, int y, DamageLocation d)  {
+FUNC_START
         imRef(enemyDamageNet, x, y) = d;
         imRef(enemyDamageNetReal, x, y) = 1;
     }
     
-    void setEnemyDamageRadius2(Point2D pos, float radius, DamageLocation damage, Agent* agent) {
+    void setEnemyDamageRadius2(Point2D pos, float radius, DamageLocation damage, Agent* agent)  {
+FUNC_START
         int x = (pos.x - radius) * damageNetPrecision;
         int y = (pos.y - radius) * damageNetPrecision;
         int xmax = (pos.x + radius) * damageNetPrecision + 1;
@@ -301,7 +321,8 @@ namespace UnitManager {
         }
     }
 
-    void setEnemyDamageRadius(Point2D pos, float radius, DamageLocation damage, Agent* agent) {
+    void setEnemyDamageRadius(Point2D pos, float radius, DamageLocation damage, Agent* agent)  {
+FUNC_START
         Profiler profiler("DamageGridF");
         //printf("5ize:%d\n", sizeof(DamageLocation));
         enemyDamageNetModify->clear();
@@ -334,7 +355,8 @@ namespace UnitManager {
         }
     }
 
-    void fillDamageModify2(Point2D pos, float radius, Agent* agent) {
+    void fillDamageModify2(Point2D pos, float radius, Agent* agent)  {
+FUNC_START
         int x = (pos.x - radius) * damageNetPrecision;
         int y = (pos.y - radius) * damageNetPrecision;
         int xmax = (pos.x + radius) * damageNetPrecision;
@@ -355,7 +377,8 @@ namespace UnitManager {
         }
     }
 
-    void fillDamageModify(Point2D pos, float radius, Agent* agent) {
+    void fillDamageModify(Point2D pos, float radius, Agent* agent)  {
+FUNC_START
         if (radius < 1) {
             fillDamageModify2(pos, radius, agent);
             return;
@@ -457,7 +480,8 @@ namespace UnitManager {
     }
 
     
-    void setEnemyDamageRadius3(Point2D pos, float radius, DamageLocation damage, Agent* agent) {
+    void setEnemyDamageRadius3(Point2D pos, float radius, DamageLocation damage, Agent* agent)  {
+FUNC_START
         //Profiler profiler("DamageGridF");
         enemyDamageNetModify->clear();
         
@@ -478,7 +502,8 @@ namespace UnitManager {
         }
     }
 
-    DamageLocation getRadiusMaxDamage(Point2D pos, float radius, Agent* agent) {
+    DamageLocation getRadiusMaxDamage(Point2D pos, float radius, Agent* agent)  {
+FUNC_START
         //Profiler profiler("DamageGridF");
         enemyDamageNetModify->clear();
 
@@ -503,7 +528,8 @@ namespace UnitManager {
         return d;
     }
 
-    DamageLocation getRadiusAvgDamage(Point2D pos, float radius, Agent* agent) {
+    DamageLocation getRadiusAvgDamage(Point2D pos, float radius, Agent* agent)  {
+FUNC_START
         //Profiler profiler("DamageGridF");
         enemyDamageNetModify->clear();
 
@@ -530,7 +556,8 @@ namespace UnitManager {
         return (d/((float)count));
     }
 
-    DamageLocation WeaponToDamageLocation(Weapon w) {
+    DamageLocation WeaponToDamageLocation(Weapon w)  {
+FUNC_START
         DamageLocation d;
         Damage damage;
         for (DamageBonus bonus : w.damage_bonus) {
@@ -568,7 +595,8 @@ namespace UnitManager {
         return d;
     }
 
-    float getRelevantDamage(UnitWrapper* unitWrap, DamageLocation pointDamage, Agent* agent) {
+    float getRelevantDamage(UnitWrapper* unitWrap, DamageLocation pointDamage, Agent* agent)  {
+FUNC_START
         Composition comp = unitWrap->getComposition(agent);
         float damage = 0;
         if (comp == Composition::Ground || comp == Composition::Any) {
@@ -626,15 +654,18 @@ namespace UnitManager {
         return damage;
     }
 
-    float getRelevantDamage(UnitWrapper* target, Weapon w, Agent* agent) {
+    float getRelevantDamage(UnitWrapper* target, Weapon w, Agent* agent)  {
+FUNC_START
         return getRelevantDamage(target, WeaponToDamageLocation(w), agent);
     }
     
-    float getPointDamage(int i, int j, UnitWrapper* unitWrap, Agent* agent) {
+    float getPointDamage(int i, int j, UnitWrapper* unitWrap, Agent* agent)  {
+FUNC_START
         return getRelevantDamage(unitWrap, getDamageNetEnemyUnscaled(i, j), agent);
     }
 
-    Point2D findMinimumDamage(UnitWrapper* unitWrap, float radius, Agent* agent) {
+    Point2D findMinimumDamage(UnitWrapper* unitWrap, float radius, Agent* agent)  {
+FUNC_START
         //printf("5ize:%d\n", sizeof(DamageLocation));
         enemyDamageNetTemp->clear();
         Point2D pos = unitWrap->pos(agent);
@@ -690,7 +721,8 @@ namespace UnitManager {
         return Point2D{ mini * blockSize, minj * blockSize };
     }
 
-    Point2D weightedVector(UnitWrapper* unitWrap, float radius, Agent* agent) {
+    Point2D weightedVector(UnitWrapper* unitWrap, float radius, Agent* agent)  {
+FUNC_START
         //printf("5ize:%d\n", sizeof(DamageLocation));
         enemyDamageNetTemp->clear();
         Point2D pos = unitWrap->pos(agent);
@@ -742,18 +774,21 @@ namespace UnitManager {
         return normalize(vector);
     }
     
-    bool checkExist(UnitTypeID id) {
+    bool checkExist(UnitTypeID id)  {
+FUNC_START
         return units.find(id) != units.end();
     }
 
-    UnitWrappers get(UnitTypeID type) {
+    UnitWrappers get(UnitTypeID type)  {
+FUNC_START
         if (checkExist(type)) {
             return units.at(type);
         }
         return UnitWrappers();
     }
 
-    UnitWrappers getMulti(vector<UnitTypeID> types) {
+    UnitWrappers getMulti(vector<UnitTypeID> types)  {
+FUNC_START
         int total = 0;
         for (UnitTypeID type : types) {
             if (checkExist(type)) {
@@ -772,7 +807,8 @@ namespace UnitManager {
         return wraps;
     }
 
-    UnitWrapper* find(UnitTypeID type, Tag tag) {
+    UnitWrapper* find(UnitTypeID type, Tag tag)  {
+FUNC_START
         UnitWrappers v = get(type);
         for (int i = 0; i < v.size(); i++) {
             if (v.at(i)->self == tag) {
@@ -782,18 +818,21 @@ namespace UnitManager {
         return nullptr;
     }
 
-    bool checkExistNeutral(UnitTypeID id) {
+    bool checkExistNeutral(UnitTypeID id)  {
+FUNC_START
         return neutrals.find(id) != neutrals.end();
     }
 
-    UnitWrappers getNeutral(UnitTypeID type) {
+    UnitWrappers getNeutral(UnitTypeID type)  {
+FUNC_START
         if (checkExistNeutral(type)) {
             return neutrals.at(type);
         }
         return UnitWrappers();
     }
 
-    UnitWrappers getNeutralMulti(vector<UnitTypeID> types) {
+    UnitWrappers getNeutralMulti(vector<UnitTypeID> types)  {
+FUNC_START
         int total = 0;
         for (UnitTypeID type : types) {
             if (checkExistNeutral(type)) {
@@ -812,7 +851,8 @@ namespace UnitManager {
         return wraps;
     }
 
-    UnitWrappers getVespene() {
+    UnitWrappers getVespene()  {
+FUNC_START
         //UnitWrappers v1 = getNeutral(UNIT_TYPEID::NEUTRAL_VESPENEGEYSER);
         //UnitWrappers v2 = getNeutral(UNIT_TYPEID::NEUTRAL_PROTOSSVESPENEGEYSER);
         //UnitWrappers v3 = getNeutral(UNIT_TYPEID::NEUTRAL_PURIFIERVESPENEGEYSER);
@@ -835,7 +875,8 @@ namespace UnitManager {
         return getNeutralMulti(vespenes);
     }
 
-    UnitWrappers getMinerals() {
+    UnitWrappers getMinerals()  {
+FUNC_START
         //UnitWrappers v1 = getNeutral(UNIT_TYPEID::NEUTRAL_MINERALFIELD);
         //UnitWrappers v2 = getNeutral(UNIT_TYPEID::NEUTRAL_LABMINERALFIELD);
         //UnitWrappers v3 = getNeutral(UNIT_TYPEID::NEUTRAL_MINERALFIELD750);
@@ -855,7 +896,8 @@ namespace UnitManager {
         return getNeutralMulti(minerals);
     }
 
-    UnitWrapper *findNeutral(UnitTypeID type, Tag tag) {
+    UnitWrapper *findNeutral(UnitTypeID type, Tag tag)  {
+FUNC_START
         UnitWrappers v = getNeutral(type);
         for (int i = 0; i < v.size(); i++) {
             if (v.at(i)->self == tag) {
@@ -865,18 +907,21 @@ namespace UnitManager {
         return nullptr;
     }
 
-    bool checkExistEnemy(UnitTypeID id) {
+    bool checkExistEnemy(UnitTypeID id)  {
+FUNC_START
         return enemies.find(id) != enemies.end();
     }
 
-    UnitWrappers getEnemy(UnitTypeID type) {
+    UnitWrappers getEnemy(UnitTypeID type)  {
+FUNC_START
         if (checkExistEnemy(type)) {
             return enemies.at(type);
         }
         return UnitWrappers();
     }
 
-    UnitWrappers getEnemyMulti(vector<UnitTypeID> types) {
+    UnitWrappers getEnemyMulti(vector<UnitTypeID> types)  {
+FUNC_START
         int total = 0;
         for (UnitTypeID type : types) {
             if (checkExistEnemy(type)) {
@@ -895,7 +940,8 @@ namespace UnitManager {
         return wraps;
     }
 
-    UnitWrapper *findEnemy(UnitTypeID type, Tag tag) {
+    UnitWrapper *findEnemy(UnitTypeID type, Tag tag)  {
+FUNC_START
         UnitWrappers v = getEnemy(type);
         for (int i = 0; i < v.size(); i++) {
             if (v.at(i)->self == tag) {
@@ -919,7 +965,8 @@ namespace UnitManager {
 //    UnitManager::units.at(type).push_back(this);
 //}
 
-UnitWrapper::UnitWrapper(const Unit *unit) : self(unit->tag), type(unit->unit_type), lastPos{0, 0, 0}, radius(unit->radius), team(unit->alliance), isBuilding(unit->is_building), health(0), healthMax(0), shields(0), shieldsMax(0) {
+UnitWrapper::UnitWrapper(const Unit *unit) : self(unit->tag), type(unit->unit_type), lastPos{0, 0, 0}, radius(unit->radius), team(unit->alliance), isBuilding(unit->is_building), health(0), healthMax(0), shields(0), shieldsMax(0)  {
+FUNC_START
     if (unit->alliance == Unit::Alliance::Self) {
         if (!UnitManager::checkExist(type)) {
             UnitManager::units[type] = UnitWrappers();
@@ -971,7 +1018,8 @@ UnitWrapper::UnitWrapper(const Unit *unit) : self(unit->tag), type(unit->unit_ty
     abilities = AvailableAbilities();
 }
 
-Point2D UnitWrapper::pos(Agent *agent) {
+Point2D UnitWrapper::pos(Agent *agent)  {
+FUNC_START
     const Unit *unit = agent->Observation()->GetUnit(self);
     if (unit != nullptr) {
         lastPos = unit->pos;
@@ -981,7 +1029,8 @@ Point2D UnitWrapper::pos(Agent *agent) {
     return lastPos;
 }
 
-Point3D UnitWrapper::pos3D(Agent *agent) {
+Point3D UnitWrapper::pos3D(Agent *agent)  {
+FUNC_START
     const Unit *unit = agent->Observation()->GetUnit(self);
     if (unit != nullptr) {
         lastPos = unit->pos;
@@ -991,20 +1040,24 @@ Point3D UnitWrapper::pos3D(Agent *agent) {
     return lastPos;
 }
 
-inline bool UnitWrapper::exists(Agent *agent) {
+inline bool UnitWrapper::exists(Agent *agent)  {
+FUNC_START
     return agent->Observation()->GetUnit(self) == nullptr;
 }
 
-inline const Unit* UnitWrapper::get(Agent *agent) {
+inline const Unit* UnitWrapper::get(Agent *agent)  {
+FUNC_START
     return agent->Observation()->GetUnit(self);
 }
 
-bool UnitWrapper::equals(UnitWrapper *wrapper) {
+bool UnitWrapper::equals(UnitWrapper *wrapper)  {
+FUNC_START
     return (wrapper->self == self) && (wrapper->type == type);
 }
 
 //We only care about nexus, probe, gateway, ?zealot?, forge, cybercore, sentry, stalker, adept, shield battery, twilight council, stargate, pheonix, oracle, void ray, robotics facility, observer, warp prism, templar, high templar, archon, dark shrine, dark templar, fleet beacon, ?carrier, mothership, robotics bay, disruptor
-void UnitWrapper::loadAbilities(Agent *agent) {
+void UnitWrapper::loadAbilities(Agent *agent)  {
+FUNC_START
     //Units all = agent->Observation()->GetUnits(Unit::Alliance::Self);
     //vector<AvailableAbilities> allAb = agent->Query()->GetAbilitiesForUnits(all);
     //for (AvailableAbilities abil : allAb) {
@@ -1067,7 +1120,8 @@ void UnitWrapper::loadAbilities(Agent *agent) {
     }
 }
 
-//void UnitWrapper::loadAbilitiesEnemy(Agent* agent) {
+//void UnitWrapper::loadAbilitiesEnemy(Agent* agent)  {
+FUNC_START
 //    Units all = agent->Observation()->GetUnits(Unit::Alliance::Enemy);
 //    vector<AvailableAbilities> allAb = agent->Query()->GetAbilitiesForUnits(all);
 //    for (AvailableAbilities abil : allAb) {
@@ -1088,7 +1142,8 @@ void UnitWrapper::loadAbilities(Agent *agent) {
 //    }
 //}
 
-UnitWrapper::~UnitWrapper() {
+UnitWrapper::~UnitWrapper()  {
+FUNC_START
     if (team == Unit::Alliance::Self) {
         for (auto it = UnitManager::units.at(type).begin(); it != UnitManager::units.at(type).end(); it++) {
             if ((*it)->self == self) {
@@ -1116,6 +1171,7 @@ UnitWrapper::~UnitWrapper() {
 
 }
 
-bool UnitWrapper::execute(Agent *agent) {
+bool UnitWrapper::execute(Agent *agent)  {
+FUNC_START
     return false;
 }

@@ -7,7 +7,8 @@ struct MacroBuilding : MacroAction {
     }
 };
 
-MacroAction MacroBuilding(AbilityID ability_, Point2D pos_) {
+MacroAction MacroBuilding(AbilityID ability_, Point2D pos_)  {
+FUNC_START
     return MacroAction(UNIT_TYPEID::PROTOSS_PROBE, ability_, pos_);
 }
 //MacroAction Action(UnitTypeID unit_type_, AbilityID ability_, Point2D pos_) {
@@ -143,7 +144,8 @@ namespace Strategem {
     Strategy pig_stalker_colossus;
     Strategy chargelot_immortal_archon_timing;
 
-    void initStrategies() {
+    void initStrategies()  {
+FUNC_START
         shit_stalker_colossus.build_order = {
             MacroBuilding(ABILITY_ID::BUILD_PYLON, P2D(Aux::staging_location)),
             MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),

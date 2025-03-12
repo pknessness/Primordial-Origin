@@ -16,14 +16,16 @@ struct lastfew {
     long long last[lastX] = {0};
     int arm = 0;
 
-    void add(long long l) {
+    void add(long long l)  {
+FUNC_START
         last[arm] = l;
         arm++;
         if (arm == lastX)
             arm = 0;
     }
 
-    long long time() {
+    long long time()  {
+FUNC_START
         long long t = 0;
         for (int i = 0; i < lastX; i++)
             t += last[i];
@@ -43,28 +45,33 @@ public:
     timeus start_time;
     bool enabled;
 
-    Profiler(string name_) {
+    Profiler(string name_)  {
+FUNC_START
         name = name_;
         start_time = std::chrono::steady_clock::now();
         mid_time = start_time;
         enabled = true;
     }
 
-    void disable() {
+    void disable()  {
+FUNC_START
         enabled = false;
     }
 
-    void enable() {
+    void enable()  {
+FUNC_START
         enabled = true;
     }
 
-    void subScope() {
+    void subScope()  {
+FUNC_START
         if (!enabled)
             return;
         mid_time = std::chrono::steady_clock::now();
     }
 
-    void addCall(string sname, long long dt) {
+    void addCall(string sname, long long dt)  {
+FUNC_START
         if (profilerMap.find(sname) == profilerMap.end()) {
             profilerMap[sname] = dt;
             profilerCoumt[sname] = 1;
@@ -77,7 +84,8 @@ public:
         }
     }
 
-    void midLog(string mid) {
+    void midLog(string mid)  {
+FUNC_START
         if (!enabled)
             return;
         timeus now = std::chrono::steady_clock::now();
@@ -89,7 +97,8 @@ public:
         mid_time = now;
     }
 
-    ~Profiler() {
+    ~Profiler()  {
+FUNC_START
         if (!enabled)
             return;
         timeus now = std::chrono::steady_clock::now();

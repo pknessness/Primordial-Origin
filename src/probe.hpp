@@ -9,7 +9,8 @@ map<Tag, int8_t> probeTargetting;
 map<Tag, float> mineralDistance;
 map<Tag, bool> nexusNearby;
 
-Point2D getBuildingLocation(Agent *agent) {
+Point2D getBuildingLocation(Agent *agent)  {
+FUNC_START
     if (Aux::buildingPointer >= Aux::buildingLocations.size()) {
         GameInfo game_info = agent->Observation()->GetGameInfo();
         auto pylons = UnitManager::get(UNIT_TYPEID::PROTOSS_PYLON);
@@ -52,7 +53,8 @@ Point2D getBuildingLocation(Agent *agent) {
     return Aux::buildingLocations.at(Aux::buildingPointer++);
 }
 
-Point2D getPylonLocation(Agent *agent) {
+Point2D getPylonLocation(Agent *agent)  {
+FUNC_START
     if (Aux::pylonPointer >= Aux::pylonLocations.size()) {
         GameInfo game_info = agent->Observation()->GetGameInfo();
         auto pylons = UnitManager::get(UNIT_TYPEID::PROTOSS_PYLON);
@@ -103,16 +105,19 @@ public:
     //    target = 0;
     //}
 
-    Probe(const Unit* unit) : UnitWrapper(unit) {
+    Probe(const Unit* unit) : UnitWrapper(unit)  {
+FUNC_START
         target = NullTag;
     }
 
-    bool addBuilding(Building building) {
+    bool addBuilding(Building building)  {
+FUNC_START
         buildings.push_back(building);
         return true;
     }
 
-    Tag getTargetTag(Agent *agent) { //TODO: IF ASSIMILATOR EMPTY RETARGET
+    Tag getTargetTag(Agent *agent)  {
+FUNC_START //TODO: IF ASSIMILATOR EMPTY RETARGET
         if (agent->Observation()->GetUnit(target) == nullptr) {
             target = NullTag;
         }
@@ -195,7 +200,8 @@ public:
         return target;
     }
 
-    bool execute(Agent *agent) {
+    bool execute(Agent *agent)  {
+FUNC_START
         if (agent->Observation()->GetUnit(self) == nullptr) {
             return false;
         }
@@ -310,7 +316,8 @@ public:
         return true;
     }
 
-    static void loadAbilities(Agent *agent) {
+    static void loadAbilities(Agent *agent)  {
+FUNC_START
         Units u;
         vector<UnitWrapper *> probes = UnitManager::get(UNIT_TYPEID::PROTOSS_PROBE);
         //for (int i = 0; i < probes.size(); i++) {

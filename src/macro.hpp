@@ -37,7 +37,8 @@ struct MacroAction {
           index(globalIndex),
           lastChecked(0),
           dist_cache(-1),
-          unit_cache(NullTag) {
+          unit_cache(NullTag)  {
+FUNC_START
         globalIndex ++;
     }
 
@@ -48,10 +49,12 @@ struct MacroAction {
           index(index),
           lastChecked(0),
           dist_cache(-1),
-          unit_cache(NullTag) {
+          unit_cache(NullTag)  {
+FUNC_START
     }
 
-    Cost cost(Agent *agent) {
+    Cost cost(Agent *agent)  {
+FUNC_START
         return Aux::abilityToCost(ability, agent);
     }
 
@@ -65,7 +68,8 @@ namespace Macro {
     int lastChecked = 0;
     string diagnostics = "";
 
-    void addAction(MacroAction m) {
+    void addAction(MacroAction m)  {
+FUNC_START
         if (actions.find(m.unit_type) == actions.end()) {
             actions[m.unit_type] = vector<MacroAction>();
         }
@@ -80,26 +84,31 @@ namespace Macro {
         return &(actions.at(unit_type_).back());
     }
 
-    void addActionTop(UnitTypeID unit_type_, AbilityID ability_, Point2D pos_, int index_) {
+    void addActionTop(UnitTypeID unit_type_, AbilityID ability_, Point2D pos_, int index_)  {
+FUNC_START
         if (actions.find(unit_type_) == actions.end()) {
             actions[unit_type_] = vector<MacroAction>();
         }
         actions.at(unit_type_).insert(actions.at(unit_type_).begin(), MacroAction(unit_type_, ability_, pos_, index_));
     }
 
-    void addProbe() {
+    void addProbe()  {
+FUNC_START
         addActionTop(UNIT_TYPEID::PROTOSS_NEXUS, ABILITY_ID::TRAIN_PROBE, {0, 0}, 0);
     }
 
-    void addBuilding(AbilityID ability_, Point2D pos_) {
+    void addBuilding(AbilityID ability_, Point2D pos_)  {
+FUNC_START
         addAction(UNIT_TYPEID::PROTOSS_PROBE, ability_, pos_);
     }
 
-    void addBuildingTop(AbilityID ability_, Point2D pos_, int index_) {
+    void addBuildingTop(AbilityID ability_, Point2D pos_, int index_)  {
+FUNC_START
         addActionTop(UNIT_TYPEID::PROTOSS_PROBE, ability_, pos_, index_);
     }
 
-    void execute(Agent *agent) {
+    void execute(Agent *agent)  {
+FUNC_START
         DebugText(agent,diagnostics, Point2D(0.03, 0.01), Color(100, 190, 215), 8);
         uint32_t gt = agent->Observation()->GetGameLoop();
         if (gt < lastChecked + ACTION_CHECK_DT) {

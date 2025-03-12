@@ -1,3 +1,12 @@
+#define FUNCTION_NAME __FUNCTION__
+
+#define FILE_NAME __FILE__
+
+#define LINE_NUM __LINE__
+
+#define FUNC_START FuncStart(FILE_NAME, FUNCTION_NAME, LINE_NUM);
+#define FUNC_END FuncEnd(FILE_NAME, FUNCTION_NAME, LINE_NUM);
+
 #pragma once
 #include <sc2api/sc2_api.h>
 #include <ctime>
@@ -61,19 +70,13 @@ void DebugSphere(Agent* agent, const Point3D& p, float r, Color color = Colors::
 #endif
 }
 
-void SendDebug(Agent* agent) {
+void SendDebug(Agent* agent)  {
 #ifndef BUILD_FOR_LADDER
     agent->Debug()->SendDebug();
 #endif
 }
 
 ///#define macros
-
-#define FUNCTION_NAME __FUNCTION__
-
-#define FILE_NAME __FILE__
-
-#define LINE_NUM __LINE__
 
 //error checking macros
 #define CONSOLE_PRINT_ERROR(errorText) ConsolePrintError(errorText, FILE_NAME, FUNCTION_NAME, LINE_NUM)
@@ -82,14 +85,14 @@ void ConsolePrintError(const std::string& errorText, const char* fileName, const
     printf("CRASH: %s@%d, %s(), %s", fileName, lineNum, functionName, errorText.c_str());
 }
 
-#define FUNC_START FuncStart(FILE_NAME, FUNCTION_NAME, LINE_NUM)
-#define FUNC_END FuncEnd(FILE_NAME, FUNCTION_NAME, LINE_NUM)
+#define FUNC_START FuncStart(FILE_NAME, FUNCTION_NAME, LINE_NUM);
+#define FUNC_END FuncEnd(FILE_NAME, FUNCTION_NAME, LINE_NUM);
 
-void FuncStart(const char* fileName, const char* functionName, int lineNum) {
+void FuncStart(const char* fileName, const char* functionName, int lineNum)  {
     printf("Entered %s(), %s@%d", fileName, lineNum, functionName);
 }
 
-void FuncEnd(const char* fileName, const char* functionName, int lineNum) {
+void FuncEnd(const char* fileName, const char* functionName, int lineNum)  {
     printf("Exited %s(), %s@%d", fileName, lineNum, functionName);
 }
 

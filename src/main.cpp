@@ -125,6 +125,14 @@ int main(int argc, char* argv[])
     //}
 
     CPPTRACE_TRY{
+        throw 1;
+    }CPPTRACE_CATCH(...){
+        printf("i threw successfully\n");
+        cpptrace::stacktrace death = cpptrace::from_current_exception();
+        death.print();
+    }
+
+    CPPTRACE_TRY{
         // Connect to the game client
         std::cout << "Connecting to port " << Options.GamePort << std::endl;
         coordinator.Connect(Options.GamePort);
@@ -158,8 +166,10 @@ int main(int argc, char* argv[])
         fwrite(stacktr.c_str(), 1, stacktr.length(), filePtr);
         death.print();
         fclose(filePtr);
-        throw -1;
+        //throw -1;
     }
+
+    sleep(4);
 
     return 0;
 }

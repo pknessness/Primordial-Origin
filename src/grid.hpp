@@ -13,17 +13,20 @@ struct Location
 	int x, y;
 	Location direction() const;
 
-	Location(int x_, int y_) {
+	Location(int x_, int y_)  {
+FUNC_START
         x = x_;
         y = y_;
     }
 
-	Location() {
+	Location()  {
+FUNC_START
         x = -1;
         y = -1;
     }
 
-	Location(Point2DI point) {
+	Location(Point2DI point)  {
+FUNC_START
         x = point.x;
         y = point.y;
 	}
@@ -71,7 +74,8 @@ private:
 public:
 	//std::unordered_set<Location> walls;
 
-	Grid() {};
+	Grid()  {
+FUNC_START};
 	Grid(int width_, int height_/*, std::unordered_set<Location> walls_*/) : width(width_), height(height_)/*, walls(walls_)*/ {};
 
 	int get_width() const {return width;};

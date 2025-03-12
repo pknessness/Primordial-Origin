@@ -9,7 +9,6 @@
 #include "spacialhashgrid.hpp"
 #include "map2dFloat.hpp"
 #include "unitpriority.hpp"
-#include "debugging.hpp"
 #include "primordialstar.hpp"
 
 constexpr int BERTH = 1;
@@ -23,7 +22,8 @@ enum SquadMode {
     SEARCH
 };
 
-char *SquadModeToString(SquadMode mode) {
+char *SquadModeToString(SquadMode mode)  {
+FUNC_START
     if (mode == ATTACK) {
         return "ATTACK";
     } else if (mode == RETREAT) {
@@ -80,7 +80,8 @@ public:
     std::vector<UnitWrapper *> army;
     std::vector<UnitWrapper*> targets;
 
-    Squad() {
+    Squad()  {
+FUNC_START
         army = std::vector<UnitWrapper *>();
         targets = std::vector<UnitWrapper*>();
         radius = 0;
@@ -91,7 +92,8 @@ public:
         core = nullptr;
     }
 
-    bool has(UnitTypeID type) {
+    bool has(UnitTypeID type)  {
+FUNC_START
         for (UnitWrapper *u : army) {
             if (u->type == type) {
                 return true;
@@ -100,7 +102,8 @@ public:
         return false;
     }
 
-    bool find(UnitTypeID tag) {
+    bool find(UnitTypeID tag)  {
+FUNC_START
         for (UnitWrapper *u : army) {
             if (u->self == tag) {
                 return true;
@@ -109,7 +112,8 @@ public:
         return false;
     }
 
-    Point2D numericalCenter(Agent* agent) {
+    Point2D numericalCenter(Agent* agent)  {
+FUNC_START
         Point2D center = { 0, 0 };
         if (army.size() == 0)
             return center;
@@ -126,7 +130,8 @@ public:
         return (center / cnt);
     }
 
-    UnitWrapper* getCore(Agent* agent) {
+    UnitWrapper* getCore(Agent* agent)  {
+FUNC_START
         if (core == nullptr || core->get(agent) == nullptr) {
             Composition c = composition(agent);
             Point2D numCenter = numericalCenter(agent);
@@ -147,14 +152,16 @@ public:
         return core;
     }
 
-    Point2D coreCenter(Agent* agent) {
+    Point2D coreCenter(Agent* agent)  {
+FUNC_START
         if (getCore(agent) != nullptr) {
             return core->pos(agent);
         }
         return Point2D{ 0,0 };
     }
 
-    Composition composition(Agent *agent) {
+    Composition composition(Agent *agent)  {
+FUNC_START
         if (comp != Composition::Invalid) {
             return comp;
         }
@@ -169,7 +176,8 @@ public:
         return comp;
     }
 
-    void singleUnitComp(UnitWrapper *unit, Agent *agent) {
+    void singleUnitComp(UnitWrapper *unit, Agent *agent)  {
+FUNC_START
         if (unit->get(agent)->is_flying) {
             if (comp == Composition::Invalid) {
                 comp = Composition::Air;
@@ -189,7 +197,8 @@ public:
         }
     }
 
-    float armyballRadius() {
+    float armyballRadius()  {
+FUNC_START
         if (radius != 0)
             return radius;
         else {
@@ -198,7 +207,8 @@ public:
         }
     }
 
-    bool execute(Agent *agent) {
+    bool execute(Agent *agent)  {
+FUNC_START
         //auto squadEx = Profiler("sE");
         if (mode == ATTACK) {
             if (ignoreFrames > 0) {
@@ -239,37 +249,43 @@ public:
         return false;
     }
 
-    bool attack(Point2D location_) {
+    bool attack(Point2D location_)  {
+FUNC_START
         mode = ATTACK;
         location = location_;
         return false;
     }
 
-    bool retreat(Point2D location_) {
+    bool retreat(Point2D location_)  {
+FUNC_START
         mode = RETREAT;
         location = location_;
         return false;
     }
 
-    bool defend(Point2D location_) {
+    bool defend(Point2D location_)  {
+FUNC_START
         mode = DEFEND;
         location = location_;
         return false;
     }
 
-    bool fullRetreat(Point2D location_) {
+    bool fullRetreat(Point2D location_)  {
+FUNC_START
         mode = FULL_RETREAT;
         location = location_;
         return false;
     }
 
-    bool search(Point2D location_) {
+    bool search(Point2D location_)  {
+FUNC_START
         mode = SEARCH;
         location = location_;
         return false;
     }
 
-    int coreCount() {
+    int coreCount()  {
+FUNC_START
         int c = 0;
         for (int i = 0; i < army.size(); i++) {
             if (squadStates.at(army.at(i)->self) != 'u') {
@@ -300,7 +316,8 @@ public:
     UnitWrapper* targetWrap;
     Squad* squad;
 
-    ArmyUnit(const Unit* unit) : UnitWrapper(unit) {
+    ArmyUnit(const Unit* unit) : UnitWrapper(unit)  {
+FUNC_START
         targetWrap = nullptr;
         if (squads.size() == 0) {
             squads.emplace_back();
@@ -315,19 +332,22 @@ public:
         distToTarget = -1;
     }
 
-    UnitTypeData getStats(Agent *agent) {
+    UnitTypeData getStats(Agent *agent)  {
+FUNC_START
         if (stats.unit_type_id == UNIT_TYPEID::INVALID) {
             stats = Aux::getStats(type,agent);
         }
         return stats;
     }
 
-    bool withSquad(Agent* agent) {
+    bool withSquad(Agent* agent)  {
+FUNC_START
         //printf("D%.1f %.1f\n", Distance2D(pos(agent), squad->coreCenter(agent)), squad->armyballRadius());
         return Distance2D(pos(agent), squad->coreCenter(agent)) < squad->armyballRadius();
     }
 
-    float priorityAttack(Weapon w, UnitWrapper* op, Agent *agent) {  // HIGHER IS MORE DESIRABLE TO ATTACK
+    float priorityAttack(Weapon w, UnitWrapper* op, Agent *agent)  {
+FUNC_START  // HIGHER IS MORE DESIRABLE TO ATTACK
         if (Army::hitsUnit(w.type, op->getComposition(agent))) {
             return Army::Priority(type, op->type) - 3 * ((op->health + op->shields)/(op->healthMax + op->shieldsMax)); //include health
         }
@@ -345,7 +365,8 @@ public:
         return 1;
     }
 
-    virtual bool execute(Agent *agent) {
+    virtual bool execute(Agent *agent)  {
+FUNC_START
         if (get(agent) == nullptr) {
             return false;
         }
@@ -363,7 +384,8 @@ public:
         return false;
     }
 
-    UnitWrappers getTargetEnemy(UnitWrappers targets, Agent* agent) {
+    UnitWrappers getTargetEnemy(UnitWrappers targets, Agent* agent)  {
+FUNC_START
         Point2D position = pos(agent);
         UnitWrappers potentialTargets = UnitWrappers();
         std::vector<float> potentialPriority = std::vector<float>();
@@ -402,7 +424,8 @@ public:
         return potentialTargets;
     }
 
-    float calculatePathDamage(Point2D start, Point2D end, Agent* agent) {
+    float calculatePathDamage(Point2D start, Point2D end, Agent* agent)  {
+FUNC_START
         float damageCost = 0.0F;
         vector<Point2D> fullpath = PrimordialStar::getPath(start, end, radius, agent);
         vector<Point2D> stepPoints = PrimordialStar::stepPointsAlongPath(fullpath, 1.0F);
@@ -427,7 +450,8 @@ public:
         return damageCost;
     }
 
-    Point2D randomPointRadius(Point2D center, float rad) {
+    Point2D randomPointRadius(Point2D center, float rad)  {
+FUNC_START
         float theta = ((float)std::rand()) * 2 * 3.1415926 / RAND_MAX;
         float r = ((float)std::rand()) * rad / RAND_MAX;
         float x = std::cos(theta) * r;
@@ -436,7 +460,8 @@ public:
         return Point2D { center.x + x, center.y + y };
     }
 
-    //void updateRandomMinDamagePoint(Point2D position, float rad, int numChecks, Point2D posTarget, Agent* agent) {
+    //void updateRandomMinDamagePoint(Point2D position, float rad, int numChecks, Point2D posTarget, Agent* agent)  {
+FUNC_START
     //    for (int i = 0; i < escapePointChecks; i++) {
     //        Profiler profil("escapePoint");
     //        
@@ -512,7 +537,8 @@ public:
     //    }
     //}
 
-    virtual bool executeAttack(Agent *agent) {
+    virtual bool executeAttack(Agent *agent)  {
+FUNC_START
         //vector<int> vac;
         //vac.push_back(2);
         //vac.at(4) = 5;
@@ -677,12 +703,14 @@ public:
         return false;
     }
 
-    virtual bool executeRetreat(Agent *agent) {
+    virtual bool executeRetreat(Agent *agent)  {
+FUNC_START
         Units enemies = agent->Observation()->GetUnits(Unit::Alliance::Enemy);
         return false;
     }
 
-    virtual bool executeDefend(Agent *agent) {
+    virtual bool executeDefend(Agent *agent)  {
+FUNC_START
         Units enemies = agent->Observation()->GetUnits(Unit::Alliance::Enemy);
         float dist = Distance2D(squad->location, pos(agent));
         //printf("%s %.1f\n", UnitTypeToName(type), dist);
@@ -693,16 +721,19 @@ public:
         return false;
     }
 
-    virtual bool executeFullRetreat(Agent *agent) {
+    virtual bool executeFullRetreat(Agent *agent)  {
+FUNC_START
         Units enemies = agent->Observation()->GetUnits(Unit::Alliance::Enemy);
         return false;
     }
 
-    float searchCost(Point2D p) {
+    float searchCost(Point2D p)  {
+FUNC_START
         return imRef(Aux::visionMap, (int)(p.x), (int)(p.y));
     }
 
-    virtual bool executeSearch(Agent* agent) {
+    virtual bool executeSearch(Agent* agent)  {
+FUNC_START
         //if (DistanceSquared2D(pos(agent), posTarget) < 9 || posTarget == Point2D{0,0}) {
         //    float cost = -1;
         //    posTarget = { 0,0 };
@@ -742,12 +773,14 @@ public:
         return false;
     }
 
-    virtual bool executeDamaged(Agent *agent, float health, float shields) {
+    virtual bool executeDamaged(Agent *agent, float health, float shields)  {
+FUNC_START
         Units enemies = agent->Observation()->GetUnits(Unit::Alliance::Enemy);
         return false;
     }
 
-    virtual ~ArmyUnit() {
+    virtual ~ArmyUnit()  {
+FUNC_START
         for (auto it = squad->army.begin(); it != squad->army.end(); it++) {
             // printf("%lx %lx", )
             if ((*it)->self == self) {
@@ -763,15 +796,18 @@ constexpr int blinkChecks = 20;
 class Stalker : public ArmyUnit {
 private:
 public:
-    Stalker(const Unit *unit) : ArmyUnit(unit) {
+    Stalker(const Unit *unit) : ArmyUnit(unit)  {
+FUNC_START
     }
 
     //the higher the more u want to go.
-    float blinkPriority(Point2D pos, Agent* agent) {
+    float blinkPriority(Point2D pos, Agent* agent)  {
+FUNC_START
         return -UnitManager::getRelevantDamage(this, UnitManager::getRadiusAvgDamage(pos, radius + 1.0F, agent), agent);
     }
 
-    virtual bool executeDamaged(Agent *agent, float health, float shields) {
+    virtual bool executeDamaged(Agent *agent, float health, float shields)  {
+FUNC_START
         if (shields < 0.05 && checkAbility(ABILITY_ID::EFFECT_BLINK)) {
             printf("TELEPORT STALKER\n");
 
@@ -814,11 +850,13 @@ class ObserverEye : public ArmyUnit {
 private:
 
 public:
-    ObserverEye(const Unit *unit) : ArmyUnit(unit) {
+    ObserverEye(const Unit *unit) : ArmyUnit(unit)  {
+FUNC_START
         squad->squadStates[self] = 'm';
     }
 
-    virtual bool execute(Agent *agent) {
+    virtual bool execute(Agent *agent)  {
+FUNC_START
         if (ignoreFrames > 0) {
             ignoreFrames--;
             return false;
@@ -832,11 +870,13 @@ class Zealot : public ArmyUnit {
 private:
 
 public:
-    Zealot(const Unit* unit) : ArmyUnit(unit) {
+    Zealot(const Unit* unit) : ArmyUnit(unit)  {
+FUNC_START
         squad->squadStates[self] = 'm';
     }
 
-    virtual bool execute(Agent* agent) {
+    virtual bool execute(Agent* agent)  {
+FUNC_START
         if (ignoreFrames > 0) {
             ignoreFrames--;
             return false;
@@ -854,10 +894,11 @@ public:
 class WarpPrism : public ArmyUnit {
 private:
 public:
-    WarpPrism(const Unit *unit) : ArmyUnit(unit) {
+    WarpPrism(const Unit *unit) : ArmyUnit(unit)  {
+FUNC_START
     }
 
-    // virtual bool execute(Agent *agent) {
+    // virtual bool execute(Agent *agent)  {
     //
     // }
 };
@@ -865,7 +906,8 @@ public:
 class Adept : public ArmyUnit {
 private:
 public:
-    Adept(const Unit *unit) : ArmyUnit(unit) {
+    Adept(const Unit *unit) : ArmyUnit(unit)  {
+FUNC_START
     }
 
     // virtual bool execute(Agent *agent) {
@@ -876,7 +918,8 @@ public:
 class Immortal : public ArmyUnit {
 private:
 public:
-    Immortal(const Unit *unit) : ArmyUnit(unit) {
+    Immortal(const Unit *unit) : ArmyUnit(unit)  {
+FUNC_START
     }
 
     // virtual bool execute(Agent *agent) {
