@@ -513,6 +513,9 @@ public:
     //}
 
     virtual bool executeAttack(Agent *agent) {
+        //vector<int> vac;
+        //vac.push_back(2);
+        //vac.at(4) = 5;
         if (ignoreFrames > 0) {
             ignoreFrames--;
         }

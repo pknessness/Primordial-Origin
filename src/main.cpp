@@ -3,6 +3,7 @@
 // Copyright (c) 2021-2024 Alexander Kurbatov
 
 #include "Bot.hpp"
+#include <ctime>
 
 #include <sc2api/sc2_coordinator.h>
 #include <sc2api/sc2_gametypes.h>
@@ -139,8 +140,21 @@ int main(int argc, char* argv[])
         while (coordinator.Update()) {
         }
     } CPPTRACE_CATCH(const std::exception& e) {
-        printf("CAUGHT");
+        printf("CAUGHT\n");
         std::cout << "Exception: " << e.what() << std::endl;
+        time_t curr_time;
+        tm* curr_tm;
+        char time_string[100];
+        time(&curr_time);
+        curr_tm = localtime(&curr_time);
+
+        strftime(time_string, 50, "%Y_%d_%m_%H_%M_%S", curr_tm);
+        string file = strprintf("data/crash_%s.txt", time_string);
+        const char* imageFileName = file.c_str();
+        FILE* imageFile = fopen(imageFileName, "wb");
+
+        string stacktr = cpptrace::from_current_exception().to_string();
+        fwrite(stacktr.c_str(), 1, stacktr.length(), imageFile);
         cpptrace::from_current_exception().print();
     }
 
@@ -218,8 +232,21 @@ int main(int argc, char* argv[])
             while (coordinator.Update()) {
             }
         } CPPTRACE_CATCH(const std::exception& e) {
-            printf("CAUGHT");
+            printf("CAUGHT\n");
             std::cout << "Exception: " << e.what() << std::endl;
+            time_t curr_time;
+            tm* curr_tm;
+            char time_string[100];
+            time(&curr_time);
+            curr_tm = localtime(&curr_time);
+
+            strftime(time_string, 50, "%Y_%d_%m_%H_%M_%S", curr_tm);
+            string file = strprintf("data/crash_%s.txt", time_string);
+            const char* imageFileName = file.c_str();
+            FILE* imageFile = fopen(imageFileName, "wb");
+
+            string stacktr = cpptrace::from_current_exception().to_string();
+            fwrite(stacktr.c_str(), 1, stacktr.length(), imageFile);
             cpptrace::from_current_exception().print();
         }
         
