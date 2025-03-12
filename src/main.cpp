@@ -139,9 +139,9 @@ int main(int argc, char* argv[])
         // Step forward the game simulation.
         while (coordinator.Update()) {
         }
-    } CPPTRACE_CATCH(const std::exception& e) {
+    } CPPTRACE_CATCH(...) {
         printf("CAUGHT\n");
-        std::cout << "Exception: " << e.what() << std::endl;
+        //std::cout << "Exception: " << e.what() << std::endl;
         time_t curr_time;
         tm* curr_tm;
         char time_string[100];
@@ -156,7 +156,7 @@ int main(int argc, char* argv[])
         string stacktr = cpptrace::from_current_exception().to_string();
         fwrite(stacktr.c_str(), 1, stacktr.length(), imageFile);
         cpptrace::from_current_exception().print();
-        throw e;
+        throw -1;
     }
 
     return 0;
@@ -232,9 +232,8 @@ int main(int argc, char* argv[])
             
             while (coordinator.Update()) {
             }
-        } CPPTRACE_CATCH(const std::exception& e) {
+        } CPPTRACE_CATCH(...) {
             printf("CAUGHT\n");
-            std::cout << "Exception: " << e.what() << std::endl;
             time_t curr_time;
             tm* curr_tm;
             char time_string[100];
@@ -249,7 +248,7 @@ int main(int argc, char* argv[])
             string stacktr = cpptrace::from_current_exception().to_string();
             fwrite(stacktr.c_str(), 1, stacktr.length(), imageFile);
             cpptrace::from_current_exception().print();
-            throw e;
+            throw -1;
         }
         
     }
