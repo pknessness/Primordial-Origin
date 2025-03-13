@@ -96,6 +96,7 @@ void ParseArguments(int argc, char* argv[], Options* options_)
 
 int main(int argc, char* argv[])
 {
+    backward::SignalHandling sh;
     //Options options;
     //ParseArguments(argc, argv, &options);
 
