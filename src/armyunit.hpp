@@ -592,7 +592,7 @@ FUNC_START
 
                 UnitWrappers potentialTargets = getTargetEnemy(squad->targets, agent);
                 
-                if (potentialTargets.size() != 0) {
+                if (potentialTargets.size() != 0 && getStats(agent).weapons.size() > 0) {
                     targetWrap = potentialTargets.front();
 
                     Weapon weap = getStats(agent).weapons.at(0);

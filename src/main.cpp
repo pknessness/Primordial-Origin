@@ -1,7 +1,8 @@
 // The MIT License (MIT)
 //
 // Copyright (c) 2021-2024 Alexander Kurbatov
-
+//#undef byte
+#include "backward/backward.hpp"
 #include "Bot.hpp"
 #include <ctime>
 
@@ -67,6 +68,7 @@ void ParseArguments(int argc, char* argv[], Options* options_)
 
 int main(int argc, char* argv[])
 {
+    backward::SignalHandling sh;
     //Options options;
     //ParseArguments(argc, argv, &options);
 
@@ -178,6 +180,7 @@ int main(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
+    backward::SignalHandling sh;
     srand(clock());
     Coordinator coordinator;
     coordinator.LoadSettings(argc, argv);

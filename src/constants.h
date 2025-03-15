@@ -175,13 +175,20 @@ bool isWithin(int x, int y, Agent* agent) {
 UnitTypes allData(Agent *agent) {
     if (!init_data) {
         cached_data = agent->Observation()->GetUnitTypeData();
+        init_data = true;
     }
     return cached_data;
 }
 
 UnitTypeData getStats(UnitTypeID type, Agent *agent) {
     if (statsMap.find(type) == statsMap.end()) {
-        statsMap[type] = allData(agent).at(static_cast<uint32_t>(type));
+        try{
+            statsMap[type] = allData(agent).at(static_cast<uint32_t>(type));
+        }
+        catch (...) {
+            printf("Errant Type: %s\n", UnitTypeToName(type));
+            statsMap[type] = agent->Observation()->GetUnitTypeData().at(static_cast<uint32_t>(type));
+        }
     }
     return statsMap[type];
 }
