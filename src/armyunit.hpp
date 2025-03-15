@@ -9,6 +9,7 @@
 #include "spacialhashgrid.hpp"
 #include "map2dFloat.hpp"
 #include "unitpriority.hpp"
+#include "debugging.hpp"
 #include "primordialstar.hpp"
 
 constexpr int BERTH = 1;
@@ -22,8 +23,7 @@ enum SquadMode {
     SEARCH
 };
 
-char *SquadModeToString(SquadMode mode)  {
-FUNC_START
+char *SquadModeToString(SquadMode mode) {
     if (mode == ATTACK) {
         return "ATTACK";
     } else if (mode == RETREAT) {
@@ -80,8 +80,7 @@ public:
     std::vector<UnitWrapper *> army;
     std::vector<UnitWrapper*> targets;
 
-    Squad()  {
-FUNC_START
+    Squad() {
         army = std::vector<UnitWrapper *>();
         targets = std::vector<UnitWrapper*>();
         radius = 0;
@@ -92,8 +91,7 @@ FUNC_START
         core = nullptr;
     }
 
-    bool has(UnitTypeID type)  {
-FUNC_START
+    bool has(UnitTypeID type) {
         for (UnitWrapper *u : army) {
             if (u->type == type) {
                 return true;
@@ -102,8 +100,7 @@ FUNC_START
         return false;
     }
 
-    bool find(UnitTypeID tag)  {
-FUNC_START
+    bool find(UnitTypeID tag) {
         for (UnitWrapper *u : army) {
             if (u->self == tag) {
                 return true;
@@ -112,26 +109,24 @@ FUNC_START
         return false;
     }
 
-    Point2D numericalCenter(Agent* agent)  {
-FUNC_START
+    Point2D numericalCenter(Agent* agent) {
         Point2D center = { 0, 0 };
         if (army.size() == 0)
             return center;
         int cnt = 0;
         for (int i = 0; i < army.size(); i++) {
-            if (squadStates.at(army.at(i)->self) == 'n') {
-                center += army.at(i)->pos(agent);
+            if (squadStates[army[i]->self] == 'n') {
+                center += army[i]->pos(agent);
                 cnt++;
             }
         }
         if (cnt == 0) {
-            return army.at(std::rand() % army.size())->pos(agent);
+            return army[std::rand() % army.size()]->pos(agent);
         }
         return (center / cnt);
     }
 
-    UnitWrapper* getCore(Agent* agent)  {
-FUNC_START
+    UnitWrapper* getCore(Agent* agent) {
         if (core == nullptr || core->get(agent) == nullptr) {
             Composition c = composition(agent);
             Point2D numCenter = numericalCenter(agent);
@@ -152,23 +147,21 @@ FUNC_START
         return core;
     }
 
-    Point2D coreCenter(Agent* agent)  {
-FUNC_START
+    Point2D coreCenter(Agent* agent) {
         if (getCore(agent) != nullptr) {
             return core->pos(agent);
         }
         return Point2D{ 0,0 };
     }
 
-    Composition composition(Agent *agent)  {
-FUNC_START
+    Composition composition(Agent *agent) {
         if (comp != Composition::Invalid) {
             return comp;
         }
         bool air = false, gnd = false;
         for (int i = 0; i < army.size(); i++) {
             if (comp != Composition::Any) {
-                singleUnitComp(army.at(i), agent);
+                singleUnitComp(army[i], agent);
             } else {
                 break;
             }
@@ -176,8 +169,7 @@ FUNC_START
         return comp;
     }
 
-    void singleUnitComp(UnitWrapper *unit, Agent *agent)  {
-FUNC_START
+    void singleUnitComp(UnitWrapper *unit, Agent *agent) {
         if (unit->get(agent)->is_flying) {
             if (comp == Composition::Invalid) {
                 comp = Composition::Air;
@@ -197,8 +189,7 @@ FUNC_START
         }
     }
 
-    float armyballRadius()  {
-FUNC_START
+    float armyballRadius() {
         if (radius != 0)
             return radius;
         else {
@@ -207,8 +198,7 @@ FUNC_START
         }
     }
 
-    bool execute(Agent *agent)  {
-FUNC_START
+    bool execute(Agent *agent) {
         //auto squadEx = Profiler("sE");
         if (mode == ATTACK) {
             if (ignoreFrames > 0) {
@@ -220,8 +210,8 @@ FUNC_START
             if (coreCenter(agent) != Point2D{ 0,0 }) {
                 Circles c;
                 for (int i = 0; i < army.size(); i++) {
-                    if (squadStates.at(army.at(i)->self) != 'u') {
-                        c.push_back(Circle{ army.at(i)->pos(agent), Army::maxWeaponRadius(army.at(i)->type) });
+                    if (squadStates[army[i]->self] != 'u') {
+                        c.push_back(Circle{ army[i]->pos(agent), Army::maxWeaponRadius(army[i]->type) });
                     }
                 }
                 targets = SpacialHash::findInRadiiEnemy(c, agent);//SpacialHash::findInRadiusEnemy(coreCenter(agent), armyballRadius() + squadExtraRadius, agent);
@@ -241,7 +231,7 @@ FUNC_START
         }
 
         //for (auto wrap : army) {
-        //    if (squadStates.at(wrap->self) == 'u' && Distance2D(wrap->pos(agent), coreCenter(agent)) < armyballRadius()) {
+        //    if (squadStates[wrap->self] == 'u' && Distance2D(wrap->pos(agent), coreCenter(agent)) < armyballRadius()) {
         //        squadStates[wrap->self] = 'n';
         //    }
         //}
@@ -249,46 +239,40 @@ FUNC_START
         return false;
     }
 
-    bool attack(Point2D location_)  {
-FUNC_START
+    bool attack(Point2D location_) {
         mode = ATTACK;
         location = location_;
         return false;
     }
 
-    bool retreat(Point2D location_)  {
-FUNC_START
+    bool retreat(Point2D location_) {
         mode = RETREAT;
         location = location_;
         return false;
     }
 
-    bool defend(Point2D location_)  {
-FUNC_START
+    bool defend(Point2D location_) {
         mode = DEFEND;
         location = location_;
         return false;
     }
 
-    bool fullRetreat(Point2D location_)  {
-FUNC_START
+    bool fullRetreat(Point2D location_) {
         mode = FULL_RETREAT;
         location = location_;
         return false;
     }
 
-    bool search(Point2D location_)  {
-FUNC_START
+    bool search(Point2D location_) {
         mode = SEARCH;
         location = location_;
         return false;
     }
 
-    int coreCount()  {
-FUNC_START
+    int coreCount() {
         int c = 0;
         for (int i = 0; i < army.size(); i++) {
-            if (squadStates.at(army.at(i)->self) != 'u') {
+            if (squadStates[army[i]->self] != 'u') {
                 c++;
             }
         }
@@ -316,14 +300,13 @@ public:
     UnitWrapper* targetWrap;
     Squad* squad;
 
-    ArmyUnit(const Unit* unit) : UnitWrapper(unit)  {
-FUNC_START
+    ArmyUnit(const Unit* unit) : UnitWrapper(unit) {
         targetWrap = nullptr;
         if (squads.size() == 0) {
             squads.emplace_back();
         }
-        squads.at(0).army.push_back(this);
-        squad = &squads.at(0);
+        squads[0].army.push_back(this);
+        squad = &squads[0];
         //is_flying = unit->is_flying; 
         squad->squadStates[self] = 'u';
         squad->subSquadStates[self] = '.';
@@ -332,22 +315,19 @@ FUNC_START
         distToTarget = -1;
     }
 
-    UnitTypeData getStats(Agent *agent)  {
-FUNC_START
+    UnitTypeData getStats(Agent *agent) {
         if (stats.unit_type_id == UNIT_TYPEID::INVALID) {
             stats = Aux::getStats(type,agent);
         }
         return stats;
     }
 
-    bool withSquad(Agent* agent)  {
-FUNC_START
+    bool withSquad(Agent* agent) {
         //printf("D%.1f %.1f\n", Distance2D(pos(agent), squad->coreCenter(agent)), squad->armyballRadius());
         return Distance2D(pos(agent), squad->coreCenter(agent)) < squad->armyballRadius();
     }
 
-    float priorityAttack(Weapon w, UnitWrapper* op, Agent *agent)  {
-FUNC_START  // HIGHER IS MORE DESIRABLE TO ATTACK
+    float priorityAttack(Weapon w, UnitWrapper* op, Agent *agent) {  // HIGHER IS MORE DESIRABLE TO ATTACK
         if (Army::hitsUnit(w.type, op->getComposition(agent))) {
             return Army::Priority(type, op->type) - 3 * ((op->health + op->shields)/(op->healthMax + op->shieldsMax)); //include health
         }
@@ -365,8 +345,7 @@ FUNC_START  // HIGHER IS MORE DESIRABLE TO ATTACK
         return 1;
     }
 
-    virtual bool execute(Agent *agent)  {
-FUNC_START
+    virtual bool execute(Agent *agent) {
         if (get(agent) == nullptr) {
             return false;
         }
@@ -384,8 +363,7 @@ FUNC_START
         return false;
     }
 
-    UnitWrappers getTargetEnemy(UnitWrappers targets, Agent* agent)  {
-FUNC_START
+    UnitWrappers getTargetEnemy(UnitWrappers targets, Agent* agent) {
         Point2D position = pos(agent);
         UnitWrappers potentialTargets = UnitWrappers();
         std::vector<float> potentialPriority = std::vector<float>();
@@ -405,7 +383,7 @@ FUNC_START
                         potentialPriority.push_back(priority);
                     }
                     for (int d = 0; d < potentialTargets.size(); d++) {
-                        if (potentialPriority.at(d) < priority) {
+                        if (potentialPriority[d] < priority) {
                             potentialTargets.insert(potentialTargets.begin() + d, enemy);
                             potentialPriority.insert(potentialPriority.begin() + d, priority);
                             inserted = true;
@@ -424,8 +402,7 @@ FUNC_START
         return potentialTargets;
     }
 
-    float calculatePathDamage(Point2D start, Point2D end, Agent* agent)  {
-FUNC_START
+    float calculatePathDamage(Point2D start, Point2D end, Agent* agent) {
         float damageCost = 0.0F;
         vector<Point2D> fullpath = PrimordialStar::getPath(start, end, radius, agent);
         vector<Point2D> stepPoints = PrimordialStar::stepPointsAlongPath(fullpath, 1.0F);
@@ -433,8 +410,8 @@ FUNC_START
         if (fullpath.size() != 0) {
             float l2 = 0;
             for (int i = 0; i < fullpath.size() - 1; i++) {
-                l2 += Distance2D(fullpath.at(i), fullpath.at(i + 1));
-                //DebugLine(agent, AP3D(fullpath.at(i)) + Point3D{ 0,0,1 }, AP3D(fullpath.at(i + 1)) + Point3D{ 0,0,1 }, Colors::Green);
+                l2 += Distance2D(fullpath[i], fullpath[i + 1]);
+                //DebugLine(agent, AP3D(fullpath[i]) + Point3D{ 0,0,1 }, AP3D(fullpath[i + 1]) + Point3D{ 0,0,1 }, Colors::Green);
             }
             for (Point2D p : stepPoints) {
                 DamageLocation d = UnitManager::getRadiusAvgDamage(P2D(p) + Point2D{ 0.5F,0.5F }, radius, agent);
@@ -450,8 +427,7 @@ FUNC_START
         return damageCost;
     }
 
-    Point2D randomPointRadius(Point2D center, float rad)  {
-FUNC_START
+    Point2D randomPointRadius(Point2D center, float rad) {
         float theta = ((float)std::rand()) * 2 * 3.1415926 / RAND_MAX;
         float r = ((float)std::rand()) * rad / RAND_MAX;
         float x = std::cos(theta) * r;
@@ -460,8 +436,7 @@ FUNC_START
         return Point2D { center.x + x, center.y + y };
     }
 
-    //void updateRandomMinDamagePoint(Point2D position, float rad, int numChecks, Point2D posTarget, Agent* agent)  {
-FUNC_START
+    //void updateRandomMinDamagePoint(Point2D position, float rad, int numChecks, Point2D posTarget, Agent* agent) {
     //    for (int i = 0; i < escapePointChecks; i++) {
     //        Profiler profil("escapePoint");
     //        
@@ -495,8 +470,8 @@ FUNC_START
     //        //if (fullpath.size() != 0) {
     //        //    float l2 = 0;
     //        //    for (int i = 0; i < fullpath.size() - 1; i++) {
-    //        //        l2 += Distance2D(fullpath.at(i), fullpath.at(i + 1));
-    //        //        DebugLine(agent, AP3D(fullpath.at(i)) + Point3D{ 0,0,1 }, AP3D(fullpath.at(i + 1)) + Point3D{ 0,0,1 }, Colors::Green);
+    //        //        l2 += Distance2D(fullpath[i], fullpath[i + 1]);
+    //        //        DebugLine(agent, AP3D(fullpath[i]) + Point3D{ 0,0,1 }, AP3D(fullpath[i + 1]) + Point3D{ 0,0,1 }, Colors::Green);
     //        //    }
     //        //    for (Point2D p : stepPoints) {
     //        //        DamageLocation d = UnitManager::getRadiusAvgDamage(P2D(p) + Point2D{ 0.5F,0.5F }, radius, agent);
@@ -537,11 +512,7 @@ FUNC_START
     //    }
     //}
 
-    virtual bool executeAttack(Agent *agent)  {
-FUNC_START
-        //vector<int> vac;
-        //vac.push_back(2);
-        //vac.at(4) = 5;
+    virtual bool executeAttack(Agent *agent) {
         if (ignoreFrames > 0) {
             ignoreFrames--;
         }
@@ -560,13 +531,13 @@ FUNC_START
             Point2D position = pos(agent);
             posTarget = { 0,0 };
             distToTarget = -1;
-            if (squad->squadStates.at(self) == 'u') {
+            if (squad->squadStates[self] == 'u') {
                 if (withSquad(agent)) {
                     squad->squadStates[self] = 'n';
                 }
             }
 
-            if (squad->squadStates.at(self) == 'u') {
+            if (squad->squadStates[self] == 'u') {
                 //UnitWrappers potentialTargets = getTargetEnemy(SpacialHash::findInRadiusEnemy(position, Army::maxWeaponRadius(self) + radius, agent), agent);
                 //if(position)
                 posTarget = squad->coreCenter(agent);
@@ -583,8 +554,8 @@ FUNC_START
 
                 //UnitWrappers personalTargets = SpacialHash::findInRadiusEnemy(position, Army::maxWeaponRadius(type), agent);
                 //for (int i = 0; i < squad->targets.size(); i++) {
-                //    if (std::find(personalTargets.begin(), personalTargets.end(), squad->targets.at(i)) == personalTargets.end()) {
-                //        personalTargets.push_back(squad->targets.at(i));
+                //    if (std::find(personalTargets.begin(), personalTargets.end(), squad->targets[i]) == personalTargets.end()) {
+                //        personalTargets.push_back(squad->targets[i]);
                 //    }
                 //}
 
@@ -595,13 +566,13 @@ FUNC_START
                 if (potentialTargets.size() != 0 && getStats(agent).weapons.size() > 0) {
                     targetWrap = potentialTargets.front();
 
-                    Weapon weap = getStats(agent).weapons.at(0);
+                    Weapon weap = getStats(agent).weapons[0];
                     float damage = UnitManager::getRelevantDamage(targetWrap, weap, agent);
                     for (int w = 1; w < getStats(agent).weapons.size(); w++) {
-                        float dmag = UnitManager::getRelevantDamage(targetWrap, getStats(agent).weapons.at(w), agent);
+                        float dmag = UnitManager::getRelevantDamage(targetWrap, getStats(agent).weapons[w], agent);
                         if (dmag > damage) {
                             damage = dmag;
-                            weap = getStats(agent).weapons.at(w);
+                            weap = getStats(agent).weapons[w];
                         }
                     }
 
@@ -640,15 +611,15 @@ FUNC_START
                 }
             }
 
-            if (squad->subSquadStates.at(self) == 'a') {
+            if (squad->subSquadStates[self] == 'a') {
                 agent->Actions()->UnitCommand(self, ABILITY_ID::ATTACK, targetWrap->self);
                 escapeLoc = posTarget;
             }
-            else if (squad->subSquadStates.at(self) == 'k') {
+            else if (squad->subSquadStates[self] == 'k') {
                 agent->Actions()->UnitCommand(self, ABILITY_ID::ATTACK, posTarget);
                 escapeLoc = posTarget;
             }
-            else if (squad->subSquadStates.at(self) == 'j' || squad->subSquadStates.at(self) == 'r' || squad->subSquadStates.at(self) == 'c') {
+            else if (squad->subSquadStates[self] == 'j' || squad->subSquadStates[self] == 'r' || squad->subSquadStates[self] == 'c') {
                 if (!Aux::isWithin(escapeLoc,agent)) {
                     escapeLoc = position;
                 }
@@ -673,7 +644,7 @@ FUNC_START
                     }
 
                     for (int i = 0; i < escapePointChecks; i++) {
-                        Point2D checkPoint = checkPoints.at(i);
+                        Point2D checkPoint = checkPoints[i];
                         float checkCost = calculatePathDamage(position, checkPoint, agent);
                         if (escapeCost > checkCost) {
                             escapeLoc = checkPoint;
@@ -703,37 +674,32 @@ FUNC_START
         return false;
     }
 
-    virtual bool executeRetreat(Agent *agent)  {
-FUNC_START
+    virtual bool executeRetreat(Agent *agent) {
         Units enemies = agent->Observation()->GetUnits(Unit::Alliance::Enemy);
         return false;
     }
 
-    virtual bool executeDefend(Agent *agent)  {
-FUNC_START
+    virtual bool executeDefend(Agent *agent) {
         Units enemies = agent->Observation()->GetUnits(Unit::Alliance::Enemy);
         float dist = Distance2D(squad->location, pos(agent));
         //printf("%s %.1f\n", UnitTypeToName(type), dist);
-        if ((get(agent)->orders.size() == 0 || get(agent)->orders.at(0).target_pos != squad->location) &&
+        if ((get(agent)->orders.size() == 0 || get(agent)->orders[0].target_pos != squad->location) &&
             dist > squad->armyballRadius()) {
             agent->Actions()->UnitCommand(self, ABILITY_ID::ATTACK, squad->location);
         }
         return false;
     }
 
-    virtual bool executeFullRetreat(Agent *agent)  {
-FUNC_START
+    virtual bool executeFullRetreat(Agent *agent) {
         Units enemies = agent->Observation()->GetUnits(Unit::Alliance::Enemy);
         return false;
     }
 
-    float searchCost(Point2D p)  {
-FUNC_START
+    float searchCost(Point2D p) {
         return imRef(Aux::visionMap, (int)(p.x), (int)(p.y));
     }
 
-    virtual bool executeSearch(Agent* agent)  {
-FUNC_START
+    virtual bool executeSearch(Agent* agent) {
         //if (DistanceSquared2D(pos(agent), posTarget) < 9 || posTarget == Point2D{0,0}) {
         //    float cost = -1;
         //    posTarget = { 0,0 };
@@ -773,14 +739,12 @@ FUNC_START
         return false;
     }
 
-    virtual bool executeDamaged(Agent *agent, float health, float shields)  {
-FUNC_START
+    virtual bool executeDamaged(Agent *agent, float health, float shields) {
         Units enemies = agent->Observation()->GetUnits(Unit::Alliance::Enemy);
         return false;
     }
 
-    virtual ~ArmyUnit()  {
-FUNC_START
+    virtual ~ArmyUnit() {
         for (auto it = squad->army.begin(); it != squad->army.end(); it++) {
             // printf("%lx %lx", )
             if ((*it)->self == self) {
@@ -796,18 +760,15 @@ constexpr int blinkChecks = 20;
 class Stalker : public ArmyUnit {
 private:
 public:
-    Stalker(const Unit *unit) : ArmyUnit(unit)  {
-FUNC_START
+    Stalker(const Unit *unit) : ArmyUnit(unit) {
     }
 
     //the higher the more u want to go.
-    float blinkPriority(Point2D pos, Agent* agent)  {
-FUNC_START
+    float blinkPriority(Point2D pos, Agent* agent) {
         return -UnitManager::getRelevantDamage(this, UnitManager::getRadiusAvgDamage(pos, radius + 1.0F, agent), agent);
     }
 
-    virtual bool executeDamaged(Agent *agent, float health, float shields)  {
-FUNC_START
+    virtual bool executeDamaged(Agent *agent, float health, float shields) {
         if (shields < 0.05 && checkAbility(ABILITY_ID::EFFECT_BLINK)) {
             printf("TELEPORT STALKER\n");
 
@@ -850,13 +811,11 @@ class ObserverEye : public ArmyUnit {
 private:
 
 public:
-    ObserverEye(const Unit *unit) : ArmyUnit(unit)  {
-FUNC_START
+    ObserverEye(const Unit *unit) : ArmyUnit(unit) {
         squad->squadStates[self] = 'm';
     }
 
-    virtual bool execute(Agent *agent)  {
-FUNC_START
+    virtual bool execute(Agent *agent) {
         if (ignoreFrames > 0) {
             ignoreFrames--;
             return false;
@@ -870,13 +829,11 @@ class Zealot : public ArmyUnit {
 private:
 
 public:
-    Zealot(const Unit* unit) : ArmyUnit(unit)  {
-FUNC_START
+    Zealot(const Unit* unit) : ArmyUnit(unit) {
         squad->squadStates[self] = 'm';
     }
 
-    virtual bool execute(Agent* agent)  {
-FUNC_START
+    virtual bool execute(Agent* agent) {
         if (ignoreFrames > 0) {
             ignoreFrames--;
             return false;
@@ -894,11 +851,10 @@ FUNC_START
 class WarpPrism : public ArmyUnit {
 private:
 public:
-    WarpPrism(const Unit *unit) : ArmyUnit(unit)  {
-FUNC_START
+    WarpPrism(const Unit *unit) : ArmyUnit(unit) {
     }
 
-    // virtual bool execute(Agent *agent)  {
+    // virtual bool execute(Agent *agent) {
     //
     // }
 };
@@ -906,8 +862,7 @@ FUNC_START
 class Adept : public ArmyUnit {
 private:
 public:
-    Adept(const Unit *unit) : ArmyUnit(unit)  {
-FUNC_START
+    Adept(const Unit *unit) : ArmyUnit(unit) {
     }
 
     // virtual bool execute(Agent *agent) {
@@ -918,8 +873,7 @@ FUNC_START
 class Immortal : public ArmyUnit {
 private:
 public:
-    Immortal(const Unit *unit) : ArmyUnit(unit)  {
-FUNC_START
+    Immortal(const Unit *unit) : ArmyUnit(unit) {
     }
 
     // virtual bool execute(Agent *agent) {

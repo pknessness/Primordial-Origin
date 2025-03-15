@@ -5,7 +5,6 @@
 
 #include "map2d.hpp"
 #include "profiler.hpp"
-#include "debugging.hpp"
 
 //#include "unitmanager.hpp"
 #include <ctime>

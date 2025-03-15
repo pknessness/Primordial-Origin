@@ -4,14 +4,42 @@
 //#undef byte
 #include "backward/backward.hpp"
 #include "Bot.hpp"
-#include <ctime>
 
 #include <sc2api/sc2_coordinator.h>
 #include <sc2api/sc2_gametypes.h>
 #include <sc2utils/sc2_arg_parser.h>
 
-#include <cpptrace/cpptrace.hpp>
-#include <cpptrace/from_current.hpp>
+
+//#define _HAS_STD_BYTE 1
+//#include <algorithm>
+//#include <cctype>
+//#include <cstdio>
+//#include <cstdlib>
+//#include <cstring>
+//#include <fstream>
+//#include <iomanip>
+//#include <iostream>
+//#include <limits>
+//#include <new>
+//#include <sstream>
+//#include <streambuf>
+//#include <string>
+//#include <vector>
+//#include <exception>
+//#include <iterator>
+//#include <condition_variable>
+//#include <mutex>
+//#include <thread>
+//
+//#include <basetsd.h>
+//#include <windows.h>
+//#include <winnt.h>
+//
+//#include <psapi.h>
+//#include <signal.h>
+//#include <imagehlp.h>
+//#include <unordered_map>
+//#include <utility> // for std::swap
 
 #include <iostream>
 
@@ -112,66 +140,19 @@ int main(int argc, char* argv[])
     sc2::FeatureLayerSettings settings;
     coordinator.SetFeatureLayers(settings);
     // Connect to the game client
-    //std::cout << "Connecting to port " << Options.GamePort << std::endl;
-    //coordinator.Connect(Options.GamePort);
-    //coordinator.SetupPorts(num_agents, Options.StartPort, false);
-    //// Set the unit selection policy
-    //// (if true, the selection will jump around everywhere so it can be harder to debug and doesn't allow a human to play at the same time)
-    //coordinator.SetRawAffectsSelection(true);
-    //// Join the already started game
-    //coordinator.JoinGame();
-    //coordinator.SetTimeoutMS(120000);	// 2 min
-    //std::cout << "Successfully joined game" << std::endl;
-    //// Step forward the game simulation.
-    //while (coordinator.Update()) {
-    //}
-
-    CPPTRACE_TRY{
-        throw 1;
-    }CPPTRACE_CATCH(...){
-        printf("i threw successfully\n");
-        cpptrace::stacktrace death = cpptrace::from_current_exception();
-        death.print();
+    std::cout << "Connecting to port " << Options.GamePort << std::endl;
+    coordinator.Connect(Options.GamePort);
+    coordinator.SetupPorts(num_agents, Options.StartPort, false);
+    // Set the unit selection policy
+    // (if true, the selection will jump around everywhere so it can be harder to debug and doesn't allow a human to play at the same time)
+    coordinator.SetRawAffectsSelection(true);
+    // Join the already started game
+    coordinator.JoinGame();
+    coordinator.SetTimeoutMS(120000);	// 2 min
+    std::cout << "Successfully joined game" << std::endl;
+    // Step forward the game simulation.
+    while (coordinator.Update()) {
     }
-
-    CPPTRACE_TRY{
-        // Connect to the game client
-        std::cout << "Connecting to port " << Options.GamePort << std::endl;
-        coordinator.Connect(Options.GamePort);
-        coordinator.SetupPorts(num_agents, Options.StartPort, false);
-        // Set the unit selection policy
-        // (if true, the selection will jump around everywhere so it can be harder to debug and doesn't allow a human to play at the same time)
-        coordinator.SetRawAffectsSelection(true);
-        // Join the already started game
-        coordinator.JoinGame();
-        coordinator.SetTimeoutMS(120000);	// 2 min
-        std::cout << "Successfully joined game" << std::endl;
-        // Step forward the game simulation.
-        while (coordinator.Update()) {
-        }
-    } CPPTRACE_CATCH(...) {
-        printf("CAUGHT\n");
-        time_t curr_time;
-        tm* curr_tm;
-        char time_string[100];
-        time(&curr_time);
-        curr_tm = localtime(&curr_time);
-
-        strftime(time_string, 50, "%Y_%d_%m_%H_%M_%S", curr_tm);
-        string file = strprintf("data/crash_%s.txt", time_string);
-        const char* fileName = file.c_str();
-        FILE* filePtr = fopen(fileName, "wb");
-
-        cpptrace::stacktrace death = cpptrace::from_current_exception();
-
-        string stacktr = death.to_string();
-        fwrite(stacktr.c_str(), 1, stacktr.length(), filePtr);
-        death.print();
-        fclose(filePtr);
-        //throw -1;
-    }
-
-    sleep(4);
 
     return 0;
 }
@@ -233,42 +214,10 @@ int main(int argc, char* argv[])
         int r = std::rand() % 6;
         printf("rand %d [%d %d %d %d %d %d] %d\n", r, std::rand(), std::rand(), std::rand(), std::rand(), std::rand(),
             std::rand(), RAND_MAX);
-        //try {
-        //    coordinator.StartGame(maps[r]);
-        //
-        //    while (coordinator.Update()) {
-        //    }
-        //}
-        //catch (...){
-        //    CONSOLE_PRINT_ERROR("UPDATE");
-        //}
-        CPPTRACE_TRY{
-            coordinator.StartGame(maps[r]);
-            
-            while (coordinator.Update()) {
-            }
-        } CPPTRACE_CATCH(...) {
-            printf("CAUGHT\n");
-            time_t curr_time;
-            tm* curr_tm;
-            char time_string[100];
-            time(&curr_time);
-            curr_tm = localtime(&curr_time);
 
-            strftime(time_string, 50, "%Y_%d_%m_%H_%M_%S", curr_tm);
-            string file = strprintf("data/crash_%s.txt", time_string);
-            const char* fileName = file.c_str();
-            FILE* filePtr = fopen(fileName, "wb");
-
-            cpptrace::stacktrace death = cpptrace::from_current_exception();
-
-            string stacktr = death.to_string();
-            fwrite(stacktr.c_str(), 1, stacktr.length(), filePtr);
-            death.print();
-            fclose(filePtr);
-            throw -1;
+        coordinator.StartGame(maps[r]);
+        while (coordinator.Update()) {
         }
-        
     }
 
     return 0;

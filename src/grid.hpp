@@ -13,20 +13,17 @@ struct Location
 	int x, y;
 	Location direction() const;
 
-	Location(int x_, int y_)  {
-FUNC_START
+	Location(int x_, int y_) {
         x = x_;
         y = y_;
     }
 
-	Location()  {
-FUNC_START
+	Location() {
         x = -1;
         y = -1;
     }
 
-	Location(Point2DI point)  {
-FUNC_START
+	Location(Point2DI point) {
         x = point.x;
         y = point.y;
 	}
@@ -74,8 +71,7 @@ private:
 public:
 	//std::unordered_set<Location> walls;
 
-	Grid()  {
-FUNC_START};
+	Grid() {};
 	Grid(int width_, int height_/*, std::unordered_set<Location> walls_*/) : width(width_), height(height_)/*, walls(walls_)*/ {};
 
 	int get_width() const {return width;};
@@ -96,19 +92,19 @@ using namespace std;
 
 std::vector<Point2DI> fullPath(std::vector<Location> path) noexcept {
     std::vector<Point2DI> pathout;
-    pathout.push_back(path.at(0));
+    pathout.push_back(path[0]);
     for (int i = 1; i < path.size(); i++) {
         for (int j = 0; j < 300; j++) {
             int x_d = 0;
             int y_d = 0;
-            if (path.at(i).x > pathout.back().x) {
+            if (path[i].x > pathout.back().x) {
                 x_d = 1;
-            } else if (path.at(i).x < pathout.back().x) {
+            } else if (path[i].x < pathout.back().x) {
                 x_d = -1;
 			}
-            if (path.at(i).y > pathout.back().y) {
+            if (path[i].y > pathout.back().y) {
                 y_d = 1;
-            } else if (path.at(i).y < pathout.back().y) {
+            } else if (path[i].y < pathout.back().y) {
                 y_d = -1;
             }
             pathout.push_back(pathout.back() + Point2DI(x_d, y_d));
@@ -123,10 +119,10 @@ float fullDist(std::vector<Location> path) noexcept {
         return -1;
     //printf("PS:%d\n", path.size());
     for (int i = 0; i < path.size() - 1; i++) {
-        int dx = path.at(i + 1).x - path.at(i).x;
-        int dy = path.at(i + 1).y - path.at(i).y;
+        int dx = path[i + 1].x - path[i].x;
+        int dy = path[i + 1].y - path[i].y;
         dist += sqrt(dx * dx + dy * dy);
-        //printf("[%d,%d %d,%d %.1f]\n", path.at(i).x, path.at(i).y, path.at(i + 1).x, path.at(i + 1).y, dist);
+        //printf("[%d,%d %d,%d %.1f]\n", path[i].x, path[i].y, path[i + 1].x, path[i + 1].y, dist);
     }
     return dist;
 }

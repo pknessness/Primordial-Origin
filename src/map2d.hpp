@@ -22,7 +22,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #define MAP_H
 
 #include <cstring>
-#include "debugging.hpp"
 
 template <class T>
 class map2d {
@@ -72,8 +71,7 @@ private:
 #define imPtr(im, x, y) &(im->access[y][x])
 
 template <class T>
-map2d<T>::map2d(const int width, const int height, const bool init)  {
-FUNC_START
+map2d<T>::map2d(const int width, const int height, const bool init) {
     w = width;
     h = height;
     data = new T[w * h];  // allocate space for image data
@@ -88,15 +86,13 @@ FUNC_START
 }
 
 template <class T>
-map2d<T>::~map2d()  {
-FUNC_START
+map2d<T>::~map2d() {
     delete[] data;
     delete[] access;
 }
 
 template <class T>
-void map2d<T>::print()  {
-FUNC_START
+void map2d<T>::print() {
     for (int y = 0; y < h; y++) {
         printf("|"); 
         for (int x = 0; x < w; x++) {
@@ -107,8 +103,7 @@ FUNC_START
 }
 
 template <class T>
-void map2d<T>::init(const T &val)  {
-FUNC_START
+void map2d<T>::init(const T &val) {
     T *ptr = imPtr(this, 0, 0);
     T *end = imPtr(this, w - 1, h - 1);
     while (ptr <= end)
@@ -116,8 +111,7 @@ FUNC_START
 }
 
 template <class T>
-void map2d<T>::clear()  {
-FUNC_START
+void map2d<T>::clear() {
     memset(data, 0, w * h * sizeof(T));
 }
 

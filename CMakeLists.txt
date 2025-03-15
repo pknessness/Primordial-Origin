@@ -46,8 +46,5 @@ list(APPEND CMAKE_MODULE_PATH thirdparty/cmake)
 # cpp-sc2 dependency
 include(cpp_sc2)
 
-# cpptrace dependency
-include(cpptrace)
-
 # bot sources
 add_subdirectory(src)

@@ -21,8 +21,7 @@
 #define P8 imRef(map, i - 1, j)
 #define P9 imRef(map, i - 1, j + 1)
 
-int B(map2d<int8_t>* map, int i, int j)  {
-FUNC_START
+int B(map2d<int8_t>* map, int i, int j){
     //int count = 0;
     //for (int i = 1; i < 9; i++) {
     //    count += imRef(map, int(x + points[i].x), int(y + points[i].y));
@@ -31,13 +30,11 @@ FUNC_START
     return (P2 + P3 + P4 + P5 + P6 + P7 + P8 + P9);
 }
 
-int C(map2d<int8_t>* map, int i, int j)  {
-FUNC_START
+int C(map2d<int8_t>* map, int i, int j) {
     return (!P1 && (P3 || P4)) + (!P4 && (P5 || P6)) + (!P6 && (P7 || P8)) + (!P8 && (P9 || P2));
 }
 
-void thinning_BST(map2d<int8_t>* map, Agent *agent)  {
-FUNC_START
+void thinning_BST(map2d<int8_t>* map, Agent *agent) {
     map2d<int8_t>* change = new map2d<int8_t>(map->width(), map->height(), true);
     #define BOX_BORDER 0.02
     while (1) {

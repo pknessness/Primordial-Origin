@@ -37,8 +37,7 @@ struct MacroAction {
           index(globalIndex),
           lastChecked(0),
           dist_cache(-1),
-          unit_cache(NullTag)  {
-FUNC_START
+          unit_cache(NullTag) {
         globalIndex ++;
     }
 
@@ -49,12 +48,10 @@ FUNC_START
           index(index),
           lastChecked(0),
           dist_cache(-1),
-          unit_cache(NullTag)  {
-FUNC_START
+          unit_cache(NullTag) {
     }
 
-    Cost cost(Agent *agent)  {
-FUNC_START
+    Cost cost(Agent *agent) {
         return Aux::abilityToCost(ability, agent);
     }
 
@@ -68,47 +65,41 @@ namespace Macro {
     int lastChecked = 0;
     string diagnostics = "";
 
-    void addAction(MacroAction m)  {
-FUNC_START
+    void addAction(MacroAction m) {
         if (actions.find(m.unit_type) == actions.end()) {
             actions[m.unit_type] = vector<MacroAction>();
         }
-        actions.at(m.unit_type).push_back(m);
+        actions[m.unit_type].push_back(m);
     }
 
     MacroAction* addAction(UnitTypeID unit_type_, AbilityID ability_, Point2D pos_ = Point2D{0,0}) {
         if (actions.find(unit_type_) == actions.end()) {
             actions[unit_type_] = vector<MacroAction>();
         }
-        actions.at(unit_type_).push_back(MacroAction(unit_type_, ability_, pos_));
-        return &(actions.at(unit_type_).back());
+        actions[unit_type_].push_back(MacroAction(unit_type_, ability_, pos_));
+        return &(actions[unit_type_].back());
     }
 
-    void addActionTop(UnitTypeID unit_type_, AbilityID ability_, Point2D pos_, int index_)  {
-FUNC_START
+    void addActionTop(UnitTypeID unit_type_, AbilityID ability_, Point2D pos_, int index_) {
         if (actions.find(unit_type_) == actions.end()) {
             actions[unit_type_] = vector<MacroAction>();
         }
-        actions.at(unit_type_).insert(actions.at(unit_type_).begin(), MacroAction(unit_type_, ability_, pos_, index_));
+        actions[unit_type_].insert(actions[unit_type_].begin(), MacroAction(unit_type_, ability_, pos_, index_));
     }
 
-    void addProbe()  {
-FUNC_START
+    void addProbe() {
         addActionTop(UNIT_TYPEID::PROTOSS_NEXUS, ABILITY_ID::TRAIN_PROBE, {0, 0}, 0);
     }
 
-    void addBuilding(AbilityID ability_, Point2D pos_)  {
-FUNC_START
+    void addBuilding(AbilityID ability_, Point2D pos_) {
         addAction(UNIT_TYPEID::PROTOSS_PROBE, ability_, pos_);
     }
 
-    void addBuildingTop(AbilityID ability_, Point2D pos_, int index_)  {
-FUNC_START
+    void addBuildingTop(AbilityID ability_, Point2D pos_, int index_) {
         addActionTop(UNIT_TYPEID::PROTOSS_PROBE, ability_, pos_, index_);
     }
 
-    void execute(Agent *agent)  {
-FUNC_START
+    void execute(Agent *agent) {
         DebugText(agent,diagnostics, Point2D(0.03, 0.01), Color(100, 190, 215), 8);
         uint32_t gt = agent->Observation()->GetGameLoop();
         if (gt < lastChecked + ACTION_CHECK_DT) {
@@ -170,7 +161,7 @@ FUNC_START
         diagnostics = "";
         for (int iAction = 0; iAction < topActions.size(); iAction++) {
             macroProfiler.subScope();
-            MacroAction topAct = topActions.at(iAction);
+            MacroAction topAct = topActions[iAction];
             Units units = agent->Observation()->GetUnits(sc2::Unit::Alliance::Self, 
                 [topAct](const Unit &unit) -> bool { 
                 //return (unit.unit_type == topAct.unit_type) &&
@@ -207,14 +198,14 @@ FUNC_START
 
                 if (ability_stats.food_required > foodCap - foodUsed) {
                     bool cont = false;
-                    if (actions.at(UNIT_TYPEID::PROTOSS_PROBE).size() != 0 && actions.at(UNIT_TYPEID::PROTOSS_PROBE).front().ability == ABILITY_ID::BUILD_PYLON) {
-                        actions.at(UNIT_TYPEID::PROTOSS_PROBE).front().index = 0;
+                    if (actions[UNIT_TYPEID::PROTOSS_PROBE].size() != 0 && actions [UNIT_TYPEID::PROTOSS_PROBE].front().ability == ABILITY_ID::BUILD_PYLON) {
+                        actions[UNIT_TYPEID::PROTOSS_PROBE].front().index = 0;
                         diagnostics += "PYLON IN TRANSIT\n\n";
                         macroProfiler.midLog("PYLON IN TRANSIT");
                         continue;
                     }
                     for (int i = 0; i < pylons.size(); i++) {
-                        if (agent->Observation()->GetUnit(pylons.at(i)->self)->build_progress != 1.0) {
+                        if (agent->Observation()->GetUnit(pylons[i]->self)->build_progress != 1.0) {
                             cont = true;
                             break;
                         }
@@ -252,18 +243,18 @@ FUNC_START
                             continue;
                         }
                         topAct.pos = p;
-                        actions.at(topAct.unit_type).front().pos = p;
+                        actions[topAct.unit_type].front().pos = p;
                     } else if (topAct.ability == ABILITY_ID::BUILD_ASSIMILATOR) {
                         UnitWrappers vespenes = UnitManager::getVespene();
                         std::vector<float> dist;
                         for (int v = 0; v < vespenes.size(); v ++) {
                             
                             for (auto n : UnitManager::get(UNIT_TYPEID::PROTOSS_NEXUS)) {
-                                float d = Distance2D(n->pos(agent), vespenes.at(v)->pos(agent));
-                                if (d < 12 && ((Vespene*)(vespenes.at(v)))->taken == 0) {
-                                    ((Vespene*)(vespenes.at(v)))->taken = 1;
-                                    topAct.pos = ((Vespene*)(vespenes.at(v)))->pos(agent);
-                                    actions.at(topAct.unit_type).front().pos = topAct.pos;
+                                float d = Distance2D(n->pos(agent), vespenes[v]->pos(agent));
+                                if (d < 12 && ((Vespene*)(vespenes[v]))->taken == 0) {
+                                    ((Vespene*)(vespenes[v]))->taken = 1;
+                                    topAct.pos = ((Vespene*)(vespenes[v]))->pos(agent);
+                                    actions[topAct.unit_type].front().pos = topAct.pos;
                                     break;
                                 }
                             }
@@ -271,17 +262,17 @@ FUNC_START
                                 break;
                             }
 
-                            //if (((Vespene *)(vespenes.at(i)))->taken == 1) {
+                            //if (((Vespene *)(vespenes[i]))->taken == 1) {
                             //    /*vespenes.erase(vespenes.begin() + i);
                             //    v--;
                             //    continue;*/
-                            //    ((Vespene*)(vespenes.at(i)))->taken = 2;
-                            //    topAct.pos = ((Vespene*)(vespenes.at(i)))->pos(agent);
-                            //    actions.at(topAct.unit_type).front().pos = topAct.pos;
+                            //    ((Vespene*)(vespenes[i]))->taken = 2;
+                            //    topAct.pos = ((Vespene*)(vespenes[i]))->pos(agent);
+                            //    actions[topAct.unit_type].front().pos = topAct.pos;
                             //}
                             //float nexdist = -1;
                             //for (auto n : UnitManager::get(UNIT_TYPEID::PROTOSS_NEXUS)) {
-                            //    float d = Distance2D(n->pos(agent), vespenes.at(i)->pos(agent));
+                            //    float d = Distance2D(n->pos(agent), vespenes[i]->pos(agent));
                             //    if (nexdist == -1 || d < nexdist) {
                             //        nexdist = d;
                             //    }
@@ -310,7 +301,7 @@ FUNC_START
                             continue;
                         }
                         topAct.pos = p;
-                        actions.at(topAct.unit_type).front().pos = p;
+                        actions[topAct.unit_type].front().pos = p;
                     }
                 } else {
                     diagnostics += strprintf("NO LOCATION\n\n");
@@ -326,8 +317,8 @@ FUNC_START
                 auto sources = agent->Observation()->GetPowerSources();
                 int index = -1;
                 for (int i = 0; i < sources.size(); i++) {
-                    if (index == -1 || Distance2D(sources.at(i).position, topAct.pos) <
-                                           Distance2D(sources.at(index).position, topAct.pos)) {
+                    if (index == -1 || Distance2D(sources[i].position, topAct.pos) <
+                                           Distance2D(sources[index].position, topAct.pos)) {
                         index = i;
                     }
                 }
@@ -338,12 +329,12 @@ FUNC_START
                 }
                 for (int ao = 0; ao < 200; ao++) {
                     float theta = ((float)std::rand()) * 2 * 3.1415926 / RAND_MAX;
-                    float radius = ((float)std::rand()) * sources.at(index).radius / RAND_MAX;
+                    float radius = ((float)std::rand()) * sources[index].radius / RAND_MAX;
 
                     float x = std::cos(theta) * radius;
                     float y = std::sin(theta) * radius;
 
-                    Point2D p = sources.at(index).position + Point2D{x, y};
+                    Point2D p = sources[index].position + Point2D{x, y};
 
                     if (Aux::checkPlacementFull(p, 2, agent)) {
                         topAct.pos = p;
@@ -365,9 +356,9 @@ FUNC_START
 
             auto probes = UnitManager::get(UNIT_TYPEID::PROTOSS_PROBE);
             for (int i = 0; i < probes.size(); i ++) {
-                vector<Building> buildings = ((Probe *)probes.at(i))->buildings;
+                vector<Building> buildings = ((Probe *)probes[i])->buildings;
                 for (int b = 0; b < buildings.size(); b++) {
-                    Cost g = buildings.at(b).cost(agent);
+                    Cost g = buildings[b].cost(agent);
                     theoreticalMinerals -= g.minerals;
                     theoreticalVespene -= g.vespene;
                 }
@@ -406,7 +397,7 @@ FUNC_START
                     //auto pylons = UnitManager::get(UNIT_TYPEID::PROTOSS_PYLON);
                     bool foundPylon = false;
                     for (int i = 0; i < pylons.size(); i++) {
-                        const Unit *pylon = agent->Observation()->GetUnit(pylons.at(i)->self);
+                        const Unit *pylon = agent->Observation()->GetUnit(pylons[i]->self);
                         if (Distance2D(pylon->pos, topAct.pos) < Aux::PYLON_RADIUS) {
                             viablePylons.push_back(pylon);
                             foundPylon = true;
@@ -424,10 +415,10 @@ FUNC_START
                 macroProfiler.midLog("PylonCheck1");
 
                 //float dt = 0;
-                float mindist = actions.at(UNIT_TYPEID::PROTOSS_PROBE).front().dist_cache;
-                actionUnit = agent->Observation()->GetUnit(actions.at(UNIT_TYPEID::PROTOSS_PROBE).front().unit_cache);
+                float mindist = actions[UNIT_TYPEID::PROTOSS_PROBE].front().dist_cache;
+                actionUnit = agent->Observation()->GetUnit(actions[UNIT_TYPEID::PROTOSS_PROBE].front().unit_cache);
 
-                const Unit *uni = units.at(std::rand() % units.size());
+                const Unit *uni = units[std::rand() % units.size()];
 
                 Point2DI start = P2D(uni->pos);
                 Point2DI goal = topAct.pos;
@@ -444,8 +435,8 @@ FUNC_START
                 if (mindist == -1 || dist < mindist || actionUnit == nullptr) {
                     mindist = dist;
                     actionUnit = uni;
-                    actions.at(UNIT_TYPEID::PROTOSS_PROBE).front().dist_cache = dist;
-                    actions.at(UNIT_TYPEID::PROTOSS_PROBE).front().unit_cache = uni->tag;
+                    actions[UNIT_TYPEID::PROTOSS_PROBE].front().dist_cache = dist;
+                    actions[UNIT_TYPEID::PROTOSS_PROBE].front().unit_cache = uni->tag;
                 }
 
                 float dt = (mindist - 2) / (unit_stats.movement_speed * timeSpeed);
@@ -491,7 +482,7 @@ FUNC_START
 
                     bool found = false;
                     for (int i = 0; i < viablePylons.size(); i++) {
-                        if (((1.0 - viablePylons.at(i)->build_progress) * pylon_stats.build_time / fps) < dt) {
+                        if (((1.0 - viablePylons[i]->build_progress) * pylon_stats.build_time / fps) < dt) {
                             found = true;
                             break;
                         }
@@ -512,7 +503,7 @@ FUNC_START
                     auto prereqs = UnitManager::get(prerequisite);
                     bool found = false;
                     for (int i = 0; i < prereqs.size(); i++) {
-                        const Unit *prereq = agent->Observation()->GetUnit(prereqs.at(i)->self);
+                        const Unit *prereq = agent->Observation()->GetUnit(prereqs[i]->self);
                         if (prereq->build_progress == 1.0 || ((1.0 - prereq->build_progress) * prereq_stats.build_time / fps) < dt) {
                             found = true;
                             break;
@@ -531,7 +522,7 @@ FUNC_START
 
                 int numMineralMiners = 0, numVespeneMiners = 0;
                 for (int i = 0; i < probes.size(); i ++) {
-                    const Unit* target = agent->Observation()->GetUnit(((Probe *)probes.at(i))->getTargetTag(agent));
+                    const Unit* target = agent->Observation()->GetUnit(((Probe *)probes[i])->getTargetTag(agent));
                     if (target == nullptr)
                         continue;
                     if (Aux::isMineral(*target)) {
@@ -555,11 +546,11 @@ FUNC_START
 
                 macroProfiler.midLog("CheckResources");
 
-                auto abil = agent->Query()->GetAbilitiesForUnits(units); //TODO: GET RID OF THIS AND REPLACE WITH GLOBAL ABILITY GRAB
+                auto abil = agent->Query()->GetAbilitiesForUnits(units); //TODO: GET RID OF THIS AND REPLACE WITH M ASS ABIL
                 for (int i = 0; i < units.size(); i++) {
-                    for (int a = 0; a < abil.at(i).abilities.size(); a ++) {
-                        if (abil.at(i).abilities.at(a).ability_id == topAct.ability) {
-                            actionUnit = units.at(i);
+                    for (int a = 0; a < abil[i].abilities.size(); a ++) {
+                        if (abil[i].abilities[a].ability_id == topAct.ability) {
+                            actionUnit = units[i];
                         }
                     }
                 }
@@ -581,7 +572,7 @@ FUNC_START
                     auto prereqs = UnitManager::get(prerequisite);
                     bool found = false;
                     for (int i = 0; i < prereqs.size(); i++) {
-                        const Unit *prereq = agent->Observation()->GetUnit(prereqs.at(i)->self);
+                        const Unit *prereq = agent->Observation()->GetUnit(prereqs[i]->self);
                         if (prereq->build_progress == 1.0) {
                             found = true;
                             break;
@@ -624,9 +615,9 @@ FUNC_START
                     agent->Actions()->UnitCommand(actionUnit, topAct.ability);
                 }
                 if (topAct.unit_type == UNIT_TYPEID::PROTOSS_WARPGATE) {
-                    actions.at(UNIT_TYPEID::PROTOSS_GATEWAY).erase(actions.at(UNIT_TYPEID::PROTOSS_GATEWAY).begin());
+                    actions[UNIT_TYPEID::PROTOSS_GATEWAY].erase(actions[UNIT_TYPEID::PROTOSS_GATEWAY].begin());
                 } else {
-                    actions.at(topAct.unit_type).erase(actions.at(topAct.unit_type).begin());
+                    actions[topAct.unit_type].erase(actions[topAct.unit_type].begin());
                 }
                 
                 diagnostics += "SUCCESS\n\n";

@@ -7,8 +7,7 @@ struct MacroBuilding : MacroAction {
     }
 };
 
-MacroAction MacroBuilding(AbilityID ability_, Point2D pos_)  {
-FUNC_START
+MacroAction MacroBuilding(AbilityID ability_, Point2D pos_) {
     return MacroAction(UNIT_TYPEID::PROTOSS_PROBE, ability_, pos_);
 }
 //MacroAction Action(UnitTypeID unit_type_, AbilityID ability_, Point2D pos_) {
@@ -144,8 +143,7 @@ namespace Strategem {
     Strategy pig_stalker_colossus;
     Strategy chargelot_immortal_archon_timing;
 
-    void initStrategies()  {
-FUNC_START
+    void initStrategies() {
         shit_stalker_colossus.build_order = {
             MacroBuilding(ABILITY_ID::BUILD_PYLON, P2D(Aux::staging_location)),
             MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),
@@ -155,7 +153,7 @@ FUNC_START
             MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER),
             MacroAction(UNIT_TYPEID::PROTOSS_CYBERNETICSCORE, ABILITY_ID::RESEARCH_WARPGATE),
             MacroAction(UNIT_TYPEID::PROTOSS_ROBOTICSBAY, ABILITY_ID::RESEARCH_EXTENDEDTHERMALLANCE),
-            MacroBuilding(ABILITY_ID::BUILD_NEXUS, P2D(Aux::rankedExpansions.at(0))),
+            MacroBuilding(ABILITY_ID::BUILD_NEXUS, P2D(Aux::rankedExpansions[0])),
             MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, { -1,-1 }),
             MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1, -1}),
             MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER),
@@ -200,7 +198,7 @@ FUNC_START
             MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),
             MacroBuilding(ABILITY_ID::GENERAL_MOVE, Aux::enemyLoc),
             MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}),
-            MacroBuilding(ABILITY_ID::BUILD_NEXUS, P2D(Aux::rankedExpansions.at(0))),
+            MacroBuilding(ABILITY_ID::BUILD_NEXUS, P2D(Aux::rankedExpansions[0])),
             MacroBuilding(ABILITY_ID::BUILD_CYBERNETICSCORE, {-1, -1}),
             MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, { -1,-1 }),
             MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1, -1}),

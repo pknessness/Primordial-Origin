@@ -7,13 +7,11 @@ namespace ArmyControl {
         UnitWrappers army;
         std::vector<UnitTypeID> unitComp;
 
-        EnemySquad()  {
-FUNC_START
+        EnemySquad() {
 
         }
 
-        void add(UnitWrapper* unitWrap)  {
-FUNC_START
+        void add(UnitWrapper* unitWrap) {
             army.push_back(unitWrap);
 
             if (std::find(unitComp.begin(), unitComp.end(), unitWrap->type) == unitComp.end()) {
@@ -21,12 +19,11 @@ FUNC_START
             }
         }
 
-        Point2D center(Agent *agent)  {
-FUNC_START
+        Point2D center(Agent *agent) {
             Point2D center;
             int count = 0;
             for (int i = 0; i < army.size(); i++) {
-                center += army.at(i)->pos(agent);
+                center += army[i]->pos(agent);
                 count++;
             }
             return center / count;
@@ -38,8 +35,7 @@ FUNC_START
     EnemySquads enemySquads;
 
 	constexpr float enemyRadius = 5.0F;
-	void collectEnemySquads(Agent *agent)  {
-FUNC_START
+	void collectEnemySquads(Agent *agent){
         enemySquads.clear();
         UnitWrappers allEnemies;
         for (auto it = UnitManager::enemies.begin(); it != UnitManager::enemies.end(); it++) {
@@ -53,19 +49,19 @@ FUNC_START
         }
         if (allEnemies.size() > 0) {
             enemySquads.emplace_back();
-            enemySquads.at(0).add(allEnemies.back());
+            enemySquads[0].add(allEnemies.back());
             allEnemies.pop_back();
             int squadPointer = 0;
             while (allEnemies.size() > 0){
-                for (int i = 0; i < enemySquads.at(squadPointer).army.size(); i ++) {
-                    UnitWrappers found = SpacialHash::findInRadiusEnemy(enemySquads.at(squadPointer).army.at(i)->pos(agent), enemyRadius, agent);
+                for (int i = 0; i < enemySquads[squadPointer].army.size(); i ++) {
+                    UnitWrappers found = SpacialHash::findInRadiusEnemy(enemySquads[squadPointer].army[i]->pos(agent), enemyRadius, agent);
                     bool added = false;
                     if (found.size() != 0) {
                         for (UnitWrapper* enemy : found) {
                             auto find = std::find(allEnemies.begin(), allEnemies.end(), enemy);
                             if (find != allEnemies.end() &&
-                                std::find(enemySquads.at(squadPointer).army.begin(), enemySquads.at(squadPointer).army.end(), enemy) == enemySquads.at(squadPointer).army.end()) {
-                                enemySquads.at(squadPointer).army.push_back(enemy);
+                                std::find(enemySquads[squadPointer].army.begin(), enemySquads[squadPointer].army.end(), enemy) == enemySquads[squadPointer].army.end()) {
+                                enemySquads[squadPointer].army.push_back(enemy);
                                 allEnemies.erase(find);
                                 added = true;
                             }
@@ -74,7 +70,7 @@ FUNC_START
                     if(!added && allEnemies.size() > 0) {
                         enemySquads.emplace_back();
                         squadPointer += 1;
-                        enemySquads.at(squadPointer).add(allEnemies.back());
+                        enemySquads[squadPointer].add(allEnemies.back());
                         allEnemies.pop_back();
                     }
                 }
@@ -82,16 +78,15 @@ FUNC_START
             //printf("\n");
             //for (int i = 0; i < enemySquads.size(); i++) {
             //    printf("%d:\n", i);
-            //    for (int e = 0; e < enemySquads.at(i).army.size(); e++) {
-            //        printf("%s:\n", UnitTypeToName(enemySquads.at(i).army.at(e)->type));
+            //    for (int e = 0; e < enemySquads[i].army.size(); e++) {
+            //        printf("%s:\n", UnitTypeToName(enemySquads[i].army[e]->type));
             //    }
             //}
             
         }
 	}
 
-	void step(Agent* agent, Point2D rally)  {
-FUNC_START
+	void step(Agent* agent, Point2D rally) {
         collectEnemySquads(agent);
         int unitCount = 0;
         for (Squad s : squads) {
@@ -114,40 +109,40 @@ FUNC_START
         EnemySquads dangerous;
 
         for (int i = 0; i < enemySquads.size(); i++) {
-            Point2D pos = enemySquads.at(i).center(agent);
+            Point2D pos = enemySquads[i].center(agent);
             if (imRef(Aux::influenceMap, int(pos.x), int(pos.y)) > 0) {
-                dangerous.push_back(enemySquads.at(i));
+                dangerous.push_back(enemySquads[i]);
             }
         }
         if (dangerous.size() > 0) {
             if (unitCount == 0) {
-                squads.at(0).attack(dangerous.at(0).center(agent)); //probe defense
+                squads[0].attack(dangerous[0].center(agent)); //probe defense
             }
             else {
-                squads.at(0).attack(dangerous.at(0).center(agent));
+                squads[0].attack(dangerous[0].center(agent));
             }
         }
         else if (enemyBuildingCount > 0) {
-            if (squads.at(0).coreCount() > 12) {
-                if (squads.at(0).getCore(agent) != nullptr) {
+            if (squads[0].coreCount() > 12) {
+                if (squads[0].getCore(agent) != nullptr) {
                     float mindist = 400;
                     UnitWrapper* min = nullptr;
                     for (UnitWrapper* wrap : buildings) {
-                        float dist = PrimordialStar::getPathLength(squads.at(0).coreCenter(agent), wrap->pos(agent), squads.at(0).getCore(agent)->radius, agent);
+                        float dist = PrimordialStar::getPathLength(squads[0].coreCenter(agent), wrap->pos(agent), squads[0].getCore(agent)->radius, agent);
                         if (dist < mindist) {
                             min = wrap;
                             mindist = dist;
                         }
                     }
-                    squads.at(0).attack(min->pos(agent));
+                    squads[0].attack(min->pos(agent));
                 }
             }
             else {
-                squads.at(0).attack(rally);
+                squads[0].attack(rally);
             }
         }
         else {
-            squads.at(0).search(Point2D{ 0,0 });
+            squads[0].search(Point2D{ 0,0 });
         }
 
 	}

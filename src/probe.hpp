@@ -9,8 +9,7 @@ map<Tag, int8_t> probeTargetting;
 map<Tag, float> mineralDistance;
 map<Tag, bool> nexusNearby;
 
-Point2D getBuildingLocation(Agent *agent)  {
-FUNC_START
+Point2D getBuildingLocation(Agent *agent) {
     if (Aux::buildingPointer >= Aux::buildingLocations.size()) {
         GameInfo game_info = agent->Observation()->GetGameInfo();
         auto pylons = UnitManager::get(UNIT_TYPEID::PROTOSS_PYLON);
@@ -18,7 +17,7 @@ FUNC_START
         bool found = false;
         for (int i = 0; i < UnitManager::get(UNIT_TYPEID::PROTOSS_PYLON).size(); i++) {
             for (int d = 0; d < 4; d++) {
-                Point2D p = pylons.at(i)->pos(agent) + diffuse[d];
+                Point2D p = pylons[i]->pos(agent) + diffuse[d];
                 if (Aux::checkPlacementFull(p, 3, agent)) {
                     Aux::buildingLocations.push_back(p);
                     found = true;
@@ -38,7 +37,7 @@ FUNC_START
                 float x = std::cos(theta) * radius;
                 float y = std::sin(theta) * radius;
 
-                Point2D p = pylons.at(std::rand() % pylons.size())->pos(agent) + Point2D{x, y};
+                Point2D p = pylons[std::rand() % pylons.size()]->pos(agent) + Point2D{x, y};
 
                 if (Aux::checkPlacementFull(p, 3, agent)) {
                     Aux::buildingLocations.push_back(p);
@@ -49,12 +48,11 @@ FUNC_START
             }
         }
     }
-    Aux::addPlacement(Aux::buildingLocations.at(Aux::buildingPointer), 3);
-    return Aux::buildingLocations.at(Aux::buildingPointer++);
+    Aux::addPlacement(Aux::buildingLocations[Aux::buildingPointer], 3);
+    return Aux::buildingLocations[Aux::buildingPointer++];
 }
 
-Point2D getPylonLocation(Agent *agent)  {
-FUNC_START
+Point2D getPylonLocation(Agent *agent) {
     if (Aux::pylonPointer >= Aux::pylonLocations.size()) {
         GameInfo game_info = agent->Observation()->GetGameInfo();
         auto pylons = UnitManager::get(UNIT_TYPEID::PROTOSS_PYLON);
@@ -62,7 +60,7 @@ FUNC_START
         bool found = false;
         for (int i = 0; i < UnitManager::get(UNIT_TYPEID::PROTOSS_PYLON).size(); i++) {
             for (int d = 0; d < 4; d++) {
-                Point2D p = pylons.at(i)->pos(agent) + diffuse[d];
+                Point2D p = pylons[i]->pos(agent) + diffuse[d];
                 if (Aux::checkPlacementFull(p, 2, agent)) {
                     Aux::pylonLocations.push_back(p);
                     found = true;
@@ -90,8 +88,8 @@ FUNC_START
             }
         }
     }
-    Aux::addPlacement(Aux::pylonLocations.at(Aux::pylonPointer), 2);
-    return Aux::pylonLocations.at(Aux::pylonPointer++);
+    Aux::addPlacement(Aux::pylonLocations[Aux::pylonPointer], 2);
+    return Aux::pylonLocations[Aux::pylonPointer++];
 }
 
 class Probe : public UnitWrapper {
@@ -105,19 +103,16 @@ public:
     //    target = 0;
     //}
 
-    Probe(const Unit* unit) : UnitWrapper(unit)  {
-FUNC_START
+    Probe(const Unit* unit) : UnitWrapper(unit) {
         target = NullTag;
     }
 
-    bool addBuilding(Building building)  {
-FUNC_START
+    bool addBuilding(Building building) {
         buildings.push_back(building);
         return true;
     }
 
-    Tag getTargetTag(Agent *agent)  {
-FUNC_START //TODO: IF ASSIMILATOR EMPTY RETARGET
+    Tag getTargetTag(Agent *agent) { //TODO: IF ASSIMILATOR EMPTY RETARGET
         if (agent->Observation()->GetUnit(target) == nullptr) {
             target = NullTag;
         }
@@ -129,12 +124,10 @@ FUNC_START //TODO: IF ASSIMILATOR EMPTY RETARGET
 
             for (UnitWrapper* probesWr : UnitManager::get(UNIT_TYPEID::PROTOSS_PROBE)) {
                 Probe* probe = (Probe*)probesWr;
-                if (probe->target != NullTag) {
-                    if (probeTargetting.find(probe->target) == probeTargetting.end()) {
-                        probeTargetting[probe->target] = 0;
-                    }
-                    probeTargetting.at(probe->target) += 1;
+                if (probe->target != NullTag && probeTargetting.find(probe->target) == probeTargetting.end()) {
+                    probeTargetting[probe->target] = 0;
                 }
+                probeTargetting[probe->target] += 1;
             }
 
             UnitWrappers mineralWraps = UnitManager::getMinerals();
@@ -176,14 +169,14 @@ FUNC_START //TODO: IF ASSIMILATOR EMPTY RETARGET
                 if (Aux::isMineralType(targWrap->type)) {
                     limit = 2;
                 }
-                if (probeTargetting.at(targWrap->self) >= limit) {
+                if (probeTargetting[targWrap->self] >= limit) {
                     continue;
                 }
 
-                float dist = mineralDistance.at(targWrap->self);
+                float dist = mineralDistance[targWrap->self];
 
-                if (mindist == -1 || (!hasNexus && nexusNearby.at(targWrap->self)) || dist < mindist) {
-                    if (!hasNexus && nexusNearby.at(targWrap->self)) {
+                if (mindist == -1 || (!hasNexus && nexusNearby[targWrap->self]) || dist < mindist) {
+                    if (!hasNexus && nexusNearby[targWrap->self]) {
                         hasNexus = true;
                     }
                     mindist = dist;
@@ -195,13 +188,12 @@ FUNC_START //TODO: IF ASSIMILATOR EMPTY RETARGET
                 return NullTag;
             }
             target = nearestWrap->self;
-            probeTargetting.at(target) += 1;
+            probeTargetting[target] += 1;
         }
         return target;
     }
 
-    bool execute(Agent *agent)  {
-FUNC_START
+    bool execute(Agent *agent) {
         if (agent->Observation()->GetUnit(self) == nullptr) {
             return false;
         }
@@ -210,28 +202,19 @@ FUNC_START
                 ignoreFrames--;
             } else {
                 if (get(agent)->orders.size() == 0) {
+                    agent->Actions()->UnitCommand(self, ABILITY_ID::HARVEST_GATHER, getTargetTag(agent));
                     if (checkAbility(ABILITY_ID::HARVEST_RETURN)) {
                         agent->Actions()->UnitCommand(self, ABILITY_ID::HARVEST_RETURN);
                     }
-                    else {
-                        Tag harvest = getTargetTag(agent);
-                        if (harvest == NullTag) {
-                            printf("NF1\n");
-                            ignoreFrames = 100;
-                        }
-                        else {
-                            agent->Actions()->UnitCommand(self, ABILITY_ID::HARVEST_GATHER, harvest);
-                        }
-                    }
                 } else {
-                    if (get(agent)->orders.at(0).ability_id == ABILITY_ID::HARVEST_GATHER &&
-                        get(agent)->orders.at(0).target_unit_tag != getTargetTag(agent)) {
+                    if (get(agent)->orders[0].ability_id == ABILITY_ID::HARVEST_GATHER &&
+                        get(agent)->orders[0].target_unit_tag != getTargetTag(agent)) {
 
                         //if (get(agent)->orders.size() != 0)
-                        //    printf("%Ix compare %Ix\n", get(agent)->orders.at(0).target_unit_tag, target);
+                        //    printf("%Ix compare %Ix\n", get(agent)->orders[0].target_unit_tag, target);
                         Tag harvest = getTargetTag(agent);
                         if (harvest == NullTag) {
-                            printf("NF2\n");
+                            printf("NOT FOUND ANY MINERALS");
                             ignoreFrames = 100;
                         } else {
                             agent->Actions()->UnitCommand(self, ABILITY_ID::HARVEST_GATHER, harvest);
@@ -240,13 +223,13 @@ FUNC_START
                     }
                 }
                 //if (checkAbility(ABILITY_ID::HARVEST_RETURN) && get(agent)->orders.size() == 0 ||
-                //    get(agent)->orders.at(0).ability_id == ABILITY_ID::HARVEST_RETURN) {
+                //    get(agent)->orders[0].ability_id == ABILITY_ID::HARVEST_RETURN) {
                 //    agent->Actions()->UnitCommand(self, ABILITY_ID::HARVEST_RETURN);
                 //} else if (get(agent)->orders.size() == 0 ||
-                //           (get(agent)->orders.at(0).ability_id == ABILITY_ID::HARVEST_GATHER &&
-                //            get(agent)->orders.at(0).target_unit_tag != getTargetTag(agent))) {
+                //           (get(agent)->orders[0].ability_id == ABILITY_ID::HARVEST_GATHER &&
+                //            get(agent)->orders[0].target_unit_tag != getTargetTag(agent))) {
                 //    if (get(agent)->orders.size() != 0)
-                //        printf("%Ix compare %Ix\n", get(agent)->orders.at(0).target_unit_tag, target);
+                //        printf("%Ix compare %Ix\n", get(agent)->orders[0].target_unit_tag, target);
                 //    Tag harvest = getTargetTag(agent);
                 //    if (harvest == NullTag) {
                 //        ignoreFrames = 100;
@@ -256,7 +239,7 @@ FUNC_START
                 //}
             }
         } else {
-            Building top = buildings.at(0);
+            Building top = buildings[0];
             if (top.build == ABILITY_ID::GENERAL_MOVE) {
                 agent->Actions()->UnitCommand(self, ABILITY_ID::GENERAL_MOVE, top.pos);
                 buildings.erase(buildings.begin());
@@ -266,7 +249,7 @@ FUNC_START
                     auto pylons = UnitManager::get(UNIT_TYPEID::PROTOSS_PYLON);
                     bool foundPylon = false;
                     for (int i = 0; i < pylons.size(); i++) {
-                        const Unit *pylon = agent->Observation()->GetUnit(pylons.at(i)->self);
+                        const Unit *pylon = agent->Observation()->GetUnit(pylons[i]->self);
                         if (Distance2D(pylon->pos, top.pos) < Aux::PYLON_RADIUS) {
                             if (pylon->build_progress == 1.0) {
                                 foundPylon = true;
@@ -284,14 +267,14 @@ FUNC_START
                 if (top.build == ABILITY_ID::BUILD_ASSIMILATOR) {
                     auto vespene = UnitManager::getVespene();
                     for (int i = 0; i < vespene.size(); i++) {
-                        //if (agent->Observation()->GetUnit(vespene.at(i)->self) == nullptr) {
+                        //if (agent->Observation()->GetUnit(vespene[i]->self) == nullptr) {
                         //    continue;
                         //}
-                        printf("TRY: %.1f,%.1f %.1f,%.1f\n", vespene.at(i)->pos(agent).x, vespene.at(i)->pos(agent).y,
+                        printf("TRY: %.1f,%.1f %.1f,%.1f\n", vespene[i]->pos(agent).x, vespene[i]->pos(agent).y,
                                pos(agent).x, pos(agent).y);
-                        if (Distance2D(vespene.at(i)->pos(agent), pos(agent)) < 2) {
-                            printf("%Ix %s %Ix\n", self, AbilityTypeToName(top.build), vespene.at(i)->self);
-                            agent->Actions()->UnitCommand(self, top.build, vespene.at(i)->self);
+                        if (Distance2D(vespene[i]->pos(agent), pos(agent)) < 2) {
+                            printf("%Ix %s %Ix\n", self, AbilityTypeToName(top.build), vespene[i]->self);
+                            agent->Actions()->UnitCommand(self, top.build, vespene[i]->self);
                             break;
                         }
                     }
@@ -316,12 +299,11 @@ FUNC_START
         return true;
     }
 
-    static void loadAbilities(Agent *agent)  {
-FUNC_START
+    static void loadAbilities(Agent *agent) {
         Units u;
         vector<UnitWrapper *> probes = UnitManager::get(UNIT_TYPEID::PROTOSS_PROBE);
         //for (int i = 0; i < probes.size(); i++) {
-        //    const Unit *unit = agent->Observation()->GetUnit(probes.at(i)->self);
+        //    const Unit *unit = agent->Observation()->GetUnit(probes[i]->self);
         //    if (unit != nullptr) {
         //        u.push_back(unit);
         //    } else {
@@ -331,8 +313,8 @@ FUNC_START
         //}
         vector<AvailableAbilities> allAb = agent->Query()->GetAbilitiesForUnits(u);
         for (int i = 0; i < allAb.size(); i++) {
-            if (probes.at(i)->self == allAb.at(i).unit_tag) {
-                ((Probe *)probes.at(i))->abilities = allAb.at(i);
+            if (probes[i]->self == allAb[i].unit_tag) {
+                ((Probe *)probes[i])->abilities = allAb[i];
             } else {
                 printf("ABILITY ASSIGNMENT ERROR\n");
             }

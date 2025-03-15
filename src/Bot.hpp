@@ -55,13 +55,11 @@ public:
 
     string fileName = "";
 
-    Point3D P3D(const Point2D& p)  {
-FUNC_START
+    Point3D P3D(const Point2D& p) {
         return Point3D(p.x, p.y, Observation()->TerrainHeight(p));
     }
 
-    void initializeStartings()  {
-FUNC_START
+    void initializeStartings() {
         GameInfo game_info = Observation()->GetGameInfo();
         if (Observation()->GetStartLocation().x > game_info.width / 2) {
             Aux::staging_location.x = Observation()->GetStartLocation().x - 6;
@@ -75,11 +73,10 @@ FUNC_START
             Aux::staging_location.y = Observation()->GetStartLocation().y + 6;
         }
         Aux::startLoc = Observation()->GetStartLocation();
-        Aux::enemyLoc = Observation()->GetGameInfo().enemy_start_locations.at(0);
+        Aux::enemyLoc = Observation()->GetGameInfo().enemy_start_locations[0];
     }
 
-    void initializeExpansions()  {
-FUNC_START
+    void initializeExpansions() {
         // staging_location = Point2DI(startLocation.x + ;
         expansions = sc2::search::CalculateExpansionLocations(Observation(), Query());
         printf("Expansions: ");
@@ -96,7 +93,7 @@ FUNC_START
             //expansionDistance.push_back(length);
 
             //for (Location l : pathToExpansion) {
-            //    printf(".at(%d,%d)", l.x, l.y);
+            //    printf("[%d,%d]", l.x, l.y);
             //}
             //printf("{%.1f}\n\n", length);
 
@@ -107,10 +104,10 @@ FUNC_START
             Units vesp = Observation()->GetUnits(Unit::Alliance::Neutral, Aux::isVespene);
             neut.insert(neut.end(), vesp.begin(), vesp.end());
             for (int i = 0; i < neut.size(); i++) {
-                if (Distance2D(point, neut.at(i)->pos) < 12) {
-                    Point2D dir = neut.at(i)->pos - point;
+                if (Distance2D(point, neut[i]->pos) < 12) {
+                    Point2D dir = neut[i]->pos - point;
                     for (int p = 0; p < numsteps; p++) {
-                        Point3D loc = point + p * (neut.at(i)->pos - point) / ((float)numsteps);
+                        Point3D loc = point + p * (neut[i]->pos - point) / ((float)numsteps);
                         Aux::addPlacement(loc, 2);
                         //DebugSphere(this,loc, 2);
                     }
@@ -123,7 +120,7 @@ FUNC_START
                 rankedExpansionDistance.push_back(length);
             }
             for (int i = 0; i < Aux::rankedExpansions.size(); i ++) {
-                if (rankedExpansionDistance.at(i) > length) {
+                if (rankedExpansionDistance[i] > length) {
                     Aux::rankedExpansions.insert(Aux::rankedExpansions.begin() + i, point);
                     rankedExpansionDistance.insert(rankedExpansionDistance.begin() + i, length);
                     break;
@@ -273,8 +270,7 @@ FUNC_START
         }
     }
 
-    void displaySpacialHashGrid()  {
-FUNC_START
+    void displaySpacialHashGrid() {
         GameInfo game_info = Observation()->GetGameInfo();
 
         int mapWidth = game_info.width;
@@ -336,8 +332,7 @@ FUNC_START
         }
     }
 
-    void displaySpacialHashGridTEST()  {
-FUNC_START
+    void displaySpacialHashGridTEST() {
         GameInfo game_info = Observation()->GetGameInfo();
 
         int mapWidth = game_info.width;
@@ -397,8 +392,7 @@ FUNC_START
         }
     }
 
-    void displayEnemyDamageGrid2()  {
-FUNC_START
+    void displayEnemyDamageGrid2() {
         GameInfo game_info = Observation()->GetGameInfo();
 
         int mapWidth = game_info.width;
@@ -461,8 +455,7 @@ FUNC_START
         }
     }
 
-    void displayEnemyDamageGrid()  {
-FUNC_START
+    void displayEnemyDamageGrid() {
         GameInfo game_info = Observation()->GetGameInfo();
 
         int mapWidth = game_info.width * UnitManager::damageNetPrecision;
@@ -539,15 +532,14 @@ FUNC_START
         }
     }
 
-    void displayPrimordialStarNodes()  {
-FUNC_START
+    void displayPrimordialStarNodes() {
         for (int i = 0; i < PrimordialStar::basePathNodes.size(); i++) {
-            PrimordialStar::PathNode* node = PrimordialStar::basePathNodes.at(i);
+            PrimordialStar::PathNode* node = PrimordialStar::basePathNodes[i];
             if (Distance2D(node->rawPos(), Observation()->GetCameraPos()) > 15) {
                 continue;
             }
             //for (int c = 0; c < node->connected.size(); c++) {
-            //    PrimordialStar::PathNode* node2 = PrimordialStar::basePathNodes.at(node->connected.at(c));
+            //    PrimordialStar::PathNode* node2 = PrimordialStar::basePathNodes[node->connected[c]];
             //    DebugLine(this, P3D(node->rawPos()) + Point3D{ 0,0,3 }, P3D(node2->rawPos()) + Point3D{ 0,0,3 }, Colors::Blue);
             //}
             DebugSphere(this, P3D(node->rawPos()), 0.5);
@@ -567,8 +559,8 @@ FUNC_START
         if (path.size() != 0) {
             float l2 = 0;
             for (int i = 0; i < path.size() - 1; i++) {
-                l2 += Distance2D(path.at(i), path.at(i + 1));
-                DebugLine(this, P3D(path.at(i)) + Point3D{ 0,0,1 }, P3D(path.at(i + 1)) + Point3D{ 0,0,1 }, Colors::Green);
+                l2 += Distance2D(path[i], path[i + 1]);
+                DebugLine(this, P3D(path[i]) + Point3D{ 0,0,1 }, P3D(path[i + 1]) + Point3D{ 0,0,1 }, Colors::Green);
             }
             vector<Point2D> subpoints = PrimordialStar::stepPointsAlongPath(path, 1.0F);
             for (Point2D p : subpoints) {
@@ -583,8 +575,7 @@ FUNC_START
 
     }
 
-    void pathVerification()  {
-FUNC_START
+    void pathVerification() {
         #define NUM_PTS_RT 40
         vector<Point2D> pts;
         pts.reserve(NUM_PTS_RT);
@@ -598,10 +589,10 @@ FUNC_START
 
         timeus startTime = std::chrono::steady_clock::now();
         for (int a = 0; a < NUM_PTS_RT; a++) {
-            Point2D from = pts.at(a);
+            Point2D from = pts[a];
             DebugSphere(this, P3D(from), 0.25, { 61,102,220 });
             for (int b = 0; b < NUM_PTS_RT; b++) {
-                Point2D to = pts.at(b);
+                Point2D to = pts[b];
                 auto path = PrimordialStar::getPathDijkstra(from, to, 0, this);
                 float dist = PrimordialStar::getPathLength(path);
                 float sc2dist = Query()->PathingDistance(from, to);
@@ -620,7 +611,7 @@ FUNC_START
                     float z = std::rand() * 2.0F / RAND_MAX;
                     if (path.size() > 0) {
                         for (int i = 0; i < path.size() - 1; i++) {
-                            DebugLine(this, P3D(path.at(i)) + Point3D{ 0,0,1.5F + z }, P3D(path.at(i + 1)) + Point3D{ 0,0,1.5F + z }, c);
+                            DebugLine(this, P3D(path[i]) + Point3D{ 0,0,1.5F + z }, P3D(path[i + 1]) + Point3D{ 0,0,1.5F + z }, c);
                         }
                     }
                     else {
@@ -651,8 +642,7 @@ FUNC_START
         SendDebug(this);
     }
 
-    void listUnitWraps()  {
-FUNC_START
+    void listUnitWraps() {
         string tot = "UNITS:\n";
         for (auto it = UnitManager::units.begin(); it != UnitManager::units.end(); it++) {
             auto all = it->second;
@@ -665,8 +655,7 @@ FUNC_START
         DebugText(this,tot, Point2D(0.01, 0.01), Color(100, 190, 215), 8);
     }
 
-    void listUnitWrapsNeutral()  {
-FUNC_START
+    void listUnitWrapsNeutral() {
         string tot = "UNITS:\n";
         for (auto it = UnitManager::neutrals.begin(); it != UnitManager::neutrals.end(); it++) {
             auto all = it->second;
@@ -679,8 +668,7 @@ FUNC_START
         DebugText(this,tot, Point2D(0.11, 0.01), Color(100, 190, 215), 8);
     }
 
-    void listUnitWrapsEnemies()  {
-FUNC_START
+    void listUnitWrapsEnemies() {
         string tot = "UNITS:\n";
         for (auto it = UnitManager::enemies.begin(); it != UnitManager::enemies.end(); it++) {
             auto all = it->second;
@@ -693,8 +681,7 @@ FUNC_START
         DebugText(this,tot, Point2D(0.21, 0.01), Color(100, 190, 215), 8);
     }
 
-    void listMacroActions()  {
-FUNC_START
+    void listMacroActions() {
         string tot = "MACRO:\n";
         for (auto it = Macro::actions.begin(); it != Macro::actions.end(); it++) {
             auto all = it->second;
@@ -707,8 +694,7 @@ FUNC_START
         DebugText(this,tot, Point2D(0.01, 0.11), Color(250, 50, 15), 8);
     }
 
-    void probeLines()  {
-FUNC_START
+    void probeLines() {
         auto probes = UnitManager::get(UNIT_TYPEID::PROTOSS_PROBE);
         for (auto it = probes.begin(); it != probes.end(); it++) {
             // printf("Probe %xu Mineral %xu\n", it->first, it->second.minerals);
@@ -723,27 +709,26 @@ FUNC_START
         }
     }
 
-    void orderDisplay()  {
-FUNC_START
+    void orderDisplay() {
         Units units = Observation()->GetUnits(sc2::Unit::Alliance::Self);
         for (const Unit* unit : units) {
             if (unit->orders.size() == 0)
                 continue;
             #define LETTER_DISP -0.07F
             string s = "";
-            if (unit->orders.at(0).target_unit_tag != NullTag && unit->orders.at(0).target_pos.x != 0 && unit->orders.at(0).target_pos.y != 0){
-                s += strprintf("%s [%lx] [%.1f, %.1f]", AbilityTypeToName(unit->orders.at(0).ability_id),
-                                     unit->orders.at(0).target_unit_tag, unit->orders.at(0).target_pos.x,
-                                     unit->orders.at(0).target_pos.y);
+            if (unit->orders[0].target_unit_tag != NullTag && unit->orders[0].target_pos.x != 0 && unit->orders[0].target_pos.y != 0){
+                s += strprintf("%s [%lx] [%.1f, %.1f]", AbilityTypeToName(unit->orders[0].ability_id),
+                                     unit->orders[0].target_unit_tag, unit->orders[0].target_pos.x,
+                                     unit->orders[0].target_pos.y);
                 
-            }else if (unit->orders.at(0).target_pos.x != 0 && unit->orders.at(0).target_pos.y != 0) {
-                s += strprintf("%s [%.1f, %.1f]", AbilityTypeToName(unit->orders.at(0).ability_id),
-                                      unit->orders.at(0).target_pos.x, unit->orders.at(0).target_pos.y);
-            } else if (unit->orders.at(0).target_unit_tag != NullTag) {
-                s += strprintf("%s [%lx]", AbilityTypeToName(unit->orders.at(0).ability_id),
-                                     unit->orders.at(0).target_unit_tag);
+            }else if (unit->orders[0].target_pos.x != 0 && unit->orders[0].target_pos.y != 0) {
+                s += strprintf("%s [%.1f, %.1f]", AbilityTypeToName(unit->orders[0].ability_id),
+                                      unit->orders[0].target_pos.x, unit->orders[0].target_pos.y);
+            } else if (unit->orders[0].target_unit_tag != NullTag) {
+                s += strprintf("%s [%lx]", AbilityTypeToName(unit->orders[0].ability_id),
+                                     unit->orders[0].target_unit_tag);
             } else {
-                s += strprintf("%s", AbilityTypeToName(unit->orders.at(0).ability_id));
+                s += strprintf("%s", AbilityTypeToName(unit->orders[0].ability_id));
             }
 
             if (unit->weapon_cooldown != 0) {
@@ -753,8 +738,7 @@ FUNC_START
         }
     }
 
-    void tagDisplay()  {
-FUNC_START
+    void tagDisplay() {
         Units units = Observation()->GetUnits(sc2::Unit::Alliance::Self);
         for (const Unit* unit : units) {
             if (unit->orders.size() == 0)
@@ -765,8 +749,7 @@ FUNC_START
         }
     }
 
-    void neutralDisplay()  {
-FUNC_START
+    void neutralDisplay() {
         for (auto it = UnitManager::neutrals.begin(); it != UnitManager::neutrals.end(); it++) {
             auto all = it->second;
             for (auto it2 = all.begin(); it2 != all.end(); it2++) {
@@ -778,22 +761,20 @@ FUNC_START
         }
     }
 
-    void buildingDisplay()  {
-FUNC_START
+    void buildingDisplay() {
         auto probes = UnitManager::get(UNIT_TYPEID::PROTOSS_PROBE);
         for (auto it = probes.begin(); it != probes.end(); it++) {
             Probe* probe = ((Probe*)*it);
             if (probe->buildings.size() == 0)
                 continue;
-            DebugText(this,strprintf("%s %d,%d", AbilityTypeToName(probe->buildings.at(0).build),
-                                            probe->buildings.at(0).pos.x, probe->buildings.at(0).pos.y),
+            DebugText(this,strprintf("%s %d,%d", AbilityTypeToName(probe->buildings[0].build),
+                                            probe->buildings[0].pos.x, probe->buildings[0].pos.y),
                                   Observation()->GetUnit(probe->self)->pos + Point3D{0, 0, 0}, Color(100, 30, 55),
                                   8);
         }
     }
 
-    void enemiesDisplay()  {
-FUNC_START
+    void enemiesDisplay() {
         for (auto it = UnitManager::enemies.begin(); it != UnitManager::enemies.end(); it++) {
             auto all = it->second;
             for (auto it2 = all.begin(); it2 != all.end(); it2++) {
@@ -809,29 +790,26 @@ FUNC_START
         
     }
 
-    void expansionsLoc()  {
-FUNC_START
+    void expansionsLoc() {
         for (int i = 0; i < Aux::rankedExpansions.size(); i++) {
-            Point3D p = P3D(Aux::rankedExpansions.at(i));
+            Point3D p = P3D(Aux::rankedExpansions[i]);
             DebugSphere(this,p, 12, {253, 216, 53});
-            DebugText(this,strprintf("%.1f", rankedExpansionDistance.at(i)), p + Point3D{0, 0, 0.5});
+            DebugText(this,strprintf("%.1f", rankedExpansionDistance[i]), p + Point3D{0, 0, 0.5});
         }
     }
 
-    void pylonBuildingLoc()  {
-FUNC_START
+    void pylonBuildingLoc() {
         for (int i = 0; i < Aux::pylonLocations.size(); i++) {
-            Point3D p = P3D(Aux::pylonLocations.at(i));
+            Point3D p = P3D(Aux::pylonLocations[i]);
             DebugBox(this,p + Point3D{-1, -1, 0}, p + Point3D{1, 1, 2});
         }
         for (int i = 0; i < Aux::buildingLocations.size(); i++) {
-            Point3D p = P3D(Aux::buildingLocations.at(i));
+            Point3D p = P3D(Aux::buildingLocations[i]);
             DebugBox(this,p + Point3D{-1.5, -1.5, 0}, p + Point3D{1.5, 1.5, 3});
         }
     }
 
-    void loadEnemyHealth()  {
-FUNC_START
+    void loadEnemyHealth() {
         for (auto it = UnitManager::enemies.begin(); it != UnitManager::enemies.end(); it++) {
             for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
                 (*it2)->loadHealth(this);
@@ -839,8 +817,72 @@ FUNC_START
         }
     }
 
-    Color pathingMapToColor(int8_t map)  {
-FUNC_START
+    //void manageArmy() {
+    //    EnemySquads danger = checkDangerAtHome();
+    //    if (danger.size() == 0) {
+    //        #if MICRO_TEST
+    //            squads[0].attack(START_OP);
+    //        #elif MICRO_TEST_2
+    //            squads[0].attack(Observation()->GetGameInfo().enemy_start_locations[0]);
+    //        #else
+    //            if (squads[0].army.size() > 11) {
+    //                squads[0].attack(Observation()->GetGameInfo().enemy_start_locations[0]);
+    //            } else {
+    //                squads[0].attack(rally_point);
+    //            }
+    //        #endif
+    //    } else {
+    //        for (int i = 0; i < danger.size(); i++) {
+    //            if (danger[i].unitComp.size() == 1 && (danger[i].unitComp[0] == UNIT_TYPEID::PROTOSS_PROBE ||
+    //                                                   danger[i].unitComp[0] == UNIT_TYPEID::ZERG_DRONE ||
+    //                                                   danger[i].unitComp[0] == UNIT_TYPEID::TERRAN_SCV)) {
+    //                UnitWrappers probes = UnitManager::get(UNIT_TYPEID::PROTOSS_PROBE);
+    //                UnitWrapper* closest = nullptr;
+    //                for (UnitWrapper* probeWrap : probes) {
+    //                    if (closest == nullptr || Distance2D(probeWrap->pos(this), danger[i].center) <
+    //                                                  Distance2D(closest->pos(this), danger[i].center)) {
+    //                        closest = probeWrap;
+    //                    }
+    //                }
+    //                Actions()->UnitCommand(closest->self, ABILITY_ID::ATTACK, danger[i].center);
+    //            } else {
+    //                squads[0].attack(danger[0].center);
+    //            }
+    //        }
+    //    }
+    //}
+
+    //EnemySquads checkDangerAtHome() {
+    //    //UnitWrappers danger = UnitWrappers();
+    //    EnemySquads danger = EnemySquads();
+    //    for (auto it = UnitManager::enemies.begin(); it != UnitManager::enemies.end(); it++) {
+    //        auto all = it->second;
+    //        for (auto it2 = all.begin(); it2 != all.end(); it2++) {
+    //            Point2D pos = (*it2)->pos(this);
+    //            if (pos == Point2D{0, 0}) {
+    //                continue;
+    //            }
+    //            if (imRef(Aux::influenceMap, int(pos.x), int(pos.y)) != 0) {
+    //                //danger.push_back((*it2));
+    //                bool added = false;
+    //                for (int i = 0; i < danger.size(); i++) {
+    //                    if (Distance2D(danger[i].center, pos) < ENEMY_SQUAD_RADIUS) {
+    //                        danger[i].add(*it2, this);
+    //                        added = true;
+    //                        break;
+    //                    }
+    //                }
+    //                if (added == false) {
+    //                    danger.emplace_back();
+    //                    danger.back().add(*it2, this);
+    //                }
+    //            }
+    //        }
+    //    }
+    //    return danger;
+    //}
+
+    Color pathingMapToColor(int8_t map) {
         switch (map) {
         case (0):
             return {255,255,255};
@@ -915,12 +957,6 @@ FUNC_START
         int numWords = sizeof(words) / sizeof(words[0]);
 
         printf("Playing on %s\n", Observation()->GetGameInfo().map_name.c_str());
-#if (defined(_MSVC_LANG))
-        printf("C++ %ld\n", _MSVC_LANG);
-#else
-        printf("C++ %ld\n", __cplusplus);
-#endif
-        
         Actions()->SendChat("My Origin? Its Primordial, baby! (protoss)");
         Actions()->SendChat(strprintf("Feel the %s of my Protoss (pheart)", words[std::rand() % numWords].c_str()));
 
@@ -1049,20 +1085,18 @@ FUNC_START
 
 
         for (int i = 0; i < PrimordialStar::basePathNodes.size(); i++) {
-            PrimordialStar::PathNode* node = PrimordialStar::basePathNodes.at(i);
+            PrimordialStar::PathNode* node = PrimordialStar::basePathNodes[i];
             if (Distance2D(node->rawPos(), Observation()->GetCameraPos()) > 300) {
                 continue;
             }
             DebugSphere(this, P3D(node->rawPos()), 0.5, {250,50,100});
             for (int c = 0; c < node->connected.size(); c++) {
-                PrimordialStar::PathNode* node2 = PrimordialStar::basePathNodes.at(node->connected.at(c));
+                PrimordialStar::PathNode* node2 = PrimordialStar::basePathNodes[node->connected[c]];
                 DebugLine(this, P3D(node->rawPos()) + Point3D{ 0,0,1 }, P3D(node2->rawPos()) + Point3D{ 0,0,1 }, Colors::Blue);
             }
         }
-
-#ifndef BUILD_FOR_LADDER
         pathVerification();
-#endif
+
         #if MICRO_TEST == 0
             for (int i = -4; i <= 4; i++) {
                 for (int j = -4; j <= 4; j++) {
@@ -1079,7 +1113,7 @@ FUNC_START
 
         //const ObservationInterface* observe = Observation();
         //PathFinder pf(observe->GetGameInfo().width, observe->GetGameInfo().height);
-        //cout << pf.findPath(observe->GetGameInfo().start_locations.at(0), observe->GetGameInfo().enemy_start_locations.at(0), this) << endl;
+        //cout << pf.findPath(observe->GetGameInfo().start_locations[0], observe->GetGameInfo().enemy_start_locations[0], this) << endl;
         //unordered_set<Location> walls{{5, 0}, {5, 1}, {2, 2}, {5, 2}, {2, 3}, {5, 3}, {2, 4}, {5, 4},
         //                              {2, 5}, {4, 5}, {5, 5}, {6, 5}, {7, 5}, {2, 6}, {2, 7}};
 
@@ -1106,9 +1140,9 @@ FUNC_START
         for (int i = -12; i <= 12; i++) {
             for (int j = -12; j <= 12; j++) {
                 float d = Distance2D(Point2D{i + 0.5F, j + 0.5F}, {0,0});
-                if (imRef(path_zhang_suen, int(Aux::rankedExpansions.at(0).x) + i, int(Aux::rankedExpansions.at(0).y) + j) == 1 &&
+                if (imRef(path_zhang_suen, int(Aux::rankedExpansions[0].x) + i, int(Aux::rankedExpansions[0].y) + j) == 1 &&
                     d > 10 && d < 12) {
-                    possiblePoints.push_back({i + (int)Aux::rankedExpansions.at(0).x, j + (int)Aux::rankedExpansions.at(0).y});
+                    possiblePoints.push_back({i + (int)Aux::rankedExpansions[0].x, j + (int)Aux::rankedExpansions[0].y});
                 }
             }
         }
@@ -1119,27 +1153,27 @@ FUNC_START
         for (int i = 0; i < possiblePoints.size(); i++) {
             auto came_from =
                 jps(gridmap, middle,
-                                 {int(possiblePoints.at(i).x), int(possiblePoints.at(i).y)}, Tool::euclidean, this);
+                                 {int(possiblePoints[i].x), int(possiblePoints[i].y)}, Tool::euclidean, this);
             auto pathToExpansion = Tool::reconstruct_path(Location(middle),
-                                       {int(possiblePoints.at(i).x), int(possiblePoints.at(i).y)}, came_from);
+                                       {int(possiblePoints[i].x), int(possiblePoints[i].y)}, came_from);
 
             double length = fullDist(pathToExpansion);
             if (min == -1 || min > length) {
                 min = length;
-                rally_point = P2D(possiblePoints.at(i)) + Point2D{0.5F, 0.5F};
+                rally_point = P2D(possiblePoints[i]) + Point2D{0.5F, 0.5F};
             }
         }
 
         squads.emplace_back();
         #if MICRO_TEST
-            squads.at(0).attack(START_OP);
+            squads[0].attack(START_OP);
         #else
-            squads.at(0).attack(rally_point);
+            squads[0].attack(rally_point);
         #endif
 
         //Debug()->DebugShowMap();
         //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_STALKER, middle, 2, 9);
-        //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_VOIDRAY, Observation()->GetGameInfo().enemy_start_locations.at(0), 2, 9);
+        //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_VOIDRAY, Observation()->GetGameInfo().enemy_start_locations[0], 2, 9);
 
         #if MICRO_TEST_2
 
@@ -1147,26 +1181,24 @@ FUNC_START
             //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_IMMORTAL, middle, 1, 2);
             ////Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_OBSERVER, middle, 1, 12);
             //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_COLOSSUS, middle, 1, 2);
-            //Debug()->DebugCreateUnit(UNIT_TYPEID::ZERG_ZERGLING, Observation()->GetGameInfo().enemy_start_locations.at(0), 2, 16);
-            //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_ADEPT, Observation()->GetGameInfo().enemy_start_locations.at(0), 2, 6);
-            //Debug()->DebugCreateUnit(UNIT_TYPEID::TERRAN_MARINE, Observation()->GetGameInfo().enemy_start_locations.at(0), 2, 14);
+            //Debug()->DebugCreateUnit(UNIT_TYPEID::ZERG_ZERGLING, Observation()->GetGameInfo().enemy_start_locations[0], 2, 16);
+            //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_ADEPT, Observation()->GetGameInfo().enemy_start_locations[0], 2, 6);
+            //Debug()->DebugCreateUnit(UNIT_TYPEID::TERRAN_MARINE, Observation()->GetGameInfo().enemy_start_locations[0], 2, 14);
 
             //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_OBSERVER, middle, 1, 1);
             //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_STALKER, middle, 1, 1);
-            //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_ADEPT, Observation()->GetGameInfo().enemy_start_locations.at(0), 2, 2);
+            //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_ADEPT, Observation()->GetGameInfo().enemy_start_locations[0], 2, 2);
         #endif
     }
 
     //! Called when a game has ended.
-    virtual void OnGameEnd()  {
-FUNC_START
+    virtual void OnGameEnd() {
 
     }
 
     //! Called when a Unit has been created by the player.
     //!< \param unit The created unit.
-    virtual void OnUnitCreated(const Unit* unit)  {
-FUNC_START
+    virtual void OnUnitCreated(const Unit* unit) {
         if (unit->tag == NullTag) {
             return;
         }
@@ -1223,8 +1255,7 @@ FUNC_START
 
     //! Called whenever one of the player's units has been destroyed.
     //!< \param unit The destroyed unit.
-    virtual void OnUnitDestroyed(const Unit* unit)  {
-FUNC_START
+    virtual void OnUnitDestroyed(const Unit* unit) {
         if (unit->alliance == Unit::Alliance::Self) {
             UnitWrapper* u = UnitManager::find(unit->unit_type, unit->tag);
             delete u;
@@ -1282,13 +1313,11 @@ FUNC_START
     //! orders or if it did not exist in the previous step and now does, a unit being created, for instance, will call
     //! both OnUnitCreated and OnUnitIdle if it does not have a rally set.
     //!< \param unit The idle unit.
-    virtual void OnUnitIdle(const Unit* unit)  {
-FUNC_START
+    virtual void OnUnitIdle(const Unit* unit) {
         //UnitManager::find(unit->unit_type, unit->tag)->execute(this);
     }
 
-    void loadVisionMap(Agent* agent)  {
-FUNC_START
+    void loadVisionMap(Agent* agent) {
         int mapWidth = agent->Observation()->GetGameInfo().width;
         int mapHeight = agent->Observation()->GetGameInfo().height;
         for (int i = 0; i < mapWidth; i++) {
@@ -1324,14 +1353,9 @@ FUNC_START
     //! In realtime this function gets called as often as possible after request/responses are received from the game
     //! gathering observation state.
     virtual void OnStep() final {
-        printf("Step: %d\n", Observation()->GetGameLoop());
+        //printf(" ");
         Profiler onStepProfiler("onStep");
         //onStepProfiler.disable();
-        if(Observation()->GetGameLoop() == 5){
-            int a[] = {20,320};
-            a[1] = 2;
-            a[5] = 2;
-        }
 
         Macro::execute(this);
 
@@ -1367,27 +1391,41 @@ FUNC_START
 
         onStepProfiler.midLog("LoadVisionMap");
 
+        //manageArmy();
         ArmyControl::step(this, rally_point);
+
+        //for (UnitWrapper* wrap : UnitManager::units[UNIT_TYPEID::PROTOSS_STALKER]) {
+        //    float theta = ((float)std::rand()) * 2 * M_PI / RAND_MAX;
+        //    float magnitude = 8;//((float)std::rand()) * 8 / RAND_MAX;
+
+        //    Point2D displace{ cos(theta) * magnitude, sin(theta) * magnitude };
+
+        //    Point3D upos = wrap->pos3D(this);
+        //    Point3D blinkPos{ upos.x + displace.x, upos.y + displace.y, upos.z };
+        //    DebugLine(this, upos, blinkPos, { 240, 73, 250 });
+        //    printf("TELEPORT STALKER {%.1f, %.1f}\n", displace.x, displace.y);
+        //    Actions()->UnitCommand(wrap->self, ABILITY_ID::EFFECT_BLINK_STALKER, blinkPos);
+        //}
 
         onStepProfiler.midLog("ArmyControl");
 
         string s = "";
         for (int i = 0; i < squads.size(); i ++) {
-            squads.at(i).execute(this);
-            s += strprintf("SQUAD%d %s %.1f,%.1f int[%.1f,%.1f]:\n", i, SquadModeToString(squads.at(i).mode),
-                           squads.at(i).location.x, squads.at(i).location.y, squads.at(i).intermediateLoc.x,
-                           squads.at(i).intermediateLoc.y);
-            Point2D c = squads.at(i).coreCenter(this);
-            //Point2D cg = squads.at(i).center(this);
-            s += strprintf("C:%.1f,%.1f S:%d\n", c.x, c.y, squads.at(i).army.size());
-            for (int a = 0; a < squads.at(i).army.size(); a++) {
-                ArmyUnit* unit = (ArmyUnit*)squads.at(i).army.at(a);
+            squads[i].execute(this);
+            s += strprintf("SQUAD%d %s %.1f,%.1f int[%.1f,%.1f]:\n", i, SquadModeToString(squads[i].mode),
+                           squads[i].location.x, squads[i].location.y, squads[i].intermediateLoc.x,
+                           squads[i].intermediateLoc.y);
+            Point2D c = squads[i].coreCenter(this);
+            //Point2D cg = squads[i].center(this);
+            s += strprintf("C:%.1f,%.1f S:%d\n", c.x, c.y, squads[i].army.size());
+            for (int a = 0; a < squads[i].army.size(); a++) {
+                ArmyUnit* unit = (ArmyUnit*)squads[i].army[a];
                 unit->execute(this);
                 Point3D pos = unit->pos3D(this);
                 s += strprintf("%s %.1fs %Ix %c {%.1f,%.1f}\n", UnitTypeToName(unit->type),
                     unit->get(this)->weapon_cooldown,
-                               ((ArmyUnit*)(unit))->targetWrap, squads.at(i).squadStates.at(unit->self), unit->posTarget.x, unit->posTarget.y);
-                DebugText(this,strprintf("%c:%c", squads.at(i).squadStates.at(unit->self), squads.at(i).subSquadStates.at(unit->self)),
+                               ((ArmyUnit*)(unit))->targetWrap, squads[i].squadStates[unit->self], unit->posTarget.x, unit->posTarget.y);
+                DebugText(this,strprintf("%c:%c", squads[i].squadStates[unit->self], squads[i].subSquadStates[unit->self]),
                                       pos,
                                       Color(210, 55, 55), 8);
                 
@@ -1395,8 +1433,8 @@ FUNC_START
                 DebugLine(this, pos + Point3D{ 0,0,1 }, P3D(unit->escapeLoc) + Point3D{ 0,0,1 }, { 10, 150, 255 });
             }
             s += '\n';
-            DebugSphere(this,P3D(squads.at(i).coreCenter(this)), squads.at(i).armyballRadius());
-            DebugSphere(this,P3D(squads.at(i).intermediateLoc), 0.5, {30,230, 210});
+            DebugSphere(this,P3D(squads[i].coreCenter(this)), squads[i].armyballRadius());
+            DebugSphere(this,P3D(squads[i].intermediateLoc), 0.5, {30,230, 210});
         }
         DebugText(this, s, Point2D(0.71, 0.11), Color(1, 42, 212), 8);
 
@@ -1408,7 +1446,7 @@ FUNC_START
                     Macro::addProbe();
                 }
                 for (int i = 0; i < strat.build_order.size(); i++) {
-                    Macro::addAction(strat.build_order.at(i));
+                    Macro::addAction(strat.build_order[i]);
                 }
             }
         #endif
@@ -1471,8 +1509,8 @@ FUNC_START
 
         if (Observation()->GetGameLoop() > 20) {
             bool found = false;
-            for (int i = 0; i < Macro::actions.at(lastUnitSpawner).size(); i++) {
-                if (Macro::actions.at(lastUnitSpawner).at(i).index == lastUnitIndex) {
+            for (int i = 0; i < Macro::actions[lastUnitSpawner].size(); i++) {
+                if (Macro::actions[lastUnitSpawner][i].index == lastUnitIndex) {
                     found = true;
                 }
             }
@@ -1707,19 +1745,19 @@ FUNC_START
             for (int i = 0; i < (max1 - strlen); i++) {
                 name += " ";
             }
-            string dtstr = strprintf("AVG:%.3f", ((double)itr->second) / profilerCoumt.at(itr->first) / 1000.0);
+            string dtstr = strprintf("AVG:%.3f", ((double)itr->second) / profilerCoumt[itr->first] / 1000.0);
             strlen = dtstr.size();
             max2 = max(strlen + 1, max2);
             for (int i = 0; i < (max2 - strlen); i++) {
                 dtstr += " ";
             }
-            string totstr = strprintf("TOT:%.3f/%d", itr->second / 1000.0, profilerCoumt.at(itr->first));
+            string totstr = strprintf("TOT:%.3f/%d", itr->second / 1000.0, profilerCoumt[itr->first]);
             strlen = totstr.size();
             max3 = max(strlen + 1, max3);
             for (int i = 0; i < (max3 - strlen); i++) {
                 totstr += " ";
             }
-            string lateststr = strprintf("LAT:%.3f", profilerLast.at(itr->first).time()/1000.0);
+            string lateststr = strprintf("LAT:%.3f", profilerLast[itr->first].time()/1000.0);
             strlen = lateststr.size();
             max4 = max(strlen + 1, max4);
             for (int i = 0; i < (max4 - strlen); i++) {
@@ -1738,8 +1776,7 @@ FUNC_START
 
     //!  Called when a neutral unit is created. For example, mineral fields observed for the first time
     //!< \param unit The observed unit.
-    virtual void OnNeutralUnitCreated(const Unit* unit)  {
-FUNC_START
+    virtual void OnNeutralUnitCreated(const Unit* unit) {
         if (Aux::isVespene(*unit)) {
             Vespene* u = new Vespene(unit);
             u->execute(this);
@@ -1751,24 +1788,21 @@ FUNC_START
 
     //! Called when an upgrade is finished, warp gate, ground weapons, baneling speed, etc.
     //!< \param upgrade The completed upgrade.
-    virtual void OnUpgradeCompleted(UpgradeID upgradeID)  {
-FUNC_START
+    virtual void OnUpgradeCompleted(UpgradeID upgradeID) {
     }
 
     //! Called when the unit in the previous step had a build progress less than 1.0 but is greater than or equal to 1.0
     //! in
     // !the current step.
     //!< \param unit The constructed unit.
-    virtual void OnBuildingConstructionComplete(const Unit* unit)  {
-FUNC_START
+    virtual void OnBuildingConstructionComplete(const Unit* unit) {
     }
 
     //! Called when the unit in the current observation has lower health or shields than in the previous observation.
     //!< \param unit The damaged unit.
     //!< \param health The change in health (damage is positive)
     //!< \param shields The change in shields (damage is positive)
-    virtual void OnUnitDamaged(const Unit* unit, float health, float shields)  {
-FUNC_START
+    virtual void OnUnitDamaged(const Unit* unit, float health, float shields) {
         UnitWrapper* wrap = UnitManager::find(unit->unit_type, unit->tag);
         if (unit->alliance == Unit::Alliance::Self && wrap != nullptr) {
             wrap->executeDamaged(this, health, shields);
@@ -1776,19 +1810,16 @@ FUNC_START
     }
 
     //! Called when a nydus is placed.
-    virtual void OnNydusDetected()  {
-FUNC_START
+    virtual void OnNydusDetected() {
     }
 
     //! Called when a nuclear launch is detected.
-    virtual void OnNuclearLaunchDetected()  {
-FUNC_START
+    virtual void OnNuclearLaunchDetected() {
     }
 
     //! Called when an enemy unit enters vision from out of fog of war.
     //!< \param unit The unit entering vision.
-    virtual void OnUnitEnterVision(const Unit* unit)  {
-FUNC_START
+    virtual void OnUnitEnterVision(const Unit* unit) {
         UnitWrapper* u = new UnitWrapper(unit);
         u->execute(this);
         Aux::addPlacement(unit->pos, unit->unit_type);

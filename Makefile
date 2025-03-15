@@ -18,6 +18,3 @@ civetclean:
 
 upload: ladder
 	python3 upload.py
-
-upload-only:
-	python3 upload.py

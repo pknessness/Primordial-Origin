@@ -9,13 +9,11 @@
 class Assimilator : public UnitWrapper {
 private:
 public:
-    Assimilator(const Unit* unit) : UnitWrapper(unit)  {
-FUNC_START
+    Assimilator(const Unit* unit) : UnitWrapper(unit){
 
     }
 
-    void nexusNearbyUpdate(Agent* agent)  {
-FUNC_START
+    void nexusNearbyUpdate(Agent* agent) {
         UnitWrappers nexuses = UnitManager::get(UNIT_TYPEID::PROTOSS_NEXUS);
 
         for (UnitWrapper* nexusWrap : nexuses) {

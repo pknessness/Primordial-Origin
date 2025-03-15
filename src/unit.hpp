@@ -38,8 +38,7 @@ public:
 
     inline const Unit *get(Agent *agent);
 
-    Composition getComposition(Agent* agent)  {
-FUNC_START
+    Composition getComposition(Agent* agent) {
         const Unit* selfUnit = get(agent);
         if (selfUnit == nullptr) {
             return c;
@@ -52,8 +51,7 @@ FUNC_START
         return Composition::Ground;
     }
 
-    void loadHealth(Agent* agent)  {
-FUNC_START
+    void loadHealth(Agent* agent) {
         const Unit* selfUnit = get(agent);
         if (selfUnit != nullptr) {
             health = selfUnit->health;
@@ -68,8 +66,7 @@ FUNC_START
 
     virtual bool execute(Agent *agent);
 
-    virtual bool executeDamaged(Agent *agent, float health, float shields)  {
-FUNC_START
+    virtual bool executeDamaged(Agent *agent, float health, float shields) {
         return false;
     }
 
@@ -77,23 +74,20 @@ FUNC_START
 
     static void loadAbilitiesEnemy(Agent* agent);
 
-    bool checkAbility(AbilityID ability)  {
-FUNC_START
+    bool checkAbility(AbilityID ability) {
         for (int i = 0; i < abilities.abilities.size(); i++) {
-            if (ability == abilities.abilities.at(i).ability_id) {
+            if (ability == abilities.abilities[i].ability_id) {
                 return true;
             }
         }
         return false;
     }
 
-    bool operator==(const UnitWrapper &u)  {
-FUNC_START
+    bool operator==(const UnitWrapper &u) {
         return u.self == self;
     }
 
-    bool operator<(const UnitWrapper &u)  {
-FUNC_START
+    bool operator<(const UnitWrapper &u) {
         return u.self < self;
     }
 
@@ -111,6 +105,7 @@ public:
 };
 
 using UnitWrappers = vector<UnitWrapper*>;
+using UnitWrapperSet = set<UnitWrapper*>;
 using damageval = uint16_t;
 
 struct Damage {
@@ -122,8 +117,7 @@ struct Damage {
     damageval massive;
     damageval psionic;
 
-    Damage()  {
-FUNC_START
+    Damage() {
         normal = 0;
         armored = 0;
         light = 0;
@@ -139,12 +133,10 @@ FUNC_START
     damageval biological,
     damageval mechanical,
     damageval massive,
-    damageval psionic) : normal(normal), armored(armored), light(light), biological(biological), mechanical(mechanical), massive(massive), psionic(psionic)  {
-FUNC_START
+    damageval psionic) : normal(normal), armored(armored), light(light), biological(biological), mechanical(mechanical), massive(massive), psionic(psionic){
     }
 
-    void operator+=(const Damage& u)  {
-FUNC_START
+    void operator+=(const Damage& u) {
         normal += u.normal;
         armored += u.armored;
         light += u.light;
@@ -154,8 +146,7 @@ FUNC_START
         psionic += u.psionic;
     }
 
-    Damage operator+(const Damage& u)  {
-FUNC_START
+    Damage operator+(const Damage& u) {
         return Damage{
             (damageval)(normal + u.normal),
             (damageval)(armored + u.armored),
@@ -166,8 +157,7 @@ FUNC_START
             (damageval)(psionic + u.psionic) };
     }
 
-    Damage operator/(const float& u)  {
-FUNC_START
+    Damage operator/(const float& u) {
         return Damage{
             (damageval)(normal / u),
             (damageval)(armored / u),
@@ -178,8 +168,7 @@ FUNC_START
             (damageval)(psionic / u) };
     }
 
-    void updateHighest(Damage dmag)  {
-FUNC_START
+    void updateHighest(Damage dmag) {
         if (dmag.normal > normal) {
             normal = dmag.normal;
         }
@@ -209,30 +198,26 @@ struct DamageLocation {
     
     Damage air;
 
-    void operator+=(const DamageLocation& u)  {
-FUNC_START
+    void operator+=(const DamageLocation& u) {
         ground += u.ground;
         air += u.air;
     }
 
-    DamageLocation operator+(const DamageLocation& u)  {
-FUNC_START
+    DamageLocation operator+(const DamageLocation& u) {
         return DamageLocation{
             (ground + u.ground),
             (air + u.air) 
         };
     }
 
-    DamageLocation operator/(const float& u)  {
-FUNC_START
+    DamageLocation operator/(const float& u) {
         return DamageLocation{
             (ground / u),
             (air / u)
         };
     }
 
-    void updateHighest(DamageLocation dmagloc)  {
-FUNC_START
+    void updateHighest(DamageLocation dmagloc) {
         ground.updateHighest(dmagloc.ground);
         air.updateHighest(dmagloc.air);
     }
@@ -260,8 +245,7 @@ namespace UnitManager {
 
     //#define damageNetEnemy(p) imRef(UnitManager::enemyDamageNet, int(p.x * UnitManager::damageNetPrecision), int(p.y * UnitManager::damageNetPrecision))
 
-    DamageLocation damageNetEnemy(Point2D p)  {
-FUNC_START
+    DamageLocation damageNetEnemy(Point2D p) {
         int x = int(p.x * damageNetPrecision);
         int y = int(p.y * damageNetPrecision);
         if (imRef(enemyDamageNetReal, x, y)) {
@@ -270,22 +254,19 @@ FUNC_START
         return DamageLocation{};
     }
 
-    DamageLocation getDamageNetEnemyUnscaled(int x, int y)  {
-FUNC_START
+    DamageLocation getDamageNetEnemyUnscaled(int x, int y) {
         if (imRef(enemyDamageNetReal, x, y)) {
             return imRef(enemyDamageNet, x, y);
         }
         return DamageLocation{};
     }
 
-    void setDamageNetEnemyUnscaled(int x, int y, DamageLocation d)  {
-FUNC_START
+    void setDamageNetEnemyUnscaled(int x, int y, DamageLocation d) {
         imRef(enemyDamageNet, x, y) = d;
         imRef(enemyDamageNetReal, x, y) = 1;
     }
     
-    void setEnemyDamageRadius2(Point2D pos, float radius, DamageLocation damage, Agent* agent)  {
-FUNC_START
+    void setEnemyDamageRadius2(Point2D pos, float radius, DamageLocation damage, Agent* agent) {
         int x = (pos.x - radius) * damageNetPrecision;
         int y = (pos.y - radius) * damageNetPrecision;
         int xmax = (pos.x + radius) * damageNetPrecision + 1;
@@ -321,8 +302,7 @@ FUNC_START
         }
     }
 
-    void setEnemyDamageRadius(Point2D pos, float radius, DamageLocation damage, Agent* agent)  {
-FUNC_START
+    void setEnemyDamageRadius(Point2D pos, float radius, DamageLocation damage, Agent* agent) {
         Profiler profiler("DamageGridF");
         //printf("5ize:%d\n", sizeof(DamageLocation));
         enemyDamageNetModify->clear();
@@ -355,8 +335,7 @@ FUNC_START
         }
     }
 
-    void fillDamageModify2(Point2D pos, float radius, Agent* agent)  {
-FUNC_START
+    void fillDamageModify2(Point2D pos, float radius, Agent* agent) {
         int x = (pos.x - radius) * damageNetPrecision;
         int y = (pos.y - radius) * damageNetPrecision;
         int xmax = (pos.x + radius) * damageNetPrecision;
@@ -377,8 +356,7 @@ FUNC_START
         }
     }
 
-    void fillDamageModify(Point2D pos, float radius, Agent* agent)  {
-FUNC_START
+    void fillDamageModify(Point2D pos, float radius, Agent* agent) {
         if (radius < 1) {
             fillDamageModify2(pos, radius, agent);
             return;
@@ -480,8 +458,7 @@ FUNC_START
     }
 
     
-    void setEnemyDamageRadius3(Point2D pos, float radius, DamageLocation damage, Agent* agent)  {
-FUNC_START
+    void setEnemyDamageRadius3(Point2D pos, float radius, DamageLocation damage, Agent* agent) {
         //Profiler profiler("DamageGridF");
         enemyDamageNetModify->clear();
         
@@ -502,8 +479,7 @@ FUNC_START
         }
     }
 
-    DamageLocation getRadiusMaxDamage(Point2D pos, float radius, Agent* agent)  {
-FUNC_START
+    DamageLocation getRadiusMaxDamage(Point2D pos, float radius, Agent* agent) {
         //Profiler profiler("DamageGridF");
         enemyDamageNetModify->clear();
 
@@ -528,8 +504,7 @@ FUNC_START
         return d;
     }
 
-    DamageLocation getRadiusAvgDamage(Point2D pos, float radius, Agent* agent)  {
-FUNC_START
+    DamageLocation getRadiusAvgDamage(Point2D pos, float radius, Agent* agent) {
         //Profiler profiler("DamageGridF");
         enemyDamageNetModify->clear();
 
@@ -556,8 +531,7 @@ FUNC_START
         return (d/((float)count));
     }
 
-    DamageLocation WeaponToDamageLocation(Weapon w)  {
-FUNC_START
+    DamageLocation WeaponToDamageLocation(Weapon w) {
         DamageLocation d;
         Damage damage;
         for (DamageBonus bonus : w.damage_bonus) {
@@ -595,8 +569,7 @@ FUNC_START
         return d;
     }
 
-    float getRelevantDamage(UnitWrapper* unitWrap, DamageLocation pointDamage, Agent* agent)  {
-FUNC_START
+    float getRelevantDamage(UnitWrapper* unitWrap, DamageLocation pointDamage, Agent* agent) {
         Composition comp = unitWrap->getComposition(agent);
         float damage = 0;
         if (comp == Composition::Ground || comp == Composition::Any) {
@@ -654,18 +627,15 @@ FUNC_START
         return damage;
     }
 
-    float getRelevantDamage(UnitWrapper* target, Weapon w, Agent* agent)  {
-FUNC_START
+    float getRelevantDamage(UnitWrapper* target, Weapon w, Agent* agent) {
         return getRelevantDamage(target, WeaponToDamageLocation(w), agent);
     }
     
-    float getPointDamage(int i, int j, UnitWrapper* unitWrap, Agent* agent)  {
-FUNC_START
+    float getPointDamage(int i, int j, UnitWrapper* unitWrap, Agent* agent) {
         return getRelevantDamage(unitWrap, getDamageNetEnemyUnscaled(i, j), agent);
     }
 
-    Point2D findMinimumDamage(UnitWrapper* unitWrap, float radius, Agent* agent)  {
-FUNC_START
+    Point2D findMinimumDamage(UnitWrapper* unitWrap, float radius, Agent* agent) {
         //printf("5ize:%d\n", sizeof(DamageLocation));
         enemyDamageNetTemp->clear();
         Point2D pos = unitWrap->pos(agent);
@@ -721,8 +691,7 @@ FUNC_START
         return Point2D{ mini * blockSize, minj * blockSize };
     }
 
-    Point2D weightedVector(UnitWrapper* unitWrap, float radius, Agent* agent)  {
-FUNC_START
+    Point2D weightedVector(UnitWrapper* unitWrap, float radius, Agent* agent) {
         //printf("5ize:%d\n", sizeof(DamageLocation));
         enemyDamageNetTemp->clear();
         Point2D pos = unitWrap->pos(agent);
@@ -774,32 +743,29 @@ FUNC_START
         return normalize(vector);
     }
     
-    bool checkExist(UnitTypeID id)  {
-FUNC_START
+    bool checkExist(UnitTypeID id) {
         return units.find(id) != units.end();
     }
 
-    UnitWrappers get(UnitTypeID type)  {
-FUNC_START
+    UnitWrappers get(UnitTypeID type) {
         if (checkExist(type)) {
-            return units.at(type);
+            return units[type];
         }
         return UnitWrappers();
     }
 
-    UnitWrappers getMulti(vector<UnitTypeID> types)  {
-FUNC_START
+    UnitWrappers getMulti(vector<UnitTypeID> types) {
         int total = 0;
         for (UnitTypeID type : types) {
             if (checkExist(type)) {
-                total += units.at(type).size();
+                total += units[type].size();
             }
         }
         UnitWrappers wraps;
         wraps.reserve(total);
         for (UnitTypeID type : types) {
             if (checkExist(type)) {
-                for (UnitWrapper* wrap : units.at(type)) {
+                for (UnitWrapper* wrap : units[type]) {
                     wraps.push_back(wrap);
                 }
             }
@@ -807,43 +773,39 @@ FUNC_START
         return wraps;
     }
 
-    UnitWrapper* find(UnitTypeID type, Tag tag)  {
-FUNC_START
+    UnitWrapper* find(UnitTypeID type, Tag tag) {
         UnitWrappers v = get(type);
         for (int i = 0; i < v.size(); i++) {
-            if (v.at(i)->self == tag) {
-                return v.at(i);
+            if (v[i]->self == tag) {
+                return v[i];
             }
         }
         return nullptr;
     }
 
-    bool checkExistNeutral(UnitTypeID id)  {
-FUNC_START
+    bool checkExistNeutral(UnitTypeID id) {
         return neutrals.find(id) != neutrals.end();
     }
 
-    UnitWrappers getNeutral(UnitTypeID type)  {
-FUNC_START
+    UnitWrappers getNeutral(UnitTypeID type) {
         if (checkExistNeutral(type)) {
-            return neutrals.at(type);
+            return neutrals[type];
         }
         return UnitWrappers();
     }
 
-    UnitWrappers getNeutralMulti(vector<UnitTypeID> types)  {
-FUNC_START
+    UnitWrappers getNeutralMulti(vector<UnitTypeID> types) {
         int total = 0;
         for (UnitTypeID type : types) {
             if (checkExistNeutral(type)) {
-                total += neutrals.at(type).size();
+                total += neutrals[type].size();
             }
         }
         UnitWrappers wraps;
         wraps.reserve(total);
         for (UnitTypeID type : types) {
             if (checkExistNeutral(type)) {
-                for (UnitWrapper* wrap : neutrals.at(type)) {
+                for (UnitWrapper* wrap : neutrals[type]) {
                     wraps.push_back(wrap);
                 }
             }
@@ -851,8 +813,7 @@ FUNC_START
         return wraps;
     }
 
-    UnitWrappers getVespene()  {
-FUNC_START
+    UnitWrappers getVespene() {
         //UnitWrappers v1 = getNeutral(UNIT_TYPEID::NEUTRAL_VESPENEGEYSER);
         //UnitWrappers v2 = getNeutral(UNIT_TYPEID::NEUTRAL_PROTOSSVESPENEGEYSER);
         //UnitWrappers v3 = getNeutral(UNIT_TYPEID::NEUTRAL_PURIFIERVESPENEGEYSER);
@@ -875,8 +836,7 @@ FUNC_START
         return getNeutralMulti(vespenes);
     }
 
-    UnitWrappers getMinerals()  {
-FUNC_START
+    UnitWrappers getMinerals() {
         //UnitWrappers v1 = getNeutral(UNIT_TYPEID::NEUTRAL_MINERALFIELD);
         //UnitWrappers v2 = getNeutral(UNIT_TYPEID::NEUTRAL_LABMINERALFIELD);
         //UnitWrappers v3 = getNeutral(UNIT_TYPEID::NEUTRAL_MINERALFIELD750);
@@ -896,43 +856,39 @@ FUNC_START
         return getNeutralMulti(minerals);
     }
 
-    UnitWrapper *findNeutral(UnitTypeID type, Tag tag)  {
-FUNC_START
+    UnitWrapper *findNeutral(UnitTypeID type, Tag tag) {
         UnitWrappers v = getNeutral(type);
         for (int i = 0; i < v.size(); i++) {
-            if (v.at(i)->self == tag) {
-                return v.at(i);
+            if (v[i]->self == tag) {
+                return v[i];
             }
         }
         return nullptr;
     }
 
-    bool checkExistEnemy(UnitTypeID id)  {
-FUNC_START
+    bool checkExistEnemy(UnitTypeID id) {
         return enemies.find(id) != enemies.end();
     }
 
-    UnitWrappers getEnemy(UnitTypeID type)  {
-FUNC_START
+    UnitWrappers getEnemy(UnitTypeID type) {
         if (checkExistEnemy(type)) {
-            return enemies.at(type);
+            return enemies[type];
         }
         return UnitWrappers();
     }
 
-    UnitWrappers getEnemyMulti(vector<UnitTypeID> types)  {
-FUNC_START
+    UnitWrappers getEnemyMulti(vector<UnitTypeID> types) {
         int total = 0;
         for (UnitTypeID type : types) {
             if (checkExistEnemy(type)) {
-                total += enemies.at(type).size();
+                total += enemies[type].size();
             }
         }
         UnitWrappers wraps;
         wraps.reserve(total);
         for (UnitTypeID type : types) {
             if (checkExistEnemy(type)) {
-                for (UnitWrapper* wrap : enemies.at(type)) {
+                for (UnitWrapper* wrap : enemies[type]) {
                     wraps.push_back(wrap);
                 }
             }
@@ -940,12 +896,11 @@ FUNC_START
         return wraps;
     }
 
-    UnitWrapper *findEnemy(UnitTypeID type, Tag tag)  {
-FUNC_START
+    UnitWrapper *findEnemy(UnitTypeID type, Tag tag) {
         UnitWrappers v = getEnemy(type);
         for (int i = 0; i < v.size(); i++) {
-            if (v.at(i)->self == tag) {
-                return v.at(i);
+            if (v[i]->self == tag) {
+                return v[i];
             }
         }
         return nullptr;
@@ -962,18 +917,17 @@ FUNC_START
 //    if (!UnitManager::checkExist(type)) {
 //            UnitManager::units[type] = UnitWrappers();
 //    }
-//    UnitManager::units.at(type).push_back(this);
+//    UnitManager::units[type].push_back(this);
 //}
 
-UnitWrapper::UnitWrapper(const Unit *unit) : self(unit->tag), type(unit->unit_type), lastPos{0, 0, 0}, radius(unit->radius), team(unit->alliance), isBuilding(unit->is_building), health(0), healthMax(0), shields(0), shieldsMax(0)  {
-FUNC_START
+UnitWrapper::UnitWrapper(const Unit *unit) : self(unit->tag), type(unit->unit_type), lastPos{0, 0, 0}, radius(unit->radius), team(unit->alliance), isBuilding(unit->is_building), health(0), healthMax(0), shields(0), shieldsMax(0) {
     if (unit->alliance == Unit::Alliance::Self) {
         if (!UnitManager::checkExist(type)) {
             UnitManager::units[type] = UnitWrappers();
         }
-        UnitManager::units.at(type).push_back(this);
-        //if (std::find(UnitManager::units.at(type).begin(), UnitManager::units.at(type).end(), this) == UnitManager::units.at(type).end()) {
-        //    UnitManager::units.at(type).push_back(this);
+        UnitManager::units[type].push_back(this);
+        //if (std::find(UnitManager::units[type].begin(), UnitManager::units[type].end(), this) == UnitManager::units[type].end()) {
+        //    UnitManager::units[type].push_back(this);
         //}
         //else {
         //    printf("DuplicateUnit\n");
@@ -982,9 +936,9 @@ FUNC_START
         if (!UnitManager::checkExistNeutral(type)) {
             UnitManager::neutrals[type] = UnitWrappers();
         }
-        UnitManager::neutrals.at(type).push_back(this);
-        //if (std::find(UnitManager::neutrals.at(type).begin(), UnitManager::neutrals.at(type).end(), this) == UnitManager::neutrals.at(type).end()) {
-        //    UnitManager::neutrals.at(type).push_back(this);
+        UnitManager::neutrals[type].push_back(this);
+        //if (std::find(UnitManager::neutrals[type].begin(), UnitManager::neutrals[type].end(), this) == UnitManager::neutrals[type].end()) {
+        //    UnitManager::neutrals[type].push_back(this);
         //}
         //else {
         //    printf("DuplicateNeutral\n");
@@ -993,9 +947,9 @@ FUNC_START
         if (!UnitManager::checkExistEnemy(type)) {
             UnitManager::enemies[type] = UnitWrappers();
         }
-        //UnitManager::enemies.at(type).push_back(this);
+        //UnitManager::enemies[type].push_back(this);
         bool found = false;
-        for (UnitWrapper* wrap : UnitManager::enemies.at(type)) {
+        for (UnitWrapper* wrap : UnitManager::enemies[type]) {
             if (unit->tag == wrap->self) {
                 found = true;
                 //printf("DuplicateEnemy O:%s N:%s\n", UnitTypeToName(wrap->type), UnitTypeToName(unit->unit_type));
@@ -1005,10 +959,10 @@ FUNC_START
         if (found) {
             //printf("DuplicateEnemy\n", UnitTypeToName());
         } else {
-            UnitManager::enemies.at(type).push_back(this);
+            UnitManager::enemies[type].push_back(this);
         }
-        //if (std::find(UnitManager::enemies.at(type).begin(), UnitManager::enemies.at(type).end(), this) == UnitManager::enemies.at(type).end()) {
-        //    UnitManager::enemies.at(type).push_back(this);
+        //if (std::find(UnitManager::enemies[type].begin(), UnitManager::enemies[type].end(), this) == UnitManager::enemies[type].end()) {
+        //    UnitManager::enemies[type].push_back(this);
         //}
         //else {
         //    printf("DuplicateEnemy\n");
@@ -1018,8 +972,7 @@ FUNC_START
     abilities = AvailableAbilities();
 }
 
-Point2D UnitWrapper::pos(Agent *agent)  {
-FUNC_START
+Point2D UnitWrapper::pos(Agent *agent) {
     const Unit *unit = agent->Observation()->GetUnit(self);
     if (unit != nullptr) {
         lastPos = unit->pos;
@@ -1029,8 +982,7 @@ FUNC_START
     return lastPos;
 }
 
-Point3D UnitWrapper::pos3D(Agent *agent)  {
-FUNC_START
+Point3D UnitWrapper::pos3D(Agent *agent) {
     const Unit *unit = agent->Observation()->GetUnit(self);
     if (unit != nullptr) {
         lastPos = unit->pos;
@@ -1040,24 +992,20 @@ FUNC_START
     return lastPos;
 }
 
-inline bool UnitWrapper::exists(Agent *agent)  {
-FUNC_START
+inline bool UnitWrapper::exists(Agent *agent) {
     return agent->Observation()->GetUnit(self) == nullptr;
 }
 
-inline const Unit* UnitWrapper::get(Agent *agent)  {
-FUNC_START
+inline const Unit* UnitWrapper::get(Agent *agent) {
     return agent->Observation()->GetUnit(self);
 }
 
-bool UnitWrapper::equals(UnitWrapper *wrapper)  {
-FUNC_START
+bool UnitWrapper::equals(UnitWrapper *wrapper) {
     return (wrapper->self == self) && (wrapper->type == type);
 }
 
 //We only care about nexus, probe, gateway, ?zealot?, forge, cybercore, sentry, stalker, adept, shield battery, twilight council, stargate, pheonix, oracle, void ray, robotics facility, observer, warp prism, templar, high templar, archon, dark shrine, dark templar, fleet beacon, ?carrier, mothership, robotics bay, disruptor
-void UnitWrapper::loadAbilities(Agent *agent)  {
-FUNC_START
+void UnitWrapper::loadAbilities(Agent *agent) {
     //Units all = agent->Observation()->GetUnits(Unit::Alliance::Self);
     //vector<AvailableAbilities> allAb = agent->Query()->GetAbilitiesForUnits(all);
     //for (AvailableAbilities abil : allAb) {
@@ -1120,8 +1068,7 @@ FUNC_START
     }
 }
 
-//void UnitWrapper::loadAbilitiesEnemy(Agent* agent)  {
-FUNC_START
+//void UnitWrapper::loadAbilitiesEnemy(Agent* agent) {
 //    Units all = agent->Observation()->GetUnits(Unit::Alliance::Enemy);
 //    vector<AvailableAbilities> allAb = agent->Query()->GetAbilitiesForUnits(all);
 //    for (AvailableAbilities abil : allAb) {
@@ -1142,26 +1089,25 @@ FUNC_START
 //    }
 //}
 
-UnitWrapper::~UnitWrapper()  {
-FUNC_START
+UnitWrapper::~UnitWrapper() {
     if (team == Unit::Alliance::Self) {
-        for (auto it = UnitManager::units.at(type).begin(); it != UnitManager::units.at(type).end(); it++) {
+        for (auto it = UnitManager::units[type].begin(); it != UnitManager::units[type].end(); it++) {
             if ((*it)->self == self) {
-                UnitManager::units.at(type).erase(it);
+                UnitManager::units[type].erase(it);
                 break;
             }
         }
     } else if (team == Unit::Alliance::Neutral) {
-        for (auto it = UnitManager::neutrals.at(type).begin(); it != UnitManager::neutrals.at(type).end(); it++) {
+        for (auto it = UnitManager::neutrals[type].begin(); it != UnitManager::neutrals[type].end(); it++) {
             if ((*it)->self == self) {
-                UnitManager::neutrals.at(type).erase(it);
+                UnitManager::neutrals[type].erase(it);
                 break;
             }
         }
     } else if (team == Unit::Alliance::Enemy) {
-        for (auto it = UnitManager::enemies.at(type).begin(); it != UnitManager::enemies.at(type).end(); it++) {
+        for (auto it = UnitManager::enemies[type].begin(); it != UnitManager::enemies[type].end(); it++) {
             if ((*it)->self == self) {
-                UnitManager::enemies.at(type).erase(it);
+                UnitManager::enemies[type].erase(it);
                 break;
             }
         }
@@ -1171,7 +1117,6 @@ FUNC_START
 
 }
 
-bool UnitWrapper::execute(Agent *agent)  {
-FUNC_START
+bool UnitWrapper::execute(Agent *agent) {
     return false;
 }

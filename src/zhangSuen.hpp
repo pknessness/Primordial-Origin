@@ -32,13 +32,11 @@
 #define P8 imRef(map, i - 1, j)
 #define P9 imRef(map, i - 1, j + 1)
 
-static int N(map2d<int8_t>* map, int i, int j)  {
-FUNC_START
+static int N(map2d<int8_t>* map, int i, int j){
     return P2 + P3 + P4 + P5 + P6 + P7 + P8 + P9;
 }
 
-static int S(map2d<int8_t>* map, int i, int j)  {
-FUNC_START
+static int S(map2d<int8_t>* map, int i, int j) {
     int count = 0;
     if (!P2 && P3) {
         count++;
@@ -67,8 +65,7 @@ FUNC_START
     return count;
 }
 
-void zhangSuenThinning(map2d<int8_t>* map, Agent *agent)  {
-FUNC_START
+void zhangSuenThinning(map2d<int8_t>* map, Agent *agent) {
     map2d<int8_t>* change = new map2d<int8_t>(map->width(), map->height(), true);
     #define BOX_BORDER 0.02
     while (1) {

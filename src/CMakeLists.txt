@@ -18,7 +18,6 @@ else ()
 endif ()
 
 target_link_libraries(BlankBot PRIVATE cpp_sc2)
-target_link_libraries(BlankBot PUBLIC cpptrace::cpptrace)
 
 if (MINGW)
     target_link_libraries(BlankBot PRIVATE ssp)

@@ -38,8 +38,7 @@ public:
 	//optimistic distance to travel
 	float h;
 
-	StarNode(int pathNode, float g, float h) : pathNode(pathNode), g(g), h(h)  {
-FUNC_START
+	StarNode(int pathNode, float g, float h) : pathNode(pathNode), g(g), h(h) {
 
 	}
 
@@ -47,8 +46,7 @@ FUNC_START
 	//	return	(g + h) < (b.g + b.h);
 	//}
 
-	operator float()  {
-FUNC_START
+	operator float() {
 		return g + h;
 	}
 };
@@ -70,8 +68,7 @@ public:
 	//distance already travelled
 	float g;
 
-	DijkStarNode(int pathNode, float g) : pathNode(pathNode), g(g)  {
-FUNC_START
+	DijkStarNode(int pathNode, float g) : pathNode(pathNode), g(g) {
 
 	}
 
@@ -79,8 +76,7 @@ FUNC_START
 	//	return	(g + h) < (b.g + b.h);
 	//}
 
-	operator float()  {
-FUNC_START
+	operator float() {
 		return g;
 	}
 };
@@ -107,8 +103,7 @@ namespace PrimordialStar {
 		UP_LT
 	};
 
-	Point2D cardinalToDirection(Cardinal &cardinal)  {
-FUNC_START
+	Point2D cardinalToDirection(Cardinal &cardinal) {
 		switch (cardinal) {
 			case(UP): {
 				return { 0,1 };
@@ -140,8 +135,7 @@ FUNC_START
 		}
 	}
 
-	Point2D cardinalToNormDirection(Cardinal& cardinal)  {
-FUNC_START
+	Point2D cardinalToNormDirection(Cardinal& cardinal) {
 		switch (cardinal) {
 		case(UP): {
 			return { 0,1 };
@@ -186,18 +180,15 @@ FUNC_START
 
 		~PathNode();
 
-		void updatePos(Point2D p)  {
-FUNC_START
+		void updatePos(Point2D p) {
 			pos = p;
 		}
 
-		Point2D rawPos()  {
-FUNC_START
+		Point2D rawPos() {
 			return pos;
 		}
 
-		Point2D position(float radius)  {
-FUNC_START
+		Point2D position(float radius) {
 			if (wall == INVALID) {
 				return pos;
 			}
@@ -214,8 +205,7 @@ FUNC_START
 	float maxDistanceConnectionSquared = 0.0F;
 
 	//DDA https://en.wikipedia.org/wiki/Digital_differential_analyzer_(graphics_algorithm)
-	bool checkLinearPath(Point2D start, Point2D end, Agent* agent)  {
-FUNC_START
+	bool checkLinearPath(Point2D start, Point2D end, Agent* agent) {
 		float dx = end.x - start.x;
 		float dy = end.y - start.y;
 		float step = 0;
@@ -265,8 +255,7 @@ FUNC_START
 		return maxSteps;
 	}
 
-	float rnd(float in)  {
-FUNC_START
+	float rnd(float in) {
 		return (int)(in + 0.1);
 	}
 
@@ -382,8 +371,7 @@ FUNC_START
 		return DistanceSquared2D(origin, getWall(origin, dir, agent, maxSteps));
 	}
 
-	float generateMaxDistanceGrid(Agent* agent)  {
-FUNC_START
+	float generateMaxDistanceGrid(Agent* agent) {
 		int mapWidth = agent->Observation()->GetGameInfo().width;
 		int mapHeight = agent->Observation()->GetGameInfo().height;
 		float maximum = 0;
@@ -425,8 +413,7 @@ FUNC_START
 		return maximum;
 	}
 
-	float generateMinDistanceGrid(Agent* agent)  {
-FUNC_START
+	float generateMinDistanceGrid(Agent* agent) {
 		int mapWidth = agent->Observation()->GetGameInfo().width;
 		int mapHeight = agent->Observation()->GetGameInfo().height;
 		float maximum = 0;
@@ -459,14 +446,13 @@ FUNC_START
 		return maximum;
 	}
 
-	void calculateNewConnection(PathNode* p, Agent* agent)  {
-FUNC_START
+	void calculateNewConnection(PathNode* p, Agent* agent) {
 		Point2D pos = p->rawPos();
 		for (int i = 0; i < basePathNodes.size(); i++) {
 			if (i == p->id) {
 				continue;
 			}
-			PrimordialStar::PathNode* node = PrimordialStar::basePathNodes.at(i);
+			PrimordialStar::PathNode* node = PrimordialStar::basePathNodes[i];
 			Point2D testPos = node->rawPos();
 			//if ((p->wall == UP_LT && testPos.x > pos.x && testPos.y < pos.y) || 
 			//	(p->wall == UP_RT && testPos.x < pos.x && testPos.y < pos.y) ||
@@ -522,30 +508,27 @@ FUNC_START
 		}
 	}
 
-	void breakAllConnections(PathNode* p)  {
-FUNC_START
+	void breakAllConnections(PathNode* p) {
 		for (int i = 0; i < p->connected.size(); i++) {
-			if (p->connected.at(i) >= PrimordialStar::basePathNodes.size()) {
+			if (p->connected[i] >= PrimordialStar::basePathNodes.size()) {
 				continue;
 			}
-			PrimordialStar::PathNode* node = PrimordialStar::basePathNodes.at(p->connected.at(i));
+			PrimordialStar::PathNode* node = PrimordialStar::basePathNodes[p->connected[i]];
 			for (int c = 0; c < node->connected.size(); c++) {
-				if (node->connected.at(c) == p->id) {
+				if (node->connected[c] == p->id) {
 					node->connected.erase(node->connected.begin() + c);
 				}
 			}
 		}
 	}
 
-	PathNode::PathNode(Point2D pos, Cardinal wall, Agent *agent) : pos(pos), wall(wall)  {
-FUNC_START
+	PathNode::PathNode(Point2D pos, Cardinal wall, Agent *agent) : pos(pos), wall(wall) {
 		id = basePathNodes.size();
 		basePathNodes.push_back(this);
 		calculateNewConnection(this, agent);
 	}
 
-	PathNode::~PathNode()  {
-FUNC_START
+	PathNode::~PathNode(){
 		breakAllConnections(this);
 	}
 
@@ -557,8 +540,7 @@ FUNC_START
 	//	return { 0,0 };
 	//}
 
-	void generateBlobGrid()  {
-FUNC_START
+	void generateBlobGrid() {
 
 	}
 
@@ -574,8 +556,7 @@ FUNC_START
 //#define BASIC_LT(i, j) BASIC(i-1,j)
 //#define BASIC_UP_LT(i, j) BASIC(i-1,j+1)
 
-	bool check_UP_RT(int i, int j)  {
-FUNC_START
+	bool check_UP_RT(int i, int j) {
 		bool up = Aux::checkPathable(i, j + 1, nullptr);
 		bool up_rt = Aux::checkPathable(i + 1, j + 1, nullptr);
 		bool rt = Aux::checkPathable(i + 1, j, nullptr);
@@ -587,8 +568,7 @@ FUNC_START
 		return up && up_rt && rt && (up_lt || dn_rt);
 	}
 
-	bool check_DN_RT(int i, int j)  {
-FUNC_START
+	bool check_DN_RT(int i, int j) {
 		bool rt = Aux::checkPathable(i + 1, j, nullptr);
 		bool dn_rt = Aux::checkPathable(i + 1, j - 1, nullptr);
 		bool dn = Aux::checkPathable(i, j - 1, nullptr);
@@ -600,8 +580,7 @@ FUNC_START
 		return dn && dn_rt && rt && (up_rt || dn_lt);
 	}
 
-	bool check_DN_LT(int i, int j)  {
-FUNC_START
+	bool check_DN_LT(int i, int j) {
 		bool dn = Aux::checkPathable(i, j - 1, nullptr);
 		bool dn_lt = Aux::checkPathable(i - 1, j - 1, nullptr);
 		bool lt = Aux::checkPathable(i - 1, j, nullptr);
@@ -613,8 +592,7 @@ FUNC_START
 		return dn && dn_lt && lt && (dn_rt || up_lt);
 	}
 
-	bool check_UP_LT(int i, int j)  {
-FUNC_START
+	bool check_UP_LT(int i, int j) {
 		bool lt = Aux::checkPathable(i - 1, j, nullptr);
 		bool up_lt = Aux::checkPathable(i - 1, j + 1, nullptr);
 		bool up = Aux::checkPathable(i, j + 1, nullptr);
@@ -626,8 +604,7 @@ FUNC_START
 		return up && up_lt && lt && (dn_lt || up_rt);
 	}
 
-	void generatePathNodes(Agent *agent)  {
-FUNC_START
+	void generatePathNodes(Agent *agent) {
 		int mapWidth = agent->Observation()->GetGameInfo().width;
 		int mapHeight = agent->Observation()->GetGameInfo().height;
 		for (int i = 1; i < mapWidth - 1; i++) {
@@ -687,11 +664,13 @@ FUNC_START
 				}
 			}
 		}
+		//for (int i = 0; i < basePathNodes.size(); i++) {
+		//	calculateConnection(basePathNodes[i], agent);
+		//}
 		printf("MAX CONNECTIONS OF A NODE: %d\t MAX DISTANCE OF A CONNECTION: %.2f\n", maxConnections, sqrt(maxDistanceConnectionSquared));
 	}
 
-	vector<Point2D> getPath(Point2D start, Point2D end, float radius, Agent* agent)  {
-FUNC_START
+	vector<Point2D> getPath(Point2D start, Point2D end, float radius, Agent* agent) {
 		Profiler profiler("getPath");
 
 		if (checkWallDistanceSquared(start, (start - end), agent) >= DistanceSquared2D(start, end)) {
@@ -717,26 +696,26 @@ FUNC_START
 		profiler.midLog("getPath.init");
 
 		if (startNode->connected.size() == 0) {
-			Point2D loc = basePathNodes.at(0)->rawPos();
+			Point2D loc = basePathNodes[0]->rawPos();
 			float mindist = DistanceSquared2D(loc, start);
 			for (int i = 1; i < basePathNodes.size() - 2; i++) {
-				float dist = DistanceSquared2D(basePathNodes.at(i)->rawPos(), start);
-				if (dist < mindist || (dist == mindist && (DistanceSquared2D(loc, end) > DistanceSquared2D(basePathNodes.at(i)->rawPos(), end)))) {
+				float dist = DistanceSquared2D(basePathNodes[i]->rawPos(), start);
+				if (dist < mindist || (dist == mindist && (DistanceSquared2D(loc, end) > DistanceSquared2D(basePathNodes[i]->rawPos(), end)))) {
 					mindist = dist;
-					loc = basePathNodes.at(i)->rawPos();
+					loc = basePathNodes[i]->rawPos();
 				}
 			}
 			startNode->updatePos(loc);
 			calculateNewConnection(startNode, agent);
 		}
 		if (endNode->connected.size() == 0) {
-			Point2D loc = basePathNodes.at(0)->rawPos();
+			Point2D loc = basePathNodes[0]->rawPos();
 			float mindist = DistanceSquared2D(loc, end);
 			for (int i = 1; i < basePathNodes.size() - 2; i++) {
-				float dist = DistanceSquared2D(basePathNodes.at(i)->rawPos(), end);
-				if (dist < mindist || (dist == mindist && (DistanceSquared2D(loc, start) > DistanceSquared2D(basePathNodes.at(i)->rawPos(), start)))) {
+				float dist = DistanceSquared2D(basePathNodes[i]->rawPos(), end);
+				if (dist < mindist || (dist == mindist && (DistanceSquared2D(loc, start) > DistanceSquared2D(basePathNodes[i]->rawPos(), start)))) {
 					mindist = dist;
-					loc = basePathNodes.at(i)->rawPos();
+					loc = basePathNodes[i]->rawPos();
 				}
 			}
 			endNode->updatePos(loc);
@@ -762,21 +741,21 @@ FUNC_START
 				}
 				StarNode star = starNodes.top();
 				starNodes.pop();
-				operatingNode = basePathNodes.at(star.pathNode);
+				operatingNode = basePathNodes[star.pathNode];
 				Point2D currentPos = operatingNode->position(radius);
 				for (int i = 0; i < operatingNode->connected.size(); i++) {
-					int subNodeID = operatingNode->connected.at(i);
+					int subNodeID = operatingNode->connected[i];
 					if (visited[subNodeID]) {
 						continue;
 					}
-					Point2D nextPos = basePathNodes.at(subNodeID)->position(radius);
+					Point2D nextPos = basePathNodes[subNodeID]->position(radius);
 					backpath[subNodeID] = operatingNode->id;
 					starNodes.push(StarNode(subNodeID, star.g + Distance2D(currentPos, nextPos), Distance2D(nextPos, end)));
 					visited[subNodeID] = true;
 
 					//DebugText(agent, strprintf("%.1f,%.1f", star.g + Distance2D(currentPos, nextPos), Distance2D(nextPos, end)), AP3D(nextPos));
 
-					if (operatingNode->connected.at(i) == endNode->id) {
+					if (operatingNode->connected[i] == endNode->id) {
 						found = true;
 						break;
 					}
@@ -787,10 +766,10 @@ FUNC_START
 			}
 			profiler.midLog("getPath.source");
 			operatingNode = endNode;
-			points.push_back(basePathNodes.at(operatingNode->id)->rawPos());
+			points.push_back(basePathNodes[operatingNode->id]->rawPos());
 			for (int i = 0; i < starNodes.size(); i++) {
-				operatingNode = basePathNodes.at(backpath.at(operatingNode->id));
-				points.insert(points.begin(), basePathNodes.at(operatingNode->id)->position(radius));
+				operatingNode = basePathNodes[backpath[operatingNode->id]];
+				points.insert(points.begin(), basePathNodes[operatingNode->id]->position(radius));
 				if (operatingNode->id == startNode->id) {
 					break;
 				}
@@ -810,8 +789,7 @@ FUNC_START
 		return points;
 	}
 
-	vector<Point2D> getPathDijkstra3(Point2D start, Point2D end, float radius, Agent* agent)  {
-FUNC_START
+	vector<Point2D> getPathDijkstra3(Point2D start, Point2D end, float radius, Agent* agent) {
 		PathNode* startNode = new PathNode(start, INVALID, agent);
 
 		PathNode* endNode = new PathNode(end, INVALID, agent);
@@ -833,17 +811,17 @@ FUNC_START
 			}
 
 			int opId = basePathNodes.size() - 2;
-			unvisited.at(opId).g = 0;
+			unvisited[opId].g = 0;
 
 			for (int cycles = 0; cycles < 10000; cycles++) {
 				
 				//visited[opId] = true;
-				for (int i = 0; i < basePathNodes.at(opId)->connected.size(); i++) {
-					int subNodeID = basePathNodes.at(opId)->connected.at(i);
-					float dist = Distance2D(basePathNodes.at(opId)->position(radius), basePathNodes.at(subNodeID)->position(radius)) + unvisited.at(opId).g;
+				for (int i = 0; i < basePathNodes[opId]->connected.size(); i++) {
+					int subNodeID = basePathNodes[opId]->connected[i];
+					float dist = Distance2D(basePathNodes[opId]->position(radius), basePathNodes[subNodeID]->position(radius)) + unvisited[opId].g;
 					
-					if (unvisited.at(subNodeID).g > dist) {
-						unvisited.at(subNodeID).g = dist;
+					if (unvisited[subNodeID].g > dist) {
+						unvisited[subNodeID].g = dist;
 					}
 				}
 
@@ -852,7 +830,7 @@ FUNC_START
 					//if (visited[i]) {
 					//	continue;
 					//}
-					if (minId == -1 || unvisited.at(minId) > unvisited.at(i)) {
+					if (minId == -1 || unvisited[minId] > unvisited[i]) {
 						minId = i;
 					}
 				}
@@ -874,8 +852,7 @@ FUNC_START
 		return points;
 	}
 
-	vector<Point2D> getPathDijkstra(Point2D start, Point2D end, float radius, Agent* agent)  {
-FUNC_START
+	vector<Point2D> getPathDijkstra(Point2D start, Point2D end, float radius, Agent* agent) {
 		Profiler profiler("getDijkstra");
 		PathNode* startNode = new PathNode(start, INVALID, agent);
 
@@ -902,23 +879,23 @@ FUNC_START
 			}
 
 			Q.push(DijkStarNode(startNode->id, 0));
-			dist.at(startNode->id) = 0;
+			dist[startNode->id] = 0;
 
 			while (Q.size() > 0) {
 				DijkStarNode u = Q.top(); Q.pop();
 
-				PathNode* operatingNode = basePathNodes.at(u.pathNode);
+				PathNode* operatingNode = basePathNodes[u.pathNode];
 				Point2D rawPosOp = operatingNode->rawPos();
 				for (int i = 0; i < operatingNode->connected.size(); i++) {
-					PathNode* adjacentNode = basePathNodes.at(operatingNode->connected.at(i));
+					PathNode* adjacentNode = basePathNodes[operatingNode->connected[i]];
 					Point2D rawPosAdj = adjacentNode->rawPos();
 					float weight = Distance2D(rawPosOp, rawPosAdj);
 
-					if (dist.at(adjacentNode->id) > dist.at(u.pathNode) + weight) {
-						parent.at(adjacentNode->id) = u.pathNode;
-						dist.at(adjacentNode->id) = dist.at(u.pathNode) + weight;
+					if (dist[adjacentNode->id] > dist[u.pathNode] + weight) {
+						parent[adjacentNode->id] = u.pathNode;
+						dist[adjacentNode->id] = dist[u.pathNode] + weight;
 
-						Q.push(DijkStarNode(adjacentNode->id, dist.at(adjacentNode->id)));
+						Q.push(DijkStarNode(adjacentNode->id, dist[adjacentNode->id]));
 					}
 				}
 			}
@@ -929,11 +906,11 @@ FUNC_START
 					points.clear();
 					break;
 				}
-				points.insert(points.begin(), basePathNodes.at(node)->position(radius));
+				points.insert(points.begin(), basePathNodes[node]->position(radius));
 				if (node == startNode->id) {
 					break;
 				}
-				node = parent.at(node);
+				node = parent[node];
 			}
 		}
 
@@ -951,45 +928,40 @@ FUNC_START
 		return points;
 	}
 
-	float getPathLength(vector<Point2D> path)  {
-FUNC_START
+	float getPathLength(vector<Point2D> path) {
 		if (path.size() == 0) return 0.0F;
 		float travelled = 0;
 		for (int i = 0; i < path.size() - 1; i++) {
-			travelled += Distance2D(path.at(i), path.at(i + 1));
+			travelled += Distance2D(path[i], path[i + 1]);
 		}
 		return travelled;
 	}
 
-	float getPathLength(Point2D start, Point2D end, float radius, Agent* agent)  {
-FUNC_START
+	float getPathLength(Point2D start, Point2D end, float radius, Agent* agent) {
 		return getPathLength(getPath(start, end, radius, agent));
 	}
 
-	float getPathLengthDijkstra(Point2D start, Point2D end, float radius, Agent* agent)  {
-FUNC_START
+	float getPathLengthDijkstra(Point2D start, Point2D end, float radius, Agent* agent) {
 		return getPathLength(getPathDijkstra(start, end, radius, agent));
 	}
 
-	Point2D distanceAlongPath(vector<Point2D> path, float distance)  {
-FUNC_START
+	Point2D distanceAlongPath(vector<Point2D> path, float distance) {
 		if (path.size() == 0) return { 0,0 };
 		float travelled = 0;
 		for (int i = 0; i < path.size() - 1; i++) {
-			float dist = Distance2D(path.at(i), path.at(i + 1));
+			float dist = Distance2D(path[i], path[i + 1]);
 			if ((travelled + dist) < distance) {
 				travelled += dist;
 			}
 			else {
-				Point2D dir = normalize((path.at(i + 1) - path.at(i)));
-				return path.at(i) + (dir * (distance - travelled));
+				Point2D dir = normalize((path[i + 1] - path[i]));
+				return path[i] + (dir * (distance - travelled));
 			}
 		}
 		return { 0,0 };
 	}
 
-	vector<Point2D> stepPointsAlongPath(vector<Point2D> path, float distance)  {
-FUNC_START
+	vector<Point2D> stepPointsAlongPath(vector<Point2D> path, float distance) {
 		if (path.size() == 0) return vector<Point2D>();
 		int siz = int(400 / distance);
 		vector<Point2D> midpath;
