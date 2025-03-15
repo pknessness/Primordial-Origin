@@ -2,7 +2,7 @@
 //
 // Copyright (c) 2021-2024 Alexander Kurbatov
 //#undef byte
-#define BACKWARD_HAS_BFD
+#define BACKWARD_HAS_BFD 1
 #include "backward/backward.hpp"
 #include "Bot.hpp"
 

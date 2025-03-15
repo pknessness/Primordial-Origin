@@ -5,13 +5,13 @@
 set(bot_sources
     main.cpp)
 
-find_library(BFD_LIBRARY NAMES libbfd.a PATHS /usr/lib /usr/lib/x86_64-linux-gnu)
-find_library(IBERTY_LIBRARY NAMES libiberty.a PATHS /usr/lib /usr/lib/x86_64-linux-gnu)
+find_library(BFD_LIBRARY NAMES libbfd.a PATHS /usr/lib /usr/lib/x86_64-linux-gnu lib)
+find_library(IBERTY_LIBRARY NAMES libiberty.a PATHS /usr/lib /usr/lib/x86_64-linux-gnu lib)
 #find_library(DL_LIBRARY NAMES dl.a PATHS /usr/lib /usr/lib/x86_64-linux-gnu)
-find_library(SFRAME_LIBRARY NAMES libsframe.a PATHS /usr/lib /usr/lib/x86_64-linux-gnu)
-find_library(ZSTD_LIBRARY NAMES libzstd.a PATHS /usr/lib /usr/lib/x86_64-linux-gnu)
+find_library(SFRAME_LIBRARY NAMES libsframe.a PATHS /usr/lib /usr/lib/x86_64-linux-gnu lib)
+find_library(ZSTD_LIBRARY NAMES libzstd.a PATHS /usr/lib /usr/lib/x86_64-linux-gnu lib)
 #find_library(OPCODES_LIBRARY NAMES libopcodes.a PATHS /usr/lib /usr/lib/x86_64-linux-gnu)
-find_library(ZLIB_LIBRARY NAMES libz.a PATHS /usr/lib /usr/lib/x86_64-linux-gnu)
+find_library(ZLIB_LIBRARY NAMES libz.a PATHS /usr/lib /usr/lib/x86_64-linux-gnu lib)
 
 add_executable(BlankBot ${bot_sources})
 
