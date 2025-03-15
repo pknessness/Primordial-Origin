@@ -18,7 +18,7 @@ jobs:
 #      run: apt-get update && apt-get upgrade --assume-yes --quiet=2 && apt-get install --assume-yes --no-install-recommends --no-show-upgraded cmake gnupg2 wget make git procps g++ ffmpeg libsm6 libxext6 unzip && rm -rf /var/lib/apt/lists/* && update-ca-certificates
 
     - name: Install dependencies
-      run: apt-get update && apt-get upgrade --assume-yes --quiet=2 && apt-get install --assume-yes --no-install-recommends --no-show-upgraded cmake make g++ binutils-dev libiberty-dev && apt-get install apt-transport-https ca-certificates -y && update-ca-certificates
+      run: apt-get update && apt-get upgrade --assume-yes --quiet=2 && apt-get install --assume-yes --no-install-recommends --no-show-upgraded cmake make g++ binutils-dev libiberty-dev libzstd-dev && apt-get install apt-transport-https ca-certificates -y && update-ca-certificates
 
 
     - name: Build
