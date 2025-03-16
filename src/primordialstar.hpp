@@ -142,25 +142,25 @@ namespace PrimordialStar {
 			return { 0,1 };
 		}
 		case(UP_RT): {
-			return { 0.7071067812,0.7071067812 };
+			return { 0.7071067812F,0.7071067812F };
 		}
 		case(RT): {
 			return { 1,0 };
 		}
 		case(DN_RT): {
-			return { 0.7071067812,-0.7071067812 };
+			return { 0.7071067812F,-0.7071067812F };
 		}
 		case(DN): {
 			return { 0,-1 };
 		}
 		case(DN_LT): {
-			return { -0.7071067812,-0.7071067812 };
+			return { -0.7071067812F,-0.7071067812F };
 		}
 		case(LT): {
 			return { -1,0 };
 		}
 		case(UP_LT): {
-			return { -0.7071067812,0.7071067812 };
+			return { -0.7071067812F,0.7071067812F };
 		}
 		default: {
 			return { 0,0 };
@@ -206,7 +206,7 @@ namespace PrimordialStar {
 	float maxDistanceConnectionSquared = 0.0F;
 
 	//DDA https://en.wikipedia.org/wiki/Digital_differential_analyzer_(graphics_algorithm)
-	bool checkLinearPath(Point2D start, Point2D end, Agent* agent) {
+	bool checkLinearPath(Point2D start, Point2D end) {
 		float dx = end.x - start.x;
 		float dy = end.y - start.y;
 		float step = 0;
@@ -231,7 +231,7 @@ namespace PrimordialStar {
 		return true;
 	}
 
-	float checkWallDistance2(Point2D start, Point2D dir, Agent* agent, int maxSteps = 255){
+	float checkWallDistance2(Point2D start, Point2D dir, int maxSteps = 255){
 		float dx = dir.x;
 		float dy = dir.y;
 		float step = 0;
@@ -253,14 +253,14 @@ namespace PrimordialStar {
 			}
 			operating += {dx, dy};
 		}
-		return maxSteps;
+		return (float)maxSteps;
 	}
 
 	float rnd(float in) {
-		return (int)(in + 0.1);
+		return (float)(int)(in + 0.1F);
 	}
 
-	Point2D getWall(Point2D origin, Point2D dir, Agent* agent, int maxSteps = 255) {
+	Point2D getWall(Point2D origin, Point2D dir, int maxSteps = 255) {
 		//var delta = Vector2.Normalize(direction - origin);
 		Point2D delta = dir;
 
@@ -314,7 +314,7 @@ namespace PrimordialStar {
 		float xRayLength = stepXDistance * rayLengthWhenMovingInX;
 		float yRayLength = stepYDistance * rayLengthWhenMovingInY;
 
-		while (Aux::getPathable(currentCell.x, currentCell.y) != 127) {
+		while (Aux::getPathable((int)(currentCell.x), (int)(currentCell.y)) != 127) {
 			if (xRayLength < yRayLength) {
 				// Step in X, reduce Y ray
 				yRayLength -= xRayLength;
@@ -364,12 +364,12 @@ namespace PrimordialStar {
 		return lastIntersection;
 	}
 
-	float checkWallDistance(Point2D origin, Point2D dir, Agent* agent, int maxSteps = 255) {
-		return Distance2D(origin, getWall(origin, dir, agent, maxSteps));
+	float checkWallDistance(Point2D origin, Point2D dir, int maxSteps = 255) {
+		return Distance2D(origin, getWall(origin, dir, maxSteps));
 	}
 
-	float checkWallDistanceSquared(Point2D origin, Point2D dir, Agent* agent, int maxSteps = 255) {
-		return DistanceSquared2D(origin, getWall(origin, dir, agent, maxSteps));
+	float checkWallDistanceSquared(Point2D origin, Point2D dir, int maxSteps = 255) {
+		return DistanceSquared2D(origin, getWall(origin, dir, maxSteps));
 	}
 
 	float generateMaxDistanceGrid(Agent* agent) {
@@ -389,7 +389,7 @@ namespace PrimordialStar {
 					for (int theta = 0; theta < angleChecks; theta++) {
 						float angle = 2 * M_PI * theta / angleChecks;
 						Point2D dir = {cos(angle), sin(angle)};
-						float dist = checkWallDistance(Point2D{ i + 0.5F, j + 0.5F }, dir, agent, steps);
+						float dist = checkWallDistance(Point2D{ i + 0.5F, j + 0.5F }, dir, steps);
 						if (dist > max) {
 							max = dist;
 							//steps = dist + 15;
@@ -428,7 +428,7 @@ namespace PrimordialStar {
 					for (int theta = 0; theta < angleChecks; theta++) {
 						float angle = 2 * M_PI * theta / angleChecks;
 						Point2D dir = { cos(angle), sin(angle) };
-						float dist = checkWallDistance(Point2D{ i + 0.5F, j + 0.5F }, dir, agent, steps);
+						float dist = checkWallDistance(Point2D{ i + 0.5F, j + 0.5F }, dir, steps);
 						if (dist < min) {
 							min = dist;
 							//steps = dist + 15;
@@ -491,7 +491,7 @@ namespace PrimordialStar {
 			if (distSqrd > (innerMax * innerMax + 2)) {
 				continue;
 			}
-			if (checkLinearPath(pos, testPos, agent)) {
+			if (checkLinearPath(pos, testPos)) {
 				
 				if (distSqrd > MAX_CONN_DIST_SQRD) {
 					continue;
@@ -499,7 +499,7 @@ namespace PrimordialStar {
 				if (maxDistanceConnectionSquared < distSqrd) {
 					maxDistanceConnectionSquared = distSqrd;
 				}
-				int m = std::max(p->connected.size(), node->connected.size());
+				int m = std::max((int)(p->connected.size()), (int)(node->connected.size()));
 				if (maxConnections < m) {
 					maxConnections = m;
 				}
@@ -524,7 +524,7 @@ namespace PrimordialStar {
 	}
 
 	PathNode::PathNode(Point2D pos, Cardinal wall, Agent *agent) : pos(pos), wall(wall) {
-		id = basePathNodes.size();
+		id = (int)(basePathNodes.size());
 		basePathNodes.push_back(this);
 		calculateNewConnection(this, agent);
 	}
@@ -674,7 +674,7 @@ namespace PrimordialStar {
 	vector<Point2D> getPath(Point2D start, Point2D end, float radius, Agent* agent) {
 		Profiler profiler("getPath");
 
-		if (checkWallDistanceSquared(start, (start - end), agent) >= DistanceSquared2D(start, end)) {
+		if (checkWallDistanceSquared(start, (start - end)) >= DistanceSquared2D(start, end)) {
 			vector<Point2D> p;
 			p.push_back(start);
 			p.push_back(end);
@@ -811,7 +811,7 @@ namespace PrimordialStar {
 				unvisited.push_back(StarNode(p->id, FLT_MAX, 0));
 			}
 
-			int opId = basePathNodes.size() - 2;
+			int opId = (int)(basePathNodes.size()) - 2;
 			unvisited[opId].g = 0;
 
 			for (int cycles = 0; cycles < 10000; cycles++) {

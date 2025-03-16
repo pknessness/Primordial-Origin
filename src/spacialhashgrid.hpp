@@ -60,7 +60,7 @@ struct Bounds {
     }
 };
 
-void initGrid(Agent *agent) {
+void initGrid() {
     for (int i = 0; i < grid->width(); i++) {
         for (int j = 0; j < grid->height(); j++) {
             imRef(grid, i, j) = UnitWrappers();
@@ -68,7 +68,7 @@ void initGrid(Agent *agent) {
     }
 }
 
-void resetGrid(Agent *agent) {
+void resetGrid() {
     for (int i = 0; i < grid->width(); i++) {
         for (int j = 0; j < grid->height(); j++) {
             imRef(grid, i, j).clear();
@@ -77,7 +77,7 @@ void resetGrid(Agent *agent) {
 }
 
 void updateGrid(Agent *agent) {
-    resetGrid(agent);
+    resetGrid();
     for (auto it = UnitManager::units.begin(); it != UnitManager::units.end(); it++) {
         for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
             Point2D p = (*it2)->pos(agent);
@@ -152,10 +152,10 @@ void fillGridModify2(Point2D pos, float radius, Agent *agent) {
 }
 
 Bounds fillGridModify(Point2D pos, float radius, Agent* agent) {
-    int x = (pos.x - radius);
-    int y = (pos.y - radius);
-    int xmax = (pos.x + radius + 1);
-    int ymax = (pos.y + radius + 1);
+    int x = (int)(pos.x - radius);
+    int y = (int)(pos.y - radius);
+    int xmax = (int)(pos.x + radius + 1);
+    int ymax = (int)(pos.y + radius + 1);
     if (radius < 1) {
         fillGridModify2(pos, radius, agent);
         return { x, xmax, y, ymax };
@@ -224,7 +224,7 @@ UnitWrappers findInRadii(Circles c, Agent* agent) {
     return findInRadius_INTERNAL(bound, agent);
 }
 
-void initGridEnemy(Agent *agent) {
+void initGridEnemy() {
     for (int i = 0; i < gridEnemy->width(); i++) {
         for (int j = 0; j < gridEnemy->height(); j++) {
             imRef(gridEnemy, i, j) = UnitWrappers();
@@ -232,7 +232,7 @@ void initGridEnemy(Agent *agent) {
     }
 }
 
-void resetGridEnemy(Agent *agent) {
+void resetGridEnemy() {
     for (int i = 0; i < gridEnemy->width(); i++) {
         for (int j = 0; j < gridEnemy->height(); j++) {
             imRef(gridEnemy, i, j).clear();
@@ -241,7 +241,7 @@ void resetGridEnemy(Agent *agent) {
 }
 
 void updateGridEnemy(Agent *agent) {
-    resetGridEnemy(agent);
+    resetGridEnemy();
     for (auto it = UnitManager::enemies.begin(); it != UnitManager::enemies.end(); it++) {
         for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
             Point2D p = (*it2)->pos(agent);

@@ -395,7 +395,6 @@ namespace Army {
                 }
             }
         }
-        return 0;
 	}
 
     //Composition unitTargetComposition(const Unit* op) {
@@ -557,9 +556,9 @@ namespace Army {
             //CASE(ZERG_LOCUSTMP) { return Composition::Ground; }
             //Protoss
             CASE(PROTOSS_SENTRY) { return 5; }
-            CASE(PROTOSS_PROBE) { return 0.1; }
+            CASE(PROTOSS_PROBE) { return 0.1F; }
             CASE(PROTOSS_HIGHTEMPLAR) { return 10; }
-            CASE(PROTOSS_DARKTEMPLAR) { return 0.1; }
+            CASE(PROTOSS_DARKTEMPLAR) { return 0.1F; }
             CASE(PROTOSS_ADEPT) { return 4; }
             CASE(PROTOSS_ZEALOT) { return 0.1F; }
             CASE(PROTOSS_STALKER) { return 6; }

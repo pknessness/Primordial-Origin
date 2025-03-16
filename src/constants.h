@@ -12,7 +12,7 @@
 #define DISP ((size%2 == 0) ? 0.5F : 0.0F)
 #define GET(tag) agent->Observation()->GetUnit(tag)
 
-#define M_PI           3.14159265358979323846
+#define M_PI           3.14159265358979323846F
 
 #define AP3D(p2) Point3D(p2.x, p2.y, agent->Observation()->TerrainHeight(p2))
 
@@ -141,8 +141,8 @@ int buildingPointer = 0;
 
 std::vector<Effect> currentEffects;
 
-constexpr auto MINERALS_PER_PROBE_PER_SEC = 55.0 / 60;
-constexpr auto VESPENE_PER_PROBE_PER_SEC = 61.0 / 60;
+constexpr float MINERALS_PER_PROBE_PER_SEC = 55.0F / 60;
+constexpr float VESPENE_PER_PROBE_PER_SEC = 61.0F / 60;
 
 constexpr int PYLON_RADIUS = 6;
 
@@ -209,7 +209,7 @@ static bool checkPathable(int x, int y) {
     return imRef(pathingMap, x, y) == 0;
 }
 
-static int getPathable(int x, int y) {
+static int8_t getPathable(int x, int y) {
     if (x < 0 || x >= pathingMap->width() || y < 0 || y >= pathingMap->height()) {
         return 127;
     }
@@ -224,11 +224,11 @@ static bool checkPlacable(int x, int y, Agent* agent) {
     return imRef(buildingBlocked, x, y) == 0 && agent->Observation()->IsPlacable({ float(x), float(y) });
 }
 
-static bool checkPathable(Point2D p, Agent* agent) {
+static bool checkPathable(Point2D p) {
     return checkPathable(int(p.x), int(p.y));
 }
 
-static int getPathable(Point2D p, Agent* agent) {
+static int8_t getPathable(Point2D p) {
     return getPathable(int(p.x), int(p.y));
 }
 
@@ -246,7 +246,7 @@ static Point2D getRandomPathable(Agent* agent, float startX = -1, float endX = -
         float x = sX + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eX - sX)));
         float y = sY + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eY - sY)));
         p = Point2D{ x, y };
-    } while (!Aux::checkPathable(p, agent));
+    } while (!Aux::checkPathable(p));
     return p;
 }
 
@@ -264,7 +264,7 @@ static Point2D getRandomNonPathable(Agent* agent, float startX = -1, float endX 
         float x = sX + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eX - sX)));
         float y = sY + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eY - sY)));
         p = Point2D{ x, y };
-    } while (Aux::checkPathable(p, agent));
+    } while (Aux::checkPathable(p));
     return p;
 }
 
@@ -412,7 +412,6 @@ static UnitTypeID buildAbilityToUnit(AbilityID build_ability) {
         default:
             return 0;
     }
-    return 0;
 }
 
 static AbilityID unitToBuildAbility(UnitTypeID unit_type) {
@@ -450,7 +449,6 @@ static AbilityID unitToBuildAbility(UnitTypeID unit_type) {
         default:
             return 0;
     }
-    return 0;
 }
 
 static UpgradeID researchAbilityToUpgrade(AbilityID build_ability) {
@@ -764,7 +762,6 @@ static bool requiresPylon(AbilityID build_ability) {
         default:
             return false;
     }
-    return 0;
 }
 
 static int theorySupply(Agent *agent) {
@@ -1030,7 +1027,6 @@ Composition unitAsTarget(const Unit *unit) {
             return Composition::Invalid;
         }
     }
-    return Composition::Invalid;
 }
 
 //bool hitsUnit(const Unit *target, Composition weapon) {

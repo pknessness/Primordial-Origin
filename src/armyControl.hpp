@@ -26,7 +26,7 @@ namespace ArmyControl {
                 center += army[i]->pos(agent);
                 count++;
             }
-            return center / count;
+            return center / (float)count;
         }
     };
 
@@ -90,7 +90,7 @@ namespace ArmyControl {
         collectEnemySquads(agent);
         int unitCount = 0;
         for (Squad s : squads) {
-            unitCount += s.army.size();
+            unitCount += (int)(s.army.size());
         }
 
         int enemyBuildingCount = 0;

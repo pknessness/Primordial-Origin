@@ -100,9 +100,9 @@ namespace Macro {
     }
 
     void execute(Agent *agent) {
-        DebugText(agent,diagnostics, Point2D(0.03, 0.01), Color(100, 190, 215), 8);
+        DebugText(agent,diagnostics, Point2D(0.03F, 0.01F), Color(100, 190, 215), 8);
         uint32_t gt = agent->Observation()->GetGameLoop();
-        if (gt < lastChecked + ACTION_CHECK_DT) {
+        if (gt < (uint32_t)(lastChecked + ACTION_CHECK_DT)) {
             return;
         }
         lastChecked = gt;
@@ -173,7 +173,7 @@ namespace Macro {
             });
 
             diagnostics += strprintf("%s %s: ", UnitTypeToName(topAct.unit_type), AbilityTypeToName(topAct.ability));   
-            Point2D diag = Point2D(0.01, 0.01 + 0.02 * iAction);
+            Point2D diag = Point2D(0.01F, 0.01F + 0.02F * iAction);
 
             //UnitTypes allData = agent->Observation()->GetUnitTypeData();
 
@@ -328,7 +328,7 @@ namespace Macro {
                     continue;
                 }
                 for (int ao = 0; ao < 200; ao++) {
-                    float theta = ((float)std::rand()) * 2 * 3.1415926 / RAND_MAX;
+                    float theta = ((float)std::rand()) * 2 * M_PI / RAND_MAX;
                     float radius = ((float)std::rand()) * sources[index].radius / RAND_MAX;
 
                     float x = std::cos(theta) * radius;
@@ -533,8 +533,8 @@ namespace Macro {
                     }
                 }
 
-                theoreticalMinerals += (dt * Aux::MINERALS_PER_PROBE_PER_SEC * numMineralMiners);
-                theoreticalVespene += (dt * Aux::VESPENE_PER_PROBE_PER_SEC * numVespeneMiners);
+                theoreticalMinerals += (int)(dt * Aux::MINERALS_PER_PROBE_PER_SEC * numMineralMiners);
+                theoreticalVespene += (int)(dt * Aux::VESPENE_PER_PROBE_PER_SEC * numVespeneMiners);
                 macroProfiler.midLog("TheoryResources");
             } else {
                 macroProfiler.subScope();

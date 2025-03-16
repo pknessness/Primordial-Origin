@@ -67,7 +67,7 @@ static int S(map2d<int8_t>* map, int i, int j) {
 
 void zhangSuenThinning(map2d<int8_t>* map, Agent *agent) {
     map2d<int8_t>* change = new map2d<int8_t>(map->width(), map->height(), true);
-    #define BOX_BORDER 0.02
+    #define BOX_BORDER 0.02F
     while (1) {
         bool changedPixel = false;
         for (int i = 1; i < map->width() - 1; i++) {
@@ -137,7 +137,7 @@ void zhangSuenThinning(map2d<int8_t>* map, Agent *agent) {
                 }
                 if (imRef(map, i, j)) {
                     DebugBox(agent,
-                        Point3D(i + BOX_BORDER, j + BOX_BORDER, agent->Observation()->TerrainHeight(Point2D{i + 0.5F, j + 0.5F}) + 0.01),
+                        Point3D(i + BOX_BORDER, j + BOX_BORDER, agent->Observation()->TerrainHeight(Point2D{i + 0.5F, j + 0.5F}) + 0.01F),
                         Point3D(i + 1 - BOX_BORDER, j + 1 - BOX_BORDER, agent->Observation()->TerrainHeight(Point2D{i + 0.5F, j + 0.5F})), {250, 200, 210});
                 }
             }

@@ -122,7 +122,7 @@ public:
         if (cnt == 0) {
             return army[std::rand() % army.size()]->pos(agent);
         }
-        return (center / cnt);
+        return (center / (float)cnt);
     }
 
     UnitWrapper* getCore(Agent* agent) {
@@ -157,7 +157,6 @@ public:
         if (comp != Composition::Invalid) {
             return comp;
         }
-        bool air = false, gnd = false;
         for (int i = 0; i < army.size(); i++) {
             if (comp != Composition::Any) {
                 singleUnitComp(army[i], agent);
@@ -193,7 +192,7 @@ public:
             return radius;
         else {
             //printf("A:%d SQRT%.1f\n", army.size(), std::sqrt(army.size()));
-            return std::sqrt(army.size())*2;
+            return (float)std::sqrt(army.size())*2;
         }
     }
 
@@ -413,8 +412,8 @@ public:
                 //DebugLine(agent, AP3D(fullpath[i]) + Point3D{ 0,0,1 }, AP3D(fullpath[i + 1]) + Point3D{ 0,0,1 }, Colors::Green);
             }
             for (Point2D p : stepPoints) {
-                DamageLocation d = UnitManager::getRadiusAvgDamage(P2D(p) + Point2D{ 0.5F,0.5F }, radius, agent);
-                damageCost += UnitManager::getRelevantDamage(this, d, agent) * 0.2;
+                DamageLocation d = UnitManager::getRadiusAvgDamage(P2D(p) + Point2D{ 0.5F,0.5F }, radius);
+                damageCost += UnitManager::getRelevantDamage(this, d, agent) * 0.2F;
 
                 //DebugSphere(agent, AP3D(p), 0.5, { 21,42,220 });
                 //DebugText(agent, strprintf("%.2f", damageCost), AP3D(p) + Point3D{ 0,0,1 });
@@ -422,12 +421,12 @@ public:
             //DebugSphere(this, P3D(PrimordialStar::distanceAlongPath(path, 5.5)), 0.5, {21,42,120});
         }
         damageCost /= (PrimordialStar::getPathLength(fullpath) + 4.0F);
-        damageCost += UnitManager::getRelevantDamage(this, UnitManager::getRadiusAvgDamage(end, radius + 2.0F, agent), agent);
+        damageCost += UnitManager::getRelevantDamage(this, UnitManager::getRadiusAvgDamage(end, radius + 2.0F), agent);
         return damageCost;
     }
 
     Point2D randomPointRadius(Point2D center, float rad) {
-        float theta = ((float)std::rand()) * 2 * 3.1415926 / RAND_MAX;
+        float theta = ((float)std::rand()) * 2 * M_PI / RAND_MAX;
         float r = ((float)std::rand()) * rad / RAND_MAX;
         float x = std::cos(theta) * r;
         float y = std::sin(theta) * r;
@@ -635,7 +634,7 @@ public:
                     checkPoints.reserve(escapePointChecks);
                     for (int i = 0; i < escapePointChecks; i++) {
                         Point2D checkPoint = randomPointRadius(position, escapePointRadius);
-                        if (!Aux::checkPathable(checkPoint, agent)) {
+                        if (!Aux::checkPathable(checkPoint)) {
                             i--;
                             continue;
                         }
@@ -727,9 +726,9 @@ public:
             else {
                 check = Aux::getRandomPathable(agent);
             }
-            float c = searchCost(check);
-            if (c < cost || cost == -1) {
-                cost = c;
+            float cos = searchCost(check);
+            if (cos < cost || cost == -1) {
+                cost = cos;
                 posTarget = check;
             }
         }
@@ -738,7 +737,7 @@ public:
         return false;
     }
 
-    virtual bool executeDamaged(Agent *agent, float health, float shields) {
+    virtual bool executeDamaged(Agent *agent, float u_health, float u_shields) {
         Units enemies = agent->Observation()->GetUnits(Unit::Alliance::Enemy);
         return false;
     }
@@ -764,11 +763,11 @@ public:
 
     //the higher the more u want to go.
     float blinkPriority(Point2D pos, Agent* agent) {
-        return -UnitManager::getRelevantDamage(this, UnitManager::getRadiusAvgDamage(pos, radius + 1.0F, agent), agent);
+        return -UnitManager::getRelevantDamage(this, UnitManager::getRadiusAvgDamage(pos, radius + 1.0F), agent);
     }
 
-    virtual bool executeDamaged(Agent *agent, float health, float shields) {
-        if (shields < 0.05 && checkAbility(ABILITY_ID::EFFECT_BLINK)) {
+    virtual bool executeDamaged(Agent *agent, float u_health, float u_shields) {
+        if (u_shields < 0.05 && checkAbility(ABILITY_ID::EFFECT_BLINK)) {
             printf("TELEPORT STALKER\n");
 
             float priorityMax = -1;
@@ -784,7 +783,7 @@ public:
 
                 Point3D blinkPos{ upos.x + displace.x, upos.y + displace.y, upos.z };
 
-                if (!Aux::checkPathable(blinkPos, agent)) {
+                if (!Aux::checkPathable(blinkPos)) {
                     i--;
                     continue;
                 }
@@ -821,6 +820,7 @@ public:
         }
         agent->Actions()->UnitCommand(self, ABILITY_ID::MOVE_MOVE, squad->coreCenter(agent));
         ignoreFrames = 50;
+        return false;
     }
 };
 
@@ -844,6 +844,7 @@ public:
             agent->Actions()->UnitCommand(self, ABILITY_ID::ATTACK, squad->location);
         }
         ignoreFrames = 3;
+        return false;
     }
 };
 

@@ -8,7 +8,6 @@
 #include "constants.h"
 #include "primordialstar.hpp"
 #include "unitmanager.hpp"
-#include "dist_transform.hpp"
 #include "zhangSuen.hpp"
 #include "spacialhashgrid.hpp"
 #include "BoudaoudSiderTariThinning.hpp"
@@ -33,7 +32,7 @@ class Bot : public Agent {
 public:
     //std::vector<Location> path;
     //std::vector < std::vector<Location>> expansionPaths;
-    std::vector<Point2DI> path;
+    //std::vector<Point2DI> path;
 
     std::vector<Point3D> expansions;
     std::vector<double> expansionDistance;
@@ -94,7 +93,7 @@ public:
             //}
             //printf("{%.1f}\n\n", length);
 
-            float length = PrimordialStar::getPathLengthDijkstra(P2D(Aux::staging_location), P2D(point), 0.2, this);
+            float length = PrimordialStar::getPathLengthDijkstra(P2D(Aux::staging_location), P2D(point), 0.2F, this);
 
             constexpr int numsteps = 6;
             Units neut = Observation()->GetUnits(Unit::Alliance::Neutral, Aux::isMineral);
@@ -104,7 +103,7 @@ public:
                 if (Distance2D(point, neut[i]->pos) < 12) {
                     Point2D dir = neut[i]->pos - point;
                     for (int p = 0; p < numsteps; p++) {
-                        Point3D loc = point + p * (neut[i]->pos - point) / ((float)numsteps);
+                        Point3D loc = point + (float)p * (neut[i]->pos - point) / ((float)numsteps);
                         Aux::addPlacement(loc, 2);
                         //DebugSphere(this,loc, 2);
                     }
@@ -149,9 +148,7 @@ public:
         if (hE > mapHeight || !nearbyOnly)
             hE = mapHeight;
 
-        int fontSize = 8;
-
-        #define BOX_BORDER 0.02
+        #define BOX_BORDER 0.02F
 
         for (int w = wS; w < wE; w++) {
             for (int h = hS; h < hE; h++) {
@@ -195,7 +192,7 @@ public:
                     //#endif
 
                     DebugText(this, strprintf("%d, %d", w, h),
-                        Point3D(w + BOX_BORDER, h + 0.2 + BOX_BORDER, height + 0.1),
+                        Point3D(w + BOX_BORDER, h + 0.2F + BOX_BORDER, height + 0.1F),
                         Color(200, 90, 15), 8);
 
                     /*std::string cs = imRef(display, w, h);
@@ -227,9 +224,7 @@ public:
         if (hE > mapHeight || !nearbyOnly)
             hE = mapHeight;
 
-        int fontSize = 8;
-
-        #define BOX_BORDER 0.02
+        #define BOX_BORDER 0.02F
 
         for (int w = wS; w < wE; w++) {
             for (int h = hS; h < hE; h++) {
@@ -238,7 +233,7 @@ public:
                 Color c(255, 255, 255);
 
                 if (Aux::checkPathable(w, h)) {
-                    //c = { uint8_t(imRef(PrimordialStar::maxDistanceGrid,w,h).distance/maximal * 255.0), 0, 0};
+                    c = { uint8_t(imRef(PrimordialStar::maxDistanceGrid,w,h).distancePP /maximal * 255.0), 0, 0};
                 }
 
                 if (0 || !(c.r == 255 && c.g == 255 && c.b == 255) || boxHeight != 0) {
@@ -248,20 +243,10 @@ public:
 
                     DebugBox(this, Point3D(w + BOX_BORDER, h + BOX_BORDER, height + 0.01F),
                         Point3D(w + 1 - BOX_BORDER, h + 1 - BOX_BORDER, height + boxHeight), c);
-                    //#if MICRO_TEST
-                    //    DebugText(this,strprintf("%d, %d", w, h),
-                    //                          Point3D(w + BOX_BORDER, h + 0.2 + BOX_BORDER, height + 0.1),
-                    //                          Color(200, 90, 15), 4);
-                    //#endif
 
                     DebugText(this, strprintf("%d, %d", w, h),
-                        Point3D(w + BOX_BORDER, h + 0.2 + BOX_BORDER, height + 0.1),
+                        Point3D(w + BOX_BORDER, h + 0.2F + BOX_BORDER, height + 0.1F),
                         Color(200, 90, 15), 8);
-
-                    /*std::string cs = imRef(display, w, h);
-                    float disp = cs.length() * 0.0667 * fontSize / 15;
-                    DebugText(this,cs, Point3D(w + 0.5 - disp, h + 0.5, height + 0.1 + displace),
-                                          Color(200, 190, 115), fontSize);*/
                 }
             }
         }
@@ -287,9 +272,7 @@ public:
         if (hE > mapHeight)
             hE = mapHeight;
 
-        int fontSize = 8;
-
-        #define BOX_BORDER 0.02
+        #define BOX_BORDER 0.02F
 
         for (int w = wS; w < wE; w++) {
             for (int h = hS; h < hE; h++) {
@@ -313,17 +296,8 @@ public:
                 if (0 || !(c.r == 255 && c.g == 255 && c.b == 255)) {
                     float height = Observation()->TerrainHeight(Point2D{ w + 0.5F, h + 0.5F });
 
-                    DebugBox(this,Point3D(w + BOX_BORDER, h + BOX_BORDER, height + 0.01),
+                    DebugBox(this,Point3D(w + BOX_BORDER, h + BOX_BORDER, height + 0.01F),
                                             Point3D(w + 1 - BOX_BORDER, h + 1 - BOX_BORDER, height + boxHeight), c);
-                    #if MICRO_TEST
-                        DebugText(this,strprintf("%d, %d", w, h),
-                                            Point3D(w + BOX_BORDER, h + 0.2 + BOX_BORDER, height + 0.1),
-                                            Color(200, 90, 15), 4);
-                    #endif
-                    /*std::string cs = imRef(display, w, h);
-                    float disp = cs.length() * 0.0667 * fontSize / 15;
-                    DebugText(this,cs, Point3D(w + 0.5 - disp, h + 0.5, height + 0.1 + displace),
-                                            Color(200, 190, 115), fontSize);*/
                 }
             }
         }
@@ -349,9 +323,7 @@ public:
         if (hE > mapHeight)
             hE = mapHeight;
 
-        int fontSize = 8;
-
-        #define BOX_BORDER 0.02
+        #define BOX_BORDER 0.02F
 
         for (int w = wS; w < wE; w++) {
             for (int h = hS; h < hE; h++) {
@@ -373,7 +345,7 @@ public:
                 if (0 || !(c.r == 255 && c.g == 255 && c.b == 255)) {
                     float height = Observation()->TerrainHeight(Point2D{ w + 0.5F, h + 0.5F });
 
-                    DebugBox(this, Point3D(w + BOX_BORDER, h + BOX_BORDER, height + 0.01),
+                    DebugBox(this, Point3D(w + BOX_BORDER, h + BOX_BORDER, height + 0.01F),
                         Point3D(w + 1 - BOX_BORDER, h + 1 - BOX_BORDER, height + boxHeight), c);
                 #if MICRO_TEST
                     DebugText(this, strprintf("%d, %d", w, h),
@@ -409,14 +381,11 @@ public:
         if (hE > mapHeight)
             hE = mapHeight;
 
-        int fontSize = 8;
+        #define BOX_BORDER_S 0.002F
 
-        #define BOX_BORDER_S 0.002
-
-        for (float w = wS; w < wE; w += blockSize) {
-            for (float h = hS; h < hE; h += blockSize) {
+        for (float w = (float)wS; w < wE; w += blockSize) {
+            for (float h = (float)hS; h < hE; h += blockSize) {
                 Point2D p(w, h);
-                float boxHeight = 0;
                 Color c(255, 255, 255);
 
                 // for (auto loc : path) {
@@ -427,8 +396,8 @@ public:
                 // }
 
                 if (UnitManager::damageNetEnemy(p).ground.normal != 0 || UnitManager::damageNetEnemy(p).air.normal != 0) {
-                    uint8_t r = (UnitManager::damageNetEnemy(p).ground.normal * 2);
-                    uint8_t b = (UnitManager::damageNetEnemy(p).air.normal * 2);
+                    uint8_t r = (uint8_t)(UnitManager::damageNetEnemy(p).ground.normal * 2);
+                    uint8_t b = (uint8_t)(UnitManager::damageNetEnemy(p).air.normal * 2);
                     //printf("col %d %d\n", r, b);
                     c = {r, 0, b};
                 }
@@ -436,17 +405,8 @@ public:
                 if (0 || !(c.r == 255 && c.g == 255 && c.b == 255)) {
                     float height = Observation()->TerrainHeight(Point2D{w+0.5F, h+0.5F});
 
-                    DebugBox(this,Point3D(w + BOX_BORDER_S, h + BOX_BORDER_S, height + 0.01),
-                        Point3D(w + blockSize - BOX_BORDER_S, h + blockSize - BOX_BORDER_S, height - 0.01), c);
-                #if MICRO_TEST
-                    DebugText(this,strprintf("%d, %d", w, h),
-                        Point3D(w + BOX_BORDER_S, h + 0.2 + BOX_BORDER_S, height + 0.1),
-                        Color(200, 90, 15), 4);
-                #endif
-                    /*std::string cs = imRef(display, w, h);
-                    float disp = cs.length() * 0.0667 * fontSize / 15;
-                    DebugText(this,cs, Point3D(w + 0.5 - disp, h + 0.5, height + 0.1 + displace),
-                                            Color(200, 190, 115), fontSize);*/
+                    DebugBox(this,Point3D(w + BOX_BORDER_S, h + BOX_BORDER_S, height + 0.01F),
+                        Point3D(w + blockSize - BOX_BORDER_S, h + blockSize - BOX_BORDER_S, height - 0.01F), c);
                 }
             }
         }
@@ -472,16 +432,13 @@ public:
         if (hE > mapHeight)
             hE = mapHeight;
 
-        int fontSize = 8;
+        #define BOX_BORDER_SD 0.002F
 
-        #define BOX_BORDER_SD 0.002
-
-        float damageMult = 255.0 / 10000;
+        float damageMult = 255.0F / 10000;
 
         for (int w = wS; w < wE; w += 1) {
             for (int h = hS; h < hE; h += 1) {
                 Point2D p(w * blockSize, h * blockSize);
-                float boxHeight = 0;
                 Color c(255, 255, 255);
                 float height = Observation()->TerrainHeight(Point2D{ (w + 0.5F) * blockSize, (h + 0.5F) * blockSize });
 
@@ -548,9 +505,9 @@ public:
         //else {
         //    DebugLine(this, P3D(rally_point) + Point3D{ 0,0,1 }, P3D(Observation()->GetCameraPos()) + Point3D{ 0,0,1 }, Colors::Red);
         //}
-        Profiler* p = new Profiler("pathfind");
-        vector<Point2D> path = PrimordialStar::getPath(Observation()->GetCameraPos(), rally_point, 0.5, this);
-        delete p;
+        Profiler* profl = new Profiler("pathfind");
+        vector<Point2D> path = PrimordialStar::getPath(Observation()->GetCameraPos(), rally_point, 0.5F, this);
+        delete profl;
 
         DebugText(this, strprintf("%d", path.size()), P3D(Observation()->GetCameraPos()) + Point3D{ 0,0,1 });
         if (path.size() != 0) {
@@ -594,9 +551,9 @@ public:
                 float dist = PrimordialStar::getPathLength(path);
                 float sc2dist = Query()->PathingDistance(from, to);
                 float diff = dist - sc2dist;
-                if (0 && diff < 0) {
-                    printf("S{%.1f,%.1f} E{%.1f,%.1f} D[%.1f]\n", from.x, from.y, to.x, to.y, diff);
-                }
+                //if (diff < 0) {
+                //    printf("S{%.1f,%.1f} E{%.1f,%.1f} D[%.1f]\n", from.x, from.y, to.x, to.y, diff);
+                //}
                 if (diff > 2 || diff < -2) {
                     Color c = Aux::randomColor();
                     if (diff < 0) {
@@ -649,7 +606,7 @@ public:
                 tot += strprintf("%lx\n",(*it2)->self);
             }
         }
-        DebugText(this,tot, Point2D(0.01, 0.01), Color(100, 190, 215), 8);
+        DebugText(this,tot, Point2D(0.01F, 0.01F), Color(100, 190, 215), 8);
     }
 
     void listUnitWrapsNeutral() {
@@ -662,7 +619,7 @@ public:
                 tot += strprintf("%lx\n", (*it2)->self);
             }
         }
-        DebugText(this,tot, Point2D(0.11, 0.01), Color(100, 190, 215), 8);
+        DebugText(this,tot, Point2D(0.11F, 0.01F), Color(100, 190, 215), 8);
     }
 
     void listUnitWrapsEnemies() {
@@ -675,7 +632,7 @@ public:
                 tot += strprintf("%lx\n", (*it2)->self);
             }
         }
-        DebugText(this,tot, Point2D(0.21, 0.01), Color(100, 190, 215), 8);
+        DebugText(this,tot, Point2D(0.21F, 0.01F), Color(100, 190, 215), 8);
     }
 
     void listMacroActions() {
@@ -688,7 +645,7 @@ public:
                 tot += strprintf("%s %d %.1f,%.1f\n", AbilityTypeToName(it2->ability), it2->index, it2->pos.x, it2->pos.y);
             }
         }
-        DebugText(this,tot, Point2D(0.01, 0.11), Color(250, 50, 15), 8);
+        DebugText(this,tot, Point2D(0.01F, 0.11F), Color(250, 50, 15), 8);
     }
 
     void probeLines() {
@@ -731,7 +688,7 @@ public:
             if (unit->weapon_cooldown != 0) {
                 s += strprintf(" %.1fs", unit->weapon_cooldown);
             }
-            DebugText(this,s, unit->pos + Point3D{s.size() * LETTER_DISP, 0, 0.5}, Color(100, 210, 55), 8);
+            DebugText(this,s, unit->pos + Point3D{s.size() * LETTER_DISP, 0.0F, 0.5F}, Color(100, 210, 55), 8);
         }
     }
 
@@ -742,7 +699,7 @@ public:
                 continue;
             #define LETTER_DISP -0.07F
             string s = strprintf("%lx", unit->tag);
-            DebugText(this,s, unit->pos + Point3D{s.size() * LETTER_DISP, 0.3, 0.5}, Color(210, 55, 55), 8);
+            DebugText(this,s, unit->pos + Point3D{s.size() * LETTER_DISP, 0.3F, 0.5F}, Color(210, 55, 55), 8);
         }
     }
 
@@ -752,7 +709,7 @@ public:
             for (auto it2 = all.begin(); it2 != all.end(); it2++) {
                 #define LETTER_DISP -0.07F
                 string s = strprintf("%lx", (*it2)->self);
-                DebugText(this,s, (*it2)->pos3D(this) + Point3D{s.size() * LETTER_DISP, 0.3, 0.5}, Color(210, 55, 55),
+                DebugText(this,s, (*it2)->pos3D(this) + Point3D{s.size() * LETTER_DISP, 0.3F, 0.5F}, Color(210, 55, 55),
                                       8);
             }
         }
@@ -777,7 +734,7 @@ public:
             for (auto it2 = all.begin(); it2 != all.end(); it2++) {
                 string tot = strprintf("%s", UnitTypeToName((*it2)->type));
                 DebugText(this,tot, (*it2)->pos3D(this), {255, 40, 10}, 8);
-                float radius = Aux::structureDiameter((*it2)->type);
+                float radius = (float)Aux::structureDiameter((*it2)->type);
                 if (radius == 0) {
                     radius = 0.5;
                 }
@@ -934,8 +891,8 @@ public:
         UnitManager::enemyDamageNetModify = new map2d<int8_t>(mapWidth * UnitManager::damageNetPrecision, mapHeight * UnitManager::damageNetPrecision, true);
         UnitManager::enemyDamageNetTemp = new map2d<float>(mapWidth * UnitManager::damageNetPrecision, mapHeight * UnitManager::damageNetPrecision, true);
 
-        SpacialHash::initGrid(this);
-        SpacialHash::initGridEnemy(this);
+        SpacialHash::initGrid();
+        SpacialHash::initGridEnemy();
 
         for (int i = 0; i < path_zhang_suen->width(); i++) {
             for (int j = 0; j < path_zhang_suen->height(); j++) {
@@ -1065,12 +1022,12 @@ public:
 
         PrimordialStar::generatePathNodes(this);
 
-        printf("Generating %d PathNodes took %.3fms ", PrimordialStar::basePathNodes.size(), std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - startPathNoding).count() / 1000.0);
+        printf("Generating %zd PathNodes took %.3fms ", PrimordialStar::basePathNodes.size(), std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - startPathNoding).count() / 1000.0);
         
         int numConnections = 0;
         
         for (PrimordialStar::PathNode* node : PrimordialStar::basePathNodes) {
-            numConnections += node->connected.size();
+            numConnections += (int)(node->connected.size());
         }
         
         printf("with %d connections\n", numConnections);
@@ -1434,7 +1391,7 @@ public:
             DebugSphere(this,P3D(squads[i].coreCenter(this)), squads[i].armyballRadius());
             DebugSphere(this,P3D(squads[i].intermediateLoc), 0.5, {30,230, 210});
         }
-        DebugText(this, s, Point2D(0.71, 0.11), Color(1, 42, 212), 8);
+        DebugText(this, s, Point2D(0.71F, 0.11F), Color(1, 42, 212), 8);
 
         onStepProfiler.midLog("SquadExecute");
         #if MICRO_TEST == 0
@@ -1452,9 +1409,6 @@ public:
         if (Observation()->GetGameLoop() % 200 == 0) { //1344
             int mapWidth = Observation()->GetGameInfo().width;
             int mapHeight = Observation()->GetGameInfo().height;
-            time_t now = time(0);
-            char* dt = ctime(&now);
-            //string time = strprintf("_%s_%d_", dt, Observation()->GetGameLoop());
             string time = strprintf("_%d_", Observation()->GetGameLoop());
             saveBitmap(fileName + time +"visionMap.bmp", mapWidth, mapHeight,
                 [this](int i, int j) {return (uint8_t)((float)imRef(Aux::visionMap, i, j) * 255 / Aux::visionMax);},
@@ -1518,26 +1472,26 @@ public:
 
                 Strategem::UnitRatioFloat percentageUnitsStrategy;
 
-                numUnits.zealot = UnitManager::get(UNIT_TYPEID::PROTOSS_ZEALOT).size();
-                numUnits.stalker = UnitManager::get(UNIT_TYPEID::PROTOSS_STALKER).size();
-                numUnits.sentry = UnitManager::get(UNIT_TYPEID::PROTOSS_SENTRY).size();
-                numUnits.adept = UnitManager::get(UNIT_TYPEID::PROTOSS_ADEPT).size();
-                numUnits.darktemplar = UnitManager::get(UNIT_TYPEID::PROTOSS_DARKTEMPLAR).size();
-                numUnits.hightemplar = UnitManager::get(UNIT_TYPEID::PROTOSS_HIGHTEMPLAR).size();
-                numUnits.archon = UnitManager::get(UNIT_TYPEID::PROTOSS_ARCHON).size();
+                numUnits.zealot = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_ZEALOT).size());
+                numUnits.stalker = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_STALKER).size());
+                numUnits.sentry = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_SENTRY).size());
+                numUnits.adept = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_ADEPT).size());
+                numUnits.darktemplar = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_DARKTEMPLAR).size());
+                numUnits.hightemplar = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_HIGHTEMPLAR).size());
+                numUnits.archon = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_ARCHON).size());
 
-                numUnits.observer = UnitManager::get(UNIT_TYPEID::PROTOSS_OBSERVER).size();
-                numUnits.immortal = UnitManager::get(UNIT_TYPEID::PROTOSS_IMMORTAL).size();
-                numUnits.warpprism = UnitManager::get(UNIT_TYPEID::PROTOSS_WARPPRISM).size();
-                numUnits.colossus = UnitManager::get(UNIT_TYPEID::PROTOSS_COLOSSUS).size();
-                numUnits.disruptor = UnitManager::get(UNIT_TYPEID::PROTOSS_DISRUPTOR).size();
+                numUnits.observer = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_OBSERVER).size());
+                numUnits.immortal = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_IMMORTAL).size());
+                numUnits.warpprism = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_WARPPRISM).size());
+                numUnits.colossus = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_COLOSSUS).size());
+                numUnits.disruptor = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_DISRUPTOR).size());
 
-                numUnits.pheonix = UnitManager::get(UNIT_TYPEID::PROTOSS_PHOENIX).size();
-                numUnits.oracle = UnitManager::get(UNIT_TYPEID::PROTOSS_ORACLE).size();
-                numUnits.voidray = UnitManager::get(UNIT_TYPEID::PROTOSS_VOIDRAY).size();
-                numUnits.tempest = UnitManager::get(UNIT_TYPEID::PROTOSS_TEMPEST).size();
-                numUnits.carrier = UnitManager::get(UNIT_TYPEID::PROTOSS_CARRIER).size();
-                numUnits.mothership = UnitManager::get(UNIT_TYPEID::PROTOSS_MOTHERSHIP).size();
+                numUnits.pheonix = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_PHOENIX).size());
+                numUnits.oracle = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_ORACLE).size());
+                numUnits.voidray = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_VOIDRAY).size());
+                numUnits.tempest = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_TEMPEST).size());
+                numUnits.carrier = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_CARRIER).size());
+                numUnits.mothership = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_MOTHERSHIP).size());
 
                 int8_t* numPtr = (int8_t*)&numUnits;
                 int8_t* numPtrStrategy = (int8_t*)&strat.unitRatio;
@@ -1558,7 +1512,7 @@ public:
 
                 printf("Strategy Profile:\n");
                 for (int i = 0; i < 18; i++) {
-                    printf("%s   \t%.1f\%\t%.1f\%\n", UnitTypeToName(Strategem::UnitOrder[i]), percentPtrStrategy[i] * 100, percentPtr[i] * 100);
+                    printf("%s   \t%.1f\t%.1f\n", UnitTypeToName(Strategem::UnitOrder[i]), percentPtrStrategy[i] * 100, percentPtr[i] * 100);
                 }
 
                 int mindex = 1;
@@ -1585,7 +1539,7 @@ public:
         clock_t new_time = clock();
         int dt = (new_time - last_time);
         last_time = new_time;
-        DebugText(this,strprintf("%d", dt), Point2D(0.10, 0.10), Color(100, 190, 215), 16);
+        DebugText(this,strprintf("%d", dt), Point2D(0.10F, 0.10F), Color(100, 190, 215), 16);
 
         onStepProfiler.midLog("DT");
 
@@ -1608,7 +1562,7 @@ public:
         if (0) {
             //Profiler profiler("BigCircle");
             DebugSphere(this,P3D(Observation()->GetCameraPos()), 3);
-            UnitManager::setEnemyDamageRadius3(Observation()->GetCameraPos(), 3, { Damage(200, 0,0,0,0,0,0), Damage(0, 0,0,0,0,0,0) }, this);
+            UnitManager::setEnemyDamageRadius3(Observation()->GetCameraPos(), 3, { Damage(200, 0,0,0,0,0,0), Damage(0, 0,0,0,0,0,0) });
         }
 
         onStepProfiler.midLog("OS-JPS");
@@ -1627,41 +1581,8 @@ public:
                 for (Weapon w : weapons) {
 
                     //TODO: REPLACE WITH WEAPON TO DAMAGELOCATION FUNCTION
-                    DamageLocation d;
-                    Damage damage;
-                    for (DamageBonus bonus : w.damage_bonus) {
-                        if (bonus.attribute == Attribute::Light) {
-                            damage.light += bonus.bonus / w.speed * 100 * w.attacks;
-                        }
-                        else if (bonus.attribute == Attribute::Armored) {
-                            damage.armored += bonus.bonus / w.speed * 100 * w.attacks;
-                        }
-                        else if (bonus.attribute == Attribute::Biological) {
-                            damage.biological += bonus.bonus / w.speed * 100 * w.attacks;
-                        }
-                        else if (bonus.attribute == Attribute::Mechanical) {
-                            damage.mechanical += bonus.bonus / w.speed * 100 * w.attacks;
-                        }
-                        else if (bonus.attribute == Attribute::Massive) {
-                            damage.massive += bonus.bonus / w.speed * 100 * w.attacks;
-                        }
-                        else if (bonus.attribute == Attribute::Psionic) {
-                            damage.psionic += bonus.bonus / w.speed * 100 * w.attacks;
-                        }
-                        else {
-                            printf("ATTRIBUTE NOT PROGRAMMED %d\n", bonus.attribute);
-                        }
-                    }
-                    
-                    if (w.type == Weapon::TargetType::Air || w.type == Weapon::TargetType::Any) {
-                        d.air.normal = w.damage_ / w.speed * 100 * w.attacks;
-                        d.air += damage;
-                    }
-                    if (w.type == Weapon::TargetType::Ground || w.type == Weapon::TargetType::Any) {
-                        d.ground.normal = w.damage_ / w.speed * 100 * w.attacks;
-                        d.ground += damage;
-                    }
-                    UnitManager::setEnemyDamageRadius3((*it2)->pos(this), (*it2)->radius + w.range, d, this);
+                    DamageLocation d = UnitManager::WeaponToDamageLocation(w);
+                    UnitManager::setEnemyDamageRadius3((*it2)->pos(this), (*it2)->radius + w.range, d);
                     //printf("%s %Ix set %.1f,%.1f  %.1f,%.1f  %.1f,%.1f\n", UnitTypeToName((*it2)->type), (*it2)->self, d.ground, d.air, d.groundlight, d.airlight, d.groundarmored, d.airarmored);
                 }
             }
@@ -1721,32 +1642,32 @@ public:
         static int max4 = 0;
         for (auto itr = profilerMap.begin(); itr != profilerMap.end(); itr ++) {
             string name = itr->first;
-            int strlen = name.size();
+            int strlen = (int)(name.size());
             max1 = max(strlen + 1, max1);
             for (int i = 0; i < (max1 - strlen); i++) {
                 name += " ";
             }
             string dtstr = strprintf("AVG:%.3f", ((double)itr->second) / profilerCoumt[itr->first] / 1000.0);
-            strlen = dtstr.size();
+            strlen = (int)(dtstr.size());
             max2 = max(strlen + 1, max2);
             for (int i = 0; i < (max2 - strlen); i++) {
                 dtstr += " ";
             }
             string totstr = strprintf("TOT:%.3f/%d", itr->second / 1000.0, profilerCoumt[itr->first]);
-            strlen = totstr.size();
+            strlen = (int)(totstr.size());
             max3 = max(strlen + 1, max3);
             for (int i = 0; i < (max3 - strlen); i++) {
                 totstr += " ";
             }
             string lateststr = strprintf("LAT:%.3f", profilerLast[itr->first].time()/1000.0);
-            strlen = lateststr.size();
+            strlen = (int)(lateststr.size());
             max4 = max(strlen + 1, max4);
             for (int i = 0; i < (max4 - strlen); i++) {
                 lateststr += " ";
             }
             profilestr += (name + lateststr + dtstr + totstr + "\n");
         }
-        DebugText(this,profilestr, Point2D(0.61, 0.41), Color(1, 212, 41), 8);
+        DebugText(this,profilestr, Point2D(0.61F, 0.41F), Color(1, 212, 41), 8);
 
         onStepProfiler.midLog("ProfilerLog");
 

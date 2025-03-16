@@ -29,10 +29,8 @@ Point2D getBuildingLocation(Agent *agent) {
         }
         if (!found) {
             for (int i = 0; i < 500; i++) {
-                float theta = ((float)std::rand()) * 2 * 3.1415926 / RAND_MAX;
+                float theta = ((float)std::rand()) * 2 * M_PI / RAND_MAX;
                 float radius = ((float)std::rand()) * Aux::PYLON_RADIUS / RAND_MAX;
-
-                auto pylons = UnitManager::get(UNIT_TYPEID::PROTOSS_PYLON);
 
                 float x = std::cos(theta) * radius;
                 float y = std::sin(theta) * radius;
@@ -261,8 +259,8 @@ public:
                         return false;
                     }
                 }
-                Cost c = Aux::buildAbilityToCost(top.build, agent);
-                if (c.minerals > agent->Observation()->GetMinerals() || c.vespene > agent->Observation()->GetVespene())
+                Cost cos = Aux::buildAbilityToCost(top.build, agent);
+                if (cos.minerals > agent->Observation()->GetMinerals() || cos.vespene > agent->Observation()->GetVespene())
                     return false;
                 if (top.build == ABILITY_ID::BUILD_ASSIMILATOR) {
                     auto vespene = UnitManager::getVespene();
