@@ -4,10 +4,7 @@
 #include <sc2lib/sc2_lib.h>
 
 #include <iostream>
-#include "jps.hpp"
 #include "macro.hpp"
-#include "grid.hpp"
-#include "tools.hpp"
 #include "constants.h"
 #include "primordialstar.hpp"
 #include "unitmanager.hpp"
@@ -35,7 +32,7 @@ using namespace sc2;
 class Bot : public Agent {
 public:
     //std::vector<Location> path;
-    std::vector < std::vector<Location>> expansionPaths;
+    //std::vector < std::vector<Location>> expansionPaths;
     std::vector<Point2DI> path;
 
     std::vector<Point3D> expansions;
@@ -180,7 +177,7 @@ public:
                 //} else if (imRef(Aux::influenceMapEnemy, w, h) != 0) {
                 //    c = {210,50, 44};
                 //}
-                if (Aux::checkPathable(w, h, this)) {
+                if (Aux::checkPathable(w, h)) {
                     c = { 250, 200, 210 };
                 }
 
@@ -240,7 +237,7 @@ public:
                 float boxHeight = 0;
                 Color c(255, 255, 255);
 
-                if (Aux::checkPathable(w, h, this)) {
+                if (Aux::checkPathable(w, h)) {
                     //c = { uint8_t(imRef(PrimordialStar::maxDistanceGrid,w,h).distance/maximal * 255.0), 0, 0};
                 }
 
@@ -1057,9 +1054,9 @@ public:
         //    [this](int i, int j) {return (Aux::checkPathable(i, j, this) || Aux::checkPlacable(i, j, this) ? 255 : 0);});
 
         saveBitmap(fileName + "_master.bmp", mapWidth, mapHeight,
-            [this](int i, int j) {return pathingMapToColor(Aux::getPathable(i, j, this)).r;},
-            [this](int i, int j) {return pathingMapToColor(Aux::getPathable(i, j, this)).g;},
-            [this](int i, int j) {return pathingMapToColor(Aux::getPathable(i, j, this)).b;});
+            [this](int i, int j) {return pathingMapToColor(Aux::getPathable(i, j)).r;},
+            [this](int i, int j) {return pathingMapToColor(Aux::getPathable(i, j)).g;},
+            [this](int i, int j) {return pathingMapToColor(Aux::getPathable(i, j)).b;});
 
         //grid(false);
         displayMaxDistanceGrid(maximalMax, false);
@@ -1109,7 +1106,7 @@ public:
         zhangSuenThinning(path_zhang_suen, this);
         //thinning_BST(path_zhang_suen, this);
 
-        gridmap = Grid{Observation()->GetGameInfo().width, Observation()->GetGameInfo().height};
+        //gridmap = Grid{Observation()->GetGameInfo().width, Observation()->GetGameInfo().height};
 
         //const ObservationInterface* observe = Observation();
         //PathFinder pf(observe->GetGameInfo().width, observe->GetGameInfo().height);
@@ -1151,13 +1148,14 @@ public:
         float min = -1;
 
         for (int i = 0; i < possiblePoints.size(); i++) {
-            auto came_from =
-                jps(gridmap, middle,
-                                 {int(possiblePoints[i].x), int(possiblePoints[i].y)}, Tool::euclidean, this);
-            auto pathToExpansion = Tool::reconstruct_path(Location(middle),
-                                       {int(possiblePoints[i].x), int(possiblePoints[i].y)}, came_from);
+            //auto came_from =
+            //    jps(gridmap, middle,
+            //                     {int(possiblePoints[i].x), int(possiblePoints[i].y)}, Tool::euclidean, this);
+            //auto pathToExpansion = Tool::reconstruct_path(Location(middle),
+            //                           {int(possiblePoints[i].x), int(possiblePoints[i].y)}, came_from);
 
-            double length = fullDist(pathToExpansion);
+            //double length = fullDist(pathToExpansion);
+            float length = PrimordialStar::getPathLengthDijkstra(P2D(possiblePoints[i]), middle, 0, this);
             if (min == -1 || min > length) {
                 min = length;
                 rally_point = P2D(possiblePoints[i]) + Point2D{0.5F, 0.5F};
@@ -1613,23 +1611,6 @@ public:
             UnitManager::setEnemyDamageRadius3(Observation()->GetCameraPos(), 3, { Damage(200, 0,0,0,0,0,0), Damage(0, 0,0,0,0,0,0) }, this);
         }
 
-        if (0) {
-            //Profiler profiler("JPS");
-            DebugSphere(this,P3D(Observation()->GetCameraPos()), 1);
-            Point2DI cam = Observation()->GetCameraPos();
-            Point2DI end = { 0,0 };
-            auto came_from = jps(gridmap, rally_point, cam, Tool::euclidean, this, 1, &end);
-            vector<Location> pat = Tool::reconstruct_path(Location(rally_point), end, came_from);
-            if (pat.size() != 0) {
-                vector<Point2DI> path = fullPath(pat);
-                for (Point2DI p : path) {
-                    DebugBox(this,P3D(P2D(p)) + Point3D{ 0,0,-1 }, P3D(P2D(p)) + Point3D{ 1,1,0.3 }, { 180,30,190 });
-                }
-                for (Point2DI p : pat) {
-                    DebugBox(this,P3D(P2D(p)) + Point3D{ 0,0,-1 }, P3D(P2D(p)) + Point3D{ 1,1,0.3 }, { 40,30,250 });
-                }
-            }
-        }
         onStepProfiler.midLog("OS-JPS");
         //DebugSphere(this,P3D(Observation()->GetCameraPos()), 0.6);
         //UnitManager::setEnemyDamageRadius(Observation()->GetCameraPos(), 0.6, {200,0,0,0,0,0}, this);
@@ -1641,7 +1622,7 @@ public:
                 //TODO:
                 // add abilities, oracle, baneling
                 // add psi storm (more damage the more time it has left, prioritzed more since its constant dmag)
-                // add helion line, lurker line
+                // add helion line, lurker line, liberator circle
                 // add ravager artillery, tank
                 for (Weapon w : weapons) {
 
@@ -1650,22 +1631,22 @@ public:
                     Damage damage;
                     for (DamageBonus bonus : w.damage_bonus) {
                         if (bonus.attribute == Attribute::Light) {
-                            damage.light += bonus.bonus / w.speed * 100;
+                            damage.light += bonus.bonus / w.speed * 100 * w.attacks;
                         }
                         else if (bonus.attribute == Attribute::Armored) {
-                            damage.armored += bonus.bonus / w.speed * 100;
+                            damage.armored += bonus.bonus / w.speed * 100 * w.attacks;
                         }
                         else if (bonus.attribute == Attribute::Biological) {
-                            damage.biological += bonus.bonus / w.speed * 100;
+                            damage.biological += bonus.bonus / w.speed * 100 * w.attacks;
                         }
                         else if (bonus.attribute == Attribute::Mechanical) {
-                            damage.mechanical += bonus.bonus / w.speed * 100;
+                            damage.mechanical += bonus.bonus / w.speed * 100 * w.attacks;
                         }
                         else if (bonus.attribute == Attribute::Massive) {
-                            damage.massive += bonus.bonus / w.speed * 100;
+                            damage.massive += bonus.bonus / w.speed * 100 * w.attacks;
                         }
                         else if (bonus.attribute == Attribute::Psionic) {
-                            damage.psionic += bonus.bonus / w.speed * 100;
+                            damage.psionic += bonus.bonus / w.speed * 100 * w.attacks;
                         }
                         else {
                             printf("ATTRIBUTE NOT PROGRAMMED %d\n", bonus.attribute);
@@ -1673,11 +1654,11 @@ public:
                     }
                     
                     if (w.type == Weapon::TargetType::Air || w.type == Weapon::TargetType::Any) {
-                        d.air.normal = w.damage_ / w.speed * 100;
+                        d.air.normal = w.damage_ / w.speed * 100 * w.attacks;
                         d.air += damage;
                     }
                     if (w.type == Weapon::TargetType::Ground || w.type == Weapon::TargetType::Any) {
-                        d.ground.normal = w.damage_ / w.speed * 100;
+                        d.ground.normal = w.damage_ / w.speed * 100 * w.attacks;
                         d.ground += damage;
                     }
                     UnitManager::setEnemyDamageRadius3((*it2)->pos(this), (*it2)->radius + w.range, d, this);

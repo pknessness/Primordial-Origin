@@ -8,9 +8,6 @@
 
 //#include "unitmanager.hpp"
 #include <ctime>
-//#include "jps.hpp"
-//#include "grid.hpp"
-//#include "tools.hpp"
 
 #define DISP ((size%2 == 0) ? 0.5F : 0.0F)
 #define GET(tag) agent->Observation()->GetUnit(tag)
@@ -185,8 +182,8 @@ UnitTypeData getStats(UnitTypeID type, Agent *agent) {
             statsMap[type] = allData(agent).at(static_cast<uint32_t>(type));
         }
         catch (...) {
-            printf("Errant Type: %s\n", UnitTypeToName(type));
-            statsMap[type] = agent->Observation()->GetUnitTypeData().at(static_cast<uint32_t>(type));
+            printf("Errant Type: %s %ud %ul %d\n", UnitTypeToName(type), static_cast<uint32_t>(type), static_cast<uint32_t>(type), static_cast<uint32_t>(type));
+            //statsMap[type] = agent->Observation()->GetUnitTypeData().at(static_cast<uint32_t>(type));
         }
     }
     return statsMap[type];
@@ -204,7 +201,7 @@ static void loadPathables(Agent *agent) {
     }
 }
 
-static bool checkPathable(int x, int y, Agent *agent) {
+static bool checkPathable(int x, int y) {
     if (x < 0 || x >= pathingMap->width() || y < 0 || y >= pathingMap->height()) {
         return false;
     }
@@ -212,7 +209,7 @@ static bool checkPathable(int x, int y, Agent *agent) {
     return imRef(pathingMap, x, y) == 0;
 }
 
-static int getPathable(int x, int y, Agent* agent) {
+static int getPathable(int x, int y) {
     if (x < 0 || x >= pathingMap->width() || y < 0 || y >= pathingMap->height()) {
         return 127;
     }
@@ -228,11 +225,11 @@ static bool checkPlacable(int x, int y, Agent* agent) {
 }
 
 static bool checkPathable(Point2D p, Agent* agent) {
-    return checkPathable(int(p.x), int(p.y), agent);
+    return checkPathable(int(p.x), int(p.y));
 }
 
 static int getPathable(Point2D p, Agent* agent) {
-    return getPathable(int(p.x), int(p.y), agent);
+    return getPathable(int(p.x), int(p.y));
 }
 
 static Point2D getRandomPathable(Agent* agent, float startX = -1, float endX = -1, float startY = -1, float endY = -1) {
@@ -241,9 +238,9 @@ static Point2D getRandomPathable(Agent* agent, float startX = -1, float endX = -
     float sY = startY; 
     float eY = endY;
     if (sX == -1) sX = 0;
-    if (eX == -1) eX = agent->Observation()->GetGameInfo().width;
+    if (eX == -1) eX = (float)agent->Observation()->GetGameInfo().width;
     if (sY == -1) sY = 0;
-    if (eY == -1) eY = agent->Observation()->GetGameInfo().height;
+    if (eY == -1) eY = (float)agent->Observation()->GetGameInfo().height;
     Point2D p;
     do {
         float x = sX + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eX - sX)));
@@ -259,9 +256,9 @@ static Point2D getRandomNonPathable(Agent* agent, float startX = -1, float endX 
     float sY = startY;
     float eY = endY;
     if (sX == -1) sX = 0;
-    if (eX == -1) eX = agent->Observation()->GetGameInfo().width;
+    if (eX == -1) eX = (float)agent->Observation()->GetGameInfo().width;
     if (sY == -1) sY = 0;
-    if (eY == -1) eY = agent->Observation()->GetGameInfo().height;
+    if (eY == -1) eY = (float)agent->Observation()->GetGameInfo().height;
     Point2D p;
     do {
         float x = sX + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eX - sX)));
@@ -277,9 +274,9 @@ static Point2D getRandomPoint(Agent* agent, float startX = -1, float endX = -1, 
     float sY = startY;
     float eY = endY;
     if (sX == -1) sX = 0;
-    if (eX == -1) eX = agent->Observation()->GetGameInfo().width;
+    if (eX == -1) eX = (float)agent->Observation()->GetGameInfo().width;
     if (sY == -1) sY = 0;
-    if (eY == -1) eY = agent->Observation()->GetGameInfo().height;
+    if (eY == -1) eY = (float)agent->Observation()->GetGameInfo().height;
     float x = sX + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eX - sX)));
     float y = sY + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eY - sY)));
     return Point2D{ x, y };
@@ -672,8 +669,8 @@ static int structureDiameter(UnitTypeID type) {
 }
 
 static void loadUnitPlacement(map2d<int8_t>* map, Point2D pos, int sizeX, int sizeY, int8_t value, int8_t(*pattern)[10][10] = nullptr) {
-    int x = pos.x - (sizeX / 2) + ((sizeX % 2 == 0) ? 0.5F : 0.0F);
-    int y = pos.y - (sizeY / 2) + ((sizeY % 2 == 0) ? 0.5F : 0.0F);
+    int x = (int)(pos.x - (sizeX / 2) + ((sizeX % 2 == 0) ? 0.5F : 0.0F));
+    int y = (int)(pos.y - (sizeY / 2) + ((sizeY % 2 == 0) ? 0.5F : 0.0F));
     for (int i = 0; i < sizeX; i++) {
         for (int j = 0; j < sizeY; j++) {
             // printf("{%d,%d}", i, j);
@@ -773,12 +770,12 @@ static bool requiresPylon(AbilityID build_ability) {
 static int theorySupply(Agent *agent) {
     Units nexi = agent->Observation()->GetUnits(Unit::Alliance::Self, Aux::isNexus);
     Units pylons = agent->Observation()->GetUnits(Unit::Alliance::Self, Aux::isPylon);
-    return int(nexi.size() * 15) + (pylons.size() * 8);
+    return int(nexi.size() * 15 + pylons.size() * 8);
 }
 
 bool addPlacement(Point2D p, int size) {
-    int x = p.x - (size / 2) + DISP;
-    int y = p.y - (size / 2) + DISP;
+    int x = (int)(p.x - (size / 2) + DISP);
+    int y = (int)(p.y - (size / 2) + DISP);
     for (int i = x; i < x + size; i++) {
         for (int j = y; j < y + size; j++) {
             // printf("{%d,%d}", i, j);
@@ -793,8 +790,8 @@ bool addPlacement(Point2D p, UnitTypeID unit_type) {
 }
 
 bool removePlacement(Point2D p, int size) {
-    int x = p.x - (size / 2) + DISP;
-    int y = p.y - (size / 2) + DISP;
+    int x = (int)(p.x - (size / 2) + DISP);
+    int y = (int)(p.y - (size / 2) + DISP);
     for (int i = x; i < x + size; i++) {
         for (int j = y; j < y + size; j++) {
             imRef(buildingBlocked, i, j) = 0;
@@ -808,8 +805,8 @@ bool removePlacement(Point2D p, UnitTypeID unit_type) {
 }
 
 bool checkPlacement(Point2D p, int size) {
-    int x = p.x - (size / 2) + DISP;
-    int y = p.y - (size / 2) + DISP;
+    int x = (int)(p.x - (size / 2) + DISP);
+    int y = (int)(p.y - (size / 2) + DISP);
     for (int i = x; i < x + size; i++) {
         for (int j = y; j < y + size; j++) {
             //Point2D check(i, j);
@@ -822,8 +819,8 @@ bool checkPlacement(Point2D p, int size) {
 }
 
 bool checkPlacementFull(Point2D p, int size, Agent *agent) {
-    int x = p.x - (size / 2) + DISP;
-    int y = p.y - (size / 2) + DISP;
+    int x = (int)(p.x - (size / 2) + DISP);
+    int y = (int)(p.y - (size / 2) + DISP);
     for (int i = x; i < x + size; i++) {
         for (int j = y; j < y + size; j++) {
             // Point2D check(i, j);
@@ -1082,7 +1079,7 @@ struct Building {
     }
 };
 
-constexpr float timeSpeed = 1.4;
+constexpr float timeSpeed = 1.4F;
 constexpr float fps = 16 * timeSpeed;
 
 //BUILDINGS

@@ -106,7 +106,7 @@ static map2d<float> *dt(Agent *agent, int width, int height) {
     map2d<float> *out = new map2d<float>(width, height, false);
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-            if (Aux::checkPathable(x, y, agent)) {
+            if (Aux::checkPathable(x, y)) {
                 imRef(out, x, y) = INF;
             } else {
                 imRef(out, x, y) = 0;

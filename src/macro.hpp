@@ -10,7 +10,7 @@
 #include "armyunit.hpp"
 //#include "jps.hpp"
 //#include "grid.hpp"
-#include "tools.hpp"
+//#include "tools.hpp"
 //#include "constants.h"
 
 using namespace sc2;
@@ -420,16 +420,17 @@ namespace Macro {
 
                 const Unit *uni = units[std::rand() % units.size()];
 
-                Point2DI start = P2D(uni->pos);
-                Point2DI goal = topAct.pos;
+                Point2D start = P2D(uni->pos);
+                Point2D goal = topAct.pos;
 
                 float dist = 0;
                 if (topAct.ability == ABILITY_ID::BUILD_ASSIMILATOR) {
                     dist = Distance2D(P2D(start), P2D(goal));
                 } else {
-                    auto came_from = jps(gridmap, start, goal, Tool::euclidean, agent);
-                    vector<Location> pat = Tool::reconstruct_path(start, goal, came_from);
-                    dist = fullDist(pat);
+                    //auto came_from = jps(gridmap, start, goal, Tool::euclidean, agent);
+                    //vector<Location> pat = Tool::reconstruct_path(start, goal, came_from);
+                    //dist = fullDist(pat);
+                    dist = PrimordialStar::getPathLength(start, goal, 0, agent);
                 }
 
                 if (mindist == -1 || dist < mindist || actionUnit == nullptr) {

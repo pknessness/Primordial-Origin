@@ -10,38 +10,6 @@
 #include <sc2api/sc2_gametypes.h>
 #include <sc2utils/sc2_arg_parser.h>
 
-
-//#define _HAS_STD_BYTE 1
-//#include <algorithm>
-//#include <cctype>
-//#include <cstdio>
-//#include <cstdlib>
-//#include <cstring>
-//#include <fstream>
-//#include <iomanip>
-//#include <iostream>
-//#include <limits>
-//#include <new>
-//#include <sstream>
-//#include <streambuf>
-//#include <string>
-//#include <vector>
-//#include <exception>
-//#include <iterator>
-//#include <condition_variable>
-//#include <mutex>
-//#include <thread>
-//
-//#include <basetsd.h>
-//#include <windows.h>
-//#include <winnt.h>
-//
-//#include <psapi.h>
-//#include <signal.h>
-//#include <imagehlp.h>
-//#include <unordered_map>
-//#include <utility> // for std::swap
-
 #include <iostream>
 
 #define MICRO_TEST 0

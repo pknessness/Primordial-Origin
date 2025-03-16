@@ -561,7 +561,7 @@ namespace Army {
             CASE(PROTOSS_HIGHTEMPLAR) { return 10; }
             CASE(PROTOSS_DARKTEMPLAR) { return 0.1; }
             CASE(PROTOSS_ADEPT) { return 4; }
-            CASE(PROTOSS_ZEALOT) { return 0.1; }
+            CASE(PROTOSS_ZEALOT) { return 0.1F; }
             CASE(PROTOSS_STALKER) { return 6; }
             CASE(PROTOSS_IMMORTAL) { return 6; }
             CASE(PROTOSS_COLOSSUS) { return 9; }

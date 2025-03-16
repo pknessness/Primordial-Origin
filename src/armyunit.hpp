@@ -7,7 +7,6 @@
 #include "profiler.hpp"
 #include "unit.hpp"
 #include "spacialhashgrid.hpp"
-#include "map2dFloat.hpp"
 #include "unitpriority.hpp"
 #include "debugging.hpp"
 #include "primordialstar.hpp"

@@ -1,8 +1,8 @@
 #pragma once
 #include <sc2api/sc2_api.h>
 #include <map>
-#include "map2dFloat.hpp"
 #include "unitpriority.hpp"
+#include <set>
 
 using namespace sc2;
 using namespace std;

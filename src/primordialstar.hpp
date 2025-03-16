@@ -10,6 +10,7 @@
 #include <map>
 #include "constants.h"
 #include "debugging.hpp"
+#include <queue>
 
 #define MAX_CONN_DIST_SQRD 65025
 
@@ -222,7 +223,7 @@ namespace PrimordialStar {
 
 		Point2D operating = start;
 		for (int i = 0; i < step; i++) {
-			if (!Aux::checkPathable(int(operating.x), int(operating.y), agent)) {
+			if (!Aux::checkPathable(int(operating.x), int(operating.y))) {
 				return false;
 			}
 			operating += {dx, dy};
@@ -247,7 +248,7 @@ namespace PrimordialStar {
 
 		Point2D operating = start;
 		for (int i = 0; i < maxSteps; i++) {
-			if (!Aux::checkPathable(int(operating.x), int(operating.y), agent)) {
+			if (!Aux::checkPathable(int(operating.x), int(operating.y))) {
 				return Distance2D(start, operating);
 			}
 			operating += {dx, dy};
@@ -313,7 +314,7 @@ namespace PrimordialStar {
 		float xRayLength = stepXDistance * rayLengthWhenMovingInX;
 		float yRayLength = stepYDistance * rayLengthWhenMovingInY;
 
-		while (Aux::getPathable(currentCell.x, currentCell.y, agent) != 127) {
+		while (Aux::getPathable(currentCell.x, currentCell.y) != 127) {
 			if (xRayLength < yRayLength) {
 				// Step in X, reduce Y ray
 				yRayLength -= xRayLength;
@@ -377,7 +378,7 @@ namespace PrimordialStar {
 		float maximum = 0;
 		for (int i = 0; i < mapWidth; i++) {
 			for (int j = 0; j < mapHeight; j++) {
-				bool center = Aux::getPathable(i, j, agent) != 127;
+				bool center = Aux::getPathable(i, j) != 127;
 				if (center) {
 					float max = 0;
 					constexpr int angleChecks = 64;
@@ -419,7 +420,7 @@ namespace PrimordialStar {
 		float maximum = 0;
 		for (int i = 0; i < mapWidth; i++) {
 			for (int j = 0; j < mapHeight; j++) {
-				bool center = Aux::getPathable(i, j, agent) != 127;
+				bool center = Aux::getPathable(i, j) != 127;
 				if (center) {
 					float min = 255;
 					constexpr int angleChecks = 24;
@@ -557,49 +558,49 @@ namespace PrimordialStar {
 //#define BASIC_UP_LT(i, j) BASIC(i-1,j+1)
 
 	bool check_UP_RT(int i, int j) {
-		bool up = Aux::checkPathable(i, j + 1, nullptr);
-		bool up_rt = Aux::checkPathable(i + 1, j + 1, nullptr);
-		bool rt = Aux::checkPathable(i + 1, j, nullptr);
+		bool up = Aux::checkPathable(i, j + 1);
+		bool up_rt = Aux::checkPathable(i + 1, j + 1);
+		bool rt = Aux::checkPathable(i + 1, j);
 
 		//extra trimming conditions
-		bool up_lt = Aux::checkPathable(i - 1, j + 1, nullptr);
-		bool dn_rt = Aux::checkPathable(i + 1, j - 1, nullptr);
+		bool up_lt = Aux::checkPathable(i - 1, j + 1);
+		bool dn_rt = Aux::checkPathable(i + 1, j - 1);
 
 		return up && up_rt && rt && (up_lt || dn_rt);
 	}
 
 	bool check_DN_RT(int i, int j) {
-		bool rt = Aux::checkPathable(i + 1, j, nullptr);
-		bool dn_rt = Aux::checkPathable(i + 1, j - 1, nullptr);
-		bool dn = Aux::checkPathable(i, j - 1, nullptr);
+		bool rt = Aux::checkPathable(i + 1, j);
+		bool dn_rt = Aux::checkPathable(i + 1, j - 1);
+		bool dn = Aux::checkPathable(i, j - 1);
 
 		//extra trimming conditions
-		bool up_rt = Aux::checkPathable(i + 1, j + 1, nullptr);
-		bool dn_lt = Aux::checkPathable(i - 1, j - 1, nullptr);
+		bool up_rt = Aux::checkPathable(i + 1, j + 1);
+		bool dn_lt = Aux::checkPathable(i - 1, j - 1);
 
 		return dn && dn_rt && rt && (up_rt || dn_lt);
 	}
 
 	bool check_DN_LT(int i, int j) {
-		bool dn = Aux::checkPathable(i, j - 1, nullptr);
-		bool dn_lt = Aux::checkPathable(i - 1, j - 1, nullptr);
-		bool lt = Aux::checkPathable(i - 1, j, nullptr);
+		bool dn = Aux::checkPathable(i, j - 1);
+		bool dn_lt = Aux::checkPathable(i - 1, j - 1);
+		bool lt = Aux::checkPathable(i - 1, j);
 
 		//extra trimming conditions
-		bool dn_rt = Aux::checkPathable(i + 1, j - 1, nullptr);
-		bool up_lt = Aux::checkPathable(i - 1, j + 1, nullptr);
+		bool dn_rt = Aux::checkPathable(i + 1, j - 1);
+		bool up_lt = Aux::checkPathable(i - 1, j + 1);
 
 		return dn && dn_lt && lt && (dn_rt || up_lt);
 	}
 
 	bool check_UP_LT(int i, int j) {
-		bool lt = Aux::checkPathable(i - 1, j, nullptr);
-		bool up_lt = Aux::checkPathable(i - 1, j + 1, nullptr);
-		bool up = Aux::checkPathable(i, j + 1, nullptr);
+		bool lt = Aux::checkPathable(i - 1, j);
+		bool up_lt = Aux::checkPathable(i - 1, j + 1);
+		bool up = Aux::checkPathable(i, j + 1);
 
 		//extra trimming conditions
-		bool dn_lt = Aux::checkPathable(i - 1, j - 1, nullptr);
-		bool up_rt = Aux::checkPathable(i + 1, j + 1, nullptr);
+		bool dn_lt = Aux::checkPathable(i - 1, j - 1);
+		bool up_rt = Aux::checkPathable(i + 1, j + 1);
 
 		return up && up_lt && lt && (dn_lt || up_rt);
 	}
@@ -609,7 +610,7 @@ namespace PrimordialStar {
 		int mapHeight = agent->Observation()->GetGameInfo().height;
 		for (int i = 1; i < mapWidth - 1; i++) {
 			for (int j = 1; j < mapHeight - 1; j++) {
-				bool center = Aux::checkPathable(i, j, agent);
+				bool center = Aux::checkPathable(i, j);
 				if (!center) {
 					//bool up =		Aux::checkPathable(i	, j + 1	, agent);
 					//bool up_rt =	Aux::checkPathable(i + 1, j + 1	, agent);
@@ -649,16 +650,16 @@ namespace PrimordialStar {
 					//bool basic_dn_lt = dn && dn_lt && lt;
 					//bool basic_up_lt = up && up_lt && lt;
 
-					if (check_UP_RT(i, j) && ((Aux::checkPathable(i - 1, j + 1, agent) || !check_UP_RT(i - 1, j + 1)) || (Aux::checkPathable(i + 1, j - 1, agent) || !check_UP_RT(i + 1, j - 1)))) {
+					if (check_UP_RT(i, j) && ((Aux::checkPathable(i - 1, j + 1) || !check_UP_RT(i - 1, j + 1)) || (Aux::checkPathable(i + 1, j - 1) || !check_UP_RT(i + 1, j - 1)))) {
 						new PathNode(Point2D{ (float)(i + 1 + displacementMinute), (float)(j + 1 + displacementMinute) }, DN_LT, agent);
 					}
-					if (check_DN_RT(i, j) && ((Aux::checkPathable(i - 1, j - 1, agent) || !check_DN_RT(i - 1, j - 1)) || (Aux::checkPathable(i + 1, j + 1, agent) || !check_DN_RT(i + 1, j + 1)))) {
+					if (check_DN_RT(i, j) && ((Aux::checkPathable(i - 1, j - 1) || !check_DN_RT(i - 1, j - 1)) || (Aux::checkPathable(i + 1, j + 1) || !check_DN_RT(i + 1, j + 1)))) {
 						new PathNode(Point2D{ (float)(i + 1 + displacementMinute), (float)(j - displacementMinute) }, UP_LT, agent);
 					}
-					if (check_DN_LT(i, j) && ((Aux::checkPathable(i - 1, j + 1, agent) || !check_DN_LT(i - 1, j + 1)) || (Aux::checkPathable(i + 1, j - 1, agent) || !check_DN_LT(i + 1, j - 1)))) {
+					if (check_DN_LT(i, j) && ((Aux::checkPathable(i - 1, j + 1) || !check_DN_LT(i - 1, j + 1)) || (Aux::checkPathable(i + 1, j - 1) || !check_DN_LT(i + 1, j - 1)))) {
 						new PathNode(Point2D{ (float)(i - displacementMinute), (float)(j - displacementMinute) }, UP_RT, agent);
 					}
-					if (check_UP_LT(i, j) && ((Aux::checkPathable(i - 1, j - 1, agent) || !check_UP_LT(i - 1, j - 1)) || (Aux::checkPathable(i + 1, j + 1, agent) || !check_UP_LT(i + 1, j + 1)))) {
+					if (check_UP_LT(i, j) && ((Aux::checkPathable(i - 1, j - 1) || !check_UP_LT(i - 1, j - 1)) || (Aux::checkPathable(i + 1, j + 1) || !check_UP_LT(i + 1, j + 1)))) {
 						new PathNode(Point2D{ (float)(i - displacementMinute), (float)(j + 1 + displacementMinute) }, DN_RT, agent);
 					}
 				}
