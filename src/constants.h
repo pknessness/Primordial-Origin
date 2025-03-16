@@ -183,7 +183,7 @@ UnitTypeData getStats(UnitTypeID type, Agent *agent) {
         }
         catch (...) {
             printf("Errant Type: %s %ud %ul %d\n", UnitTypeToName(type), static_cast<uint32_t>(type), static_cast<uint32_t>(type), static_cast<uint32_t>(type));
-            //statsMap[type] = agent->Observation()->GetUnitTypeData().at(static_cast<uint32_t>(type));
+            return UnitTypeData();//agent->Observation()->GetUnitTypeData().at(static_cast<uint32_t>(type));
         }
     }
     return statsMap[type];
