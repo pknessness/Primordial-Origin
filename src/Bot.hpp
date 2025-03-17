@@ -727,8 +727,7 @@ public:
                 continue;
             DebugText(this,strprintf("%s %d,%d", AbilityTypeToName(probe->buildings[0].build),
                                             probe->buildings[0].pos.x, probe->buildings[0].pos.y),
-                                  Observation()->GetUnit(probe->self)->pos + Point3D{0, 0, 0}, Color(100, 30, 55),
-                                  8);
+                                            probe->pos(this), Color(100, 30, 55), 8);
         }
     }
 
@@ -1607,20 +1606,20 @@ public:
         //}
 
         onStepProfiler.midLog("DamageGridUpdate");
-
+#ifndef BUILD_FOR_LADDER
         //grid();
 
         //displaySpacialHashGrid();
 
-        SpacialHash::gridModify->clear();
+        //SpacialHash::gridModify->clear();
 
-        float testRadius = 0.375F;
+        //float testRadius = 0.375F;
 
-        DebugSphere(this, P3D(Observation()->GetCameraPos()), testRadius);
+        //DebugSphere(this, P3D(Observation()->GetCameraPos()), testRadius);
 
-        SpacialHash::fillGridModify(Observation()->GetCameraPos(), testRadius, this);
+        //SpacialHash::fillGridModify(Observation()->GetCameraPos(), testRadius, this);
 
-        displaySpacialHashGridTEST();
+        //displaySpacialHashGridTEST();
 
         //displayEnemyDamageGrid();
 
@@ -1648,7 +1647,7 @@ public:
         //enemiesDisplay();
 
         onStepProfiler.midLog("Debug");
-
+#endif
         string profilestr = "";
         static int max1 = 0;
         static int max2 = 0;
