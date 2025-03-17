@@ -1583,6 +1583,9 @@ public:
 
         for (auto it = UnitManager::enemies.begin(); it != UnitManager::enemies.end(); it++) {
             for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
+                if ((*it2)->hallucination) {
+                    continue;
+                }
                 std::vector<Weapon> weapons = Aux::getStats((*it2)->type, this).weapons;
                 //TODO:
                 // add abilities, oracle, baneling

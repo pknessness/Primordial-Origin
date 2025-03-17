@@ -26,6 +26,8 @@ public:
     AvailableAbilities abilities;
     int8_t ignoreFrames;
 
+    bool hallucination;
+
     //UnitWrapper(Tag self_);
 
     //UnitWrapper(Tag self_, UnitTypeID id);
@@ -919,7 +921,7 @@ namespace UnitManager {
 //    UnitManager::units[type].push_back(this);
 //}
 
-UnitWrapper::UnitWrapper(const Unit *unit) : self(unit->tag), type(unit->unit_type), lastPos{0, 0, 0}, radius(unit->radius), team(unit->alliance), isBuilding(unit->is_building), health(0), healthMax(0), shields(0), shieldsMax(0) {
+UnitWrapper::UnitWrapper(const Unit *unit) : self(unit->tag), type(unit->unit_type), lastPos{0, 0, 0}, radius(unit->radius), team(unit->alliance), isBuilding(unit->is_building), health(0), healthMax(0), shields(0), shieldsMax(0), hallucination(unit->is_hallucination) {
     if (unit->alliance == Unit::Alliance::Self) {
         if (!UnitManager::checkExist(type)) {
             UnitManager::units[type] = UnitWrappers();
@@ -996,7 +998,11 @@ inline bool UnitWrapper::exists(Agent *agent) {
 }
 
 inline const Unit* UnitWrapper::get(Agent *agent) {
-    return agent->Observation()->GetUnit(self);
+    const Unit* unit = agent->Observation()->GetUnit(self);
+    if (unit != nullptr && unit->is_hallucination) {
+        hallucination = true;
+    }
+    return unit;
 }
 
 bool UnitWrapper::equals(UnitWrapper *wrapper) {

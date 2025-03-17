@@ -283,7 +283,7 @@ void updateGridEnemy(Agent *agent) {
     }
 }
 
-static UnitWrappers findInRadiusEnemy_INTERNAL(Bounds b, Agent* agent) {
+static UnitWrappers findInRadiusEnemy_INTERNAL(Bounds b, Agent* agent, bool excludeHallucination = true) {
     UnitWrappers found;
     for (int i = b.xmin; i < b.xmax; i++) {
         for (int j = b.ymin; j < b.ymax; j++) {
@@ -293,7 +293,7 @@ static UnitWrappers findInRadiusEnemy_INTERNAL(Bounds b, Agent* agent) {
             if (imRef(gridModify, i, j) == 1) {
                 UnitWrappers cell = imRef(gridEnemy, i, j);
                 for (auto it = cell.begin(); it != cell.end(); it++) {
-                    if (std::find(found.begin(), found.end(), *it) == found.end()) {
+                    if (std::find(found.begin(), found.end(), *it) == found.end() && (!excludeHallucination || (*it)->hallucination)) {
                         found.push_back(*it);
                     }
                 }
@@ -316,7 +316,7 @@ UnitWrappers findInRadiusEnemy(Circle c, Agent* agent) {
     return findInRadiusEnemy(c.pos, c.radius, agent);
 }
 
-UnitWrappers findInRadiiEnemy(Circles c, Agent* agent) {
+UnitWrappers findInRadiiEnemy(Circles c, Agent* agent, bool excludeHallucination = true) {
     if (c.size() == 0) {
         return UnitWrappers();
     }
@@ -328,7 +328,7 @@ UnitWrappers findInRadiiEnemy(Circles c, Agent* agent) {
         bound += fillGridModify(c[i].pos, c[i].radius, agent);
     }
 
-    return findInRadiusEnemy_INTERNAL(bound, agent);
+    return findInRadiusEnemy_INTERNAL(bound, agent, excludeHallucination);
 }
 
 }
