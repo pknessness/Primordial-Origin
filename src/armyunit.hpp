@@ -45,10 +45,11 @@ struct DamageNet {
 };
 
 constexpr int escapePointChecks = 5;
-constexpr float escapePointWeight = 10.0;
-constexpr float escapePointRadius = 8.0;
+constexpr float escapePointWeight = 10.0F;
+constexpr float escapePointRadius = 12.0F;
 
-constexpr float squadExtraRadius = 6.0;
+constexpr float squadExtraRadius = 6.0F;
+constexpr int alongPurePathBisects = 4;
 
 
 class Squad {
@@ -630,8 +631,10 @@ public:
                     distToTarget = 0;
                 }
                 else {
+                    int numPoints = escapePointChecks + alongPurePathBisects - 1;
                     vector<Point2D> checkPoints;
-                    checkPoints.reserve(escapePointChecks);
+                    vector<float> checkPointDistances;
+                    checkPoints.reserve(numPoints);
                     for (int i = 0; i < escapePointChecks; i++) {
                         Point2D checkPoint = randomPointRadius(position, escapePointRadius);
                         if (!Aux::checkPathable(checkPoint)) {
@@ -639,9 +642,19 @@ public:
                             continue;
                         }
                         checkPoints.push_back(checkPoint);
+                        checkPointDistances.push_back(-1);
+                    }
+                    if (position != posTarget) {
+                        vector<Point2D> pathDijkstra = PrimordialStar::getPathDijkstra(position, posTarget, radius, agent);
+                        float dijkstraLength = PrimordialStar::getPathLength(pathDijkstra);
+                        for (int i = 0; i < alongPurePathBisects - 1; i++) {
+                            Point2D checkPoint = PrimordialStar::distanceAlongPath(pathDijkstra, (i + 1) * dijkstraLength / alongPurePathBisects);
+                            checkPoints.push_back(checkPoint);
+                            checkPointDistances.push_back((3 - i) * dijkstraLength / alongPurePathBisects);
+                        }
                     }
 
-                    for (int i = 0; i < escapePointChecks; i++) {
+                    for (int i = 0; i < checkPoints.size(); i++) {
                         Point2D checkPoint = checkPoints[i];
                         float checkCost = calculatePathDamage(position, checkPoint, agent);
                         if (escapeCost > checkCost) {
@@ -653,11 +666,13 @@ public:
                             if (distToTarget == -1) {
                                 distToTarget = PrimordialStar::getPathLength(escapeLoc, posTarget, radius, agent);
                             }
-                            float checkDistToTarget = PrimordialStar::getPathLength(checkPoint, posTarget, radius, agent);
-                            if (distToTarget > checkDistToTarget) {
+                            if (checkPointDistances[i] == -1) {
+                                checkPointDistances[i] = PrimordialStar::getPathLength(checkPoint, posTarget, radius, agent);
+                            }
+                            if (distToTarget > checkPointDistances[i]) {
                                 escapeLoc = checkPoint;
                                 escapeCost = checkCost;
-                                distToTarget = checkDistToTarget;
+                                distToTarget = checkPointDistances[i];
                             }
                         }
                     }
@@ -879,4 +894,37 @@ public:
     // virtual bool execute(Agent *agent) {
     //
     // }
+};
+
+class HighTemplar : public ArmyUnit {
+private:
+public:
+    HighTemplar(const Unit* unit) : ArmyUnit(unit) {
+    }
+
+    virtual bool execute(Agent* agent) {
+        const Unit* uni = get(agent);
+        if (uni == nullptr) {
+            return false;
+        }
+        if (uni->orders.size() > 0 && uni->orders[0].ability_id == ABILITY_ID::MORPH_ARCHON) {
+            return false;
+        }
+        if (squad->mode == ATTACK) {
+            return executeAttack(agent);
+        }
+        else if (squad->mode == RETREAT) {
+            return executeRetreat(agent);
+        }
+        else if (squad->mode == DEFEND) {
+            return executeDefend(agent);
+        }
+        else if (squad->mode == FULL_RETREAT) {
+            return executeFullRetreat(agent);
+        }
+        else if (squad->mode == SEARCH) {
+            return executeSearch(agent);
+        }
+        return false;
+    }
 };

@@ -17,7 +17,6 @@
 #include "bmp.hpp"
 #include "sc2api/sc2_client.h"
 #include "armyControl.hpp"
-#include "strategy.hpp"
 
 #define DISPLAY_AIR 0
 #define MICRO_TEST 0
@@ -37,6 +36,8 @@ public:
     std::vector<Point3D> expansions;
     std::vector<double> expansionDistance;
     std::vector<double> rankedExpansionDistance;
+
+    Strategem::Strategy* strat;
 
     //Point2DI staging_location;
     Point2D rally_point;
@@ -642,6 +643,9 @@ public:
             string type = UnitTypeToName(it->first);
             tot += ("\n" + type + ":\n");
             for (auto it2 = all.begin(); it2 != all.end(); it2++) {
+                if (it2->ability == ABILITY_ID::TRAIN_PROBE) {
+                    continue;
+                }
                 tot += strprintf("%s %d %.1f,%.1f\n", AbilityTypeToName(it2->ability), it2->index, it2->pos.x, it2->pos.y);
             }
         }
@@ -893,6 +897,8 @@ public:
 
         SpacialHash::initGrid();
         SpacialHash::initGridEnemy();
+
+        strat = &Strategem::pig_stalker_colossus;//&Strategem::hupsaiya_adept_timing;//&Strategem::chargelot_immortal_archon_timing;//
 
         for (int i = 0; i < path_zhang_suen->width(); i++) {
             for (int j = 0; j < path_zhang_suen->height(); j++) {
@@ -1167,7 +1173,10 @@ public:
                 new ObserverEye(unit);
             } else if (unit->unit_type == UNIT_TYPEID::PROTOSS_ZEALOT) {
                 new Zealot(unit);
-            } else {
+            } else if (unit->unit_type == UNIT_TYPEID::PROTOSS_HIGHTEMPLAR) {
+                new HighTemplar(unit);
+            }
+            else {
                 new ArmyUnit(unit);
             }
         } else if (unit->unit_type == UNIT_TYPEID::PROTOSS_NEXUS) {
@@ -1347,7 +1356,7 @@ public:
         onStepProfiler.midLog("LoadVisionMap");
 
         //manageArmy();
-        ArmyControl::step(this, rally_point);
+        ArmyControl::step(this, rally_point, strat);
 
         //for (UnitWrapper* wrap : UnitManager::units[UNIT_TYPEID::PROTOSS_STALKER]) {
         //    float theta = ((float)std::rand()) * 2 * M_PI / RAND_MAX;
@@ -1375,6 +1384,9 @@ public:
             s += strprintf("C:%.1f,%.1f S:%d\n", c.x, c.y, squads[i].army.size());
             for (int a = 0; a < squads[i].army.size(); a++) {
                 ArmyUnit* unit = (ArmyUnit*)squads[i].army[a];
+                if (unit->get(this) == nullptr) {
+                    continue;
+                }
                 unit->execute(this);
                 Point3D pos = unit->pos3D(this);
                 s += strprintf("%s %.1fs %Ix %c {%.1f,%.1f}\n", UnitTypeToName(unit->type),
@@ -1395,13 +1407,12 @@ public:
 
         onStepProfiler.midLog("SquadExecute");
         #if MICRO_TEST == 0
-        Strategem::Strategy strat = Strategem::pig_stalker_colossus;
             if (Observation()->GetGameLoop() == 2) {
                 for (int i = 0; i < 32; i++) {
                     Macro::addProbe();
                 }
-                for (int i = 0; i < strat.build_order.size(); i++) {
-                    Macro::addAction(strat.build_order[i]);
+                for (int i = 0; i < strat->build_order.size(); i++) {
+                    Macro::addAction(strat->build_order[i]);
                 }
             }
         #endif
@@ -1494,7 +1505,7 @@ public:
                 numUnits.mothership = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_MOTHERSHIP).size());
 
                 int8_t* numPtr = (int8_t*)&numUnits;
-                int8_t* numPtrStrategy = (int8_t*)&strat.unitRatio;
+                int8_t* numPtrStrategy = (int8_t*)&(strat->unitRatio);
                 float* percentPtr = (float*)&percentageUnits;
                 float* percentPtrStrategy = (float*)&percentageUnitsStrategy;
 
@@ -1750,6 +1761,14 @@ public:
 
 //MICRO
 //executeAttack doesnt work for some reason, redo it its also pretty dogshit code
+//keep army together
+//executeAttack gets stuck wierdly
+
+//adept micro
+//cloaked unit micro
+//damagenet detector net
+
+//more complex army splitting, harrasssing army, etc
 
 //primordialstar optimizations: 
 //-check max num of paths from nodes and max length of a path to optimize

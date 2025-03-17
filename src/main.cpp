@@ -130,13 +130,13 @@ int main(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-    backward::SignalHandling sh;
+    //backward::SignalHandling sh;
     srand(clock());
     Coordinator coordinator;
     coordinator.LoadSettings(argc, argv);
 
     Bot bot;
-    Difficulty diff = Difficulty::HardVeryHard;
+    Difficulty diff = Difficulty::Hard;
 
     if (MICRO_TEST) {
         Race race = Race::Random;

@@ -137,11 +137,13 @@ namespace Strategem {
     struct Strategy {
         std::vector<MacroAction> build_order;
         UnitRatio unitRatio;
+        int armyAttackNum = 12;
     };
 
     Strategy shit_stalker_colossus;
     Strategy pig_stalker_colossus;
     Strategy chargelot_immortal_archon_timing;
+    Strategy hupsaiya_adept_timing;
 
     void initStrategies() {
         shit_stalker_colossus.build_order = {
@@ -193,6 +195,7 @@ namespace Strategem {
         shit_stalker_colossus.unitRatio.observer = 1;
         shit_stalker_colossus.unitRatio.warpprism = 1;
 
+        //https://lotv.spawningtool.com/build/184604/
         pig_stalker_colossus.build_order = {
             MacroBuilding(ABILITY_ID::BUILD_PYLON, P2D(Aux::staging_location)),
             MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),
@@ -235,5 +238,106 @@ namespace Strategem {
         pig_stalker_colossus.unitRatio.colossus = 2;
         pig_stalker_colossus.unitRatio.observer = 1;
         pig_stalker_colossus.unitRatio.warpprism = 1;
+
+        //https://lotv.spawningtool.com/build/188377/
+        chargelot_immortal_archon_timing.build_order = {
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, P2D(Aux::staging_location)),
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),
+            MacroBuilding(ABILITY_ID::GENERAL_MOVE, Aux::enemyLoc),
+            MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}),
+            MacroBuilding(ABILITY_ID::BUILD_NEXUS, P2D(Aux::rankedExpansions[0])),
+            MacroBuilding(ABILITY_ID::BUILD_CYBERNETICSCORE, {-1, -1}),
+            MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, { -1,-1 }),
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1, -1}),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ADEPT),
+            MacroAction(UNIT_TYPEID::PROTOSS_CYBERNETICSCORE, ABILITY_ID::RESEARCH_WARPGATE),
+            MacroBuilding(ABILITY_ID::BUILD_ROBOTICSFACILITY, {-1, -1}),
+            MacroBuilding(ABILITY_ID::BUILD_SHIELDBATTERY, {-1, -1}),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER),
+            MacroAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_OBSERVER),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_SENTRY),
+            MacroAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_IMMORTAL),
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1, -1}),
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1, -1}),
+            MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, { -1,-1 }),
+            MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, { -1,-1 }),
+            MacroAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_IMMORTAL),
+            MacroBuilding(ABILITY_ID::BUILD_TWILIGHTCOUNCIL, { -1,-1 }),
+            MacroBuilding(ABILITY_ID::BUILD_FORGE, { -1,-1 }),
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1, -1}),
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),
+            MacroAction(UNIT_TYPEID::PROTOSS_TWILIGHTCOUNCIL, ABILITY_ID::RESEARCH_CHARGE),
+            MacroAction(UNIT_TYPEID::PROTOSS_FORGE, ABILITY_ID::RESEARCH_PROTOSSGROUNDWEAPONS),
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),
+            MacroBuilding(ABILITY_ID::BUILD_TEMPLARARCHIVE, {-1,-1}),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT),
+            MacroAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_WARPPRISM),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ARCHON),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ARCHON),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ARCHON),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ARCHON),
+            MacroAction(UNIT_TYPEID::PROTOSS_ROBOTICSBAY, ABILITY_ID::RESEARCH_EXTENDEDTHERMALLANCE)
+        };
+        chargelot_immortal_archon_timing.unitRatio.immortal = 4;
+        chargelot_immortal_archon_timing.unitRatio.zealot = 20;
+        chargelot_immortal_archon_timing.unitRatio.archon = 8;
+        chargelot_immortal_archon_timing.unitRatio.observer = 1;
+        chargelot_immortal_archon_timing.unitRatio.warpprism = 1;
+        
+        chargelot_immortal_archon_timing.armyAttackNum = 19;
+
+        //https://lotv.spawningtool.com/build/190069/
+        hupsaiya_adept_timing.build_order = {
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, P2D(Aux::staging_location)),
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),
+            MacroBuilding(ABILITY_ID::GENERAL_MOVE, Aux::enemyLoc),
+            MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}),
+            MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}),
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),
+            MacroBuilding(ABILITY_ID::BUILD_CYBERNETICSCORE, {-1,-1}),
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}),
+            MacroAction(UNIT_TYPEID::PROTOSS_CYBERNETICSCORE, ABILITY_ID::RESEARCH_WARPGATE),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ADEPT),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ADEPT),
+            MacroBuilding(ABILITY_ID::BUILD_TWILIGHTCOUNCIL, {-1,-1}),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ADEPT),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ADEPT),
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}),
+            MacroAction(UNIT_TYPEID::PROTOSS_TWILIGHTCOUNCIL, ABILITY_ID::RESEARCH_ADEPTRESONATINGGLAIVES),
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}), //Proxy Pylon near their 3rd base
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ADEPT),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ADEPT),
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),
+            MacroBuilding(ABILITY_ID::BUILD_SHIELDBATTERY, {-1,-1}),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ADEPT),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ADEPT),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ADEPT),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ADEPT),
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ADEPT),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ADEPT),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ADEPT),
+        };
+
+        hupsaiya_adept_timing.unitRatio.adept = 1; 
+        hupsaiya_adept_timing.armyAttackNum = 1; //Hit at 4:37 with 14 Adepts
     }
 }

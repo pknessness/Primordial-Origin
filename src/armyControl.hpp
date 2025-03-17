@@ -1,4 +1,5 @@
 #include "armyunit.hpp"
+#include "strategy.hpp"
 
 namespace ArmyControl {
 
@@ -86,7 +87,7 @@ namespace ArmyControl {
         }
 	}
 
-	void step(Agent* agent, Point2D rally) {
+	void step(Agent* agent, Point2D rally, Strategem::Strategy* strat) {
         collectEnemySquads(agent);
         int unitCount = 0;
         for (Squad s : squads) {
@@ -123,7 +124,7 @@ namespace ArmyControl {
             }
         }
         else if (enemyBuildingCount > 0) {
-            if (squads[0].coreCount() > 12) {
+            if (squads[0].coreCount() > strat->armyAttackNum) {
                 if (squads[0].getCore(agent) != nullptr) {
                     float mindist = 400;
                     UnitWrapper* min = nullptr;

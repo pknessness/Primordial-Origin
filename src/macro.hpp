@@ -117,7 +117,7 @@ namespace Macro {
             MacroAction currentAction = it->second.front();
             //printf("%s %d\n", AbilityTypeToName(currentAction.ability), currentAction.index);
             if (currentAction.unit_type == UNIT_TYPEID::PROTOSS_GATEWAY &&
-                agent->Observation()->GetWarpGateCount() > 0) {
+                agent->Observation()->GetWarpGateCount() > 0 && currentAction.ability != ABILITY_ID::TRAIN_ARCHON) {
                 it->second.front().unit_type = UNIT_TYPEID::PROTOSS_WARPGATE;
                 //it->second.front().pos = {-1, -1};
                 if (currentAction.ability == ABILITY_ID::TRAIN_ZEALOT) {
@@ -132,7 +132,8 @@ namespace Macro {
                     it->second.front().ability = ABILITY_ID::TRAINWARP_DARKTEMPLAR;
                 } else if (currentAction.ability == ABILITY_ID::TRAIN_HIGHTEMPLAR) {
                     it->second.front().ability = ABILITY_ID::TRAINWARP_HIGHTEMPLAR;
-                } else {
+                }
+                else {
                     printf("DELETED WARPGATE ACTION\n");
                     //it->second.erase(it->second.begin());
                     continue;
@@ -162,6 +163,41 @@ namespace Macro {
         for (int iAction = 0; iAction < topActions.size(); iAction++) {
             macroProfiler.subScope();
             MacroAction topAct = topActions[iAction];
+
+            if (topAct.ability == ABILITY_ID::TRAIN_ARCHON) {
+                UnitWrappers templars = UnitManager::getMulti({ UNIT_TYPEID::PROTOSS_HIGHTEMPLAR, UNIT_TYPEID::PROTOSS_DARKTEMPLAR });
+                int numSpawn = 2 - (templars.size());
+                if (numSpawn <= 0) {
+                    UnitWrappers templars2 = UnitManager::getMulti({ UNIT_TYPEID::PROTOSS_HIGHTEMPLAR, UNIT_TYPEID::PROTOSS_DARKTEMPLAR });
+                    for (int i = 0; i < templars.size(); i++) {
+                        const Unit* templar = templars[i]->get(agent);
+                        if (templar != nullptr && templar->IsBuildFinished()) {
+                            templars2.push_back(templars[i]);
+                        }
+                    }
+                    agent->Actions()->UnitCommand({templars2[0]->self, templars2[1]->self}, ABILITY_ID::MORPH_ARCHON);
+                    actions[topAct.unit_type].erase(actions[topAct.unit_type].begin());
+                    diagnostics += "ARCHON SUCCESS\n\n";
+                    macroProfiler.midLog("ARCHON SUCCESS");
+                    break;
+                }
+                else {
+                    bool ins = false;
+                    for (int i = 0; i < actions[UNIT_TYPEID::PROTOSS_GATEWAY].size(); i++) {
+                        if (actions[UNIT_TYPEID::PROTOSS_GATEWAY][i].index >= topAct.index) {
+                            actions[UNIT_TYPEID::PROTOSS_GATEWAY].insert(actions[UNIT_TYPEID::PROTOSS_GATEWAY].begin() + i, MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_HIGHTEMPLAR, { 0,0 }, topAct.index));
+                            ins = true;
+                            break;
+                        }
+                    }
+                    if (!ins) {
+                        actions[UNIT_TYPEID::PROTOSS_GATEWAY].push_back(MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_HIGHTEMPLAR, { 0,0 }, topAct.index));
+                    }
+                    continue;
+                }
+            }
+
+            //TODO: REPLACE WITH UNITMANAGER GET
             Units units = agent->Observation()->GetUnits(sc2::Unit::Alliance::Self, 
                 [topAct](const Unit &unit) -> bool { 
                 //return (unit.unit_type == topAct.unit_type) &&
