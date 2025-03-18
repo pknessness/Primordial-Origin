@@ -164,7 +164,7 @@ public:
                     //}
                 }
                 int limit = 3;
-                if (Aux::isMineralType(targWrap->type)) {
+                if (Aux::isMineralType(targWrap->getType(agent))) {
                     limit = 2;
                 }
                 if (probeTargetting[targWrap->self] >= limit) {

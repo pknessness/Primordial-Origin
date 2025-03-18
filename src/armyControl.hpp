@@ -12,11 +12,11 @@ namespace ArmyControl {
 
         }
 
-        void add(UnitWrapper* unitWrap) {
+        void add(UnitWrapper* unitWrap, Agent* agent) {
             army.push_back(unitWrap);
 
-            if (std::find(unitComp.begin(), unitComp.end(), unitWrap->type) == unitComp.end()) {
-                unitComp.push_back(unitWrap->type);
+            if (std::find(unitComp.begin(), unitComp.end(), unitWrap->getType(agent)) == unitComp.end()) {
+                unitComp.push_back(unitWrap->getType(agent));
             }
         }
 
@@ -50,7 +50,7 @@ namespace ArmyControl {
         }
         if (allEnemies.size() > 0) {
             enemySquads.emplace_back();
-            enemySquads[0].add(allEnemies.back());
+            enemySquads[0].add(allEnemies.back(), agent);
             allEnemies.pop_back();
             int squadPointer = 0;
             while (allEnemies.size() > 0){
@@ -71,7 +71,7 @@ namespace ArmyControl {
                     if(!added && allEnemies.size() > 0) {
                         enemySquads.emplace_back();
                         squadPointer += 1;
-                        enemySquads[squadPointer].add(allEnemies.back());
+                        enemySquads[squadPointer].add(allEnemies.back(), agent);
                         allEnemies.pop_back();
                     }
                 }

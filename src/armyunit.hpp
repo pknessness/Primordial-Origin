@@ -91,9 +91,9 @@ public:
         core = nullptr;
     }
 
-    bool has(UnitTypeID type) {
+    bool has(UnitTypeID type, Agent* agent) {
         for (UnitWrapper *u : army) {
-            if (u->type == type) {
+            if (u->getType(agent) == type) {
                 return true;
             }
         }
@@ -210,7 +210,7 @@ public:
                 Circles c;
                 for (int i = 0; i < army.size(); i++) {
                     if (squadStates[army[i]->self] != 'u') {
-                        c.push_back(Circle{ army[i]->pos(agent), Army::maxWeaponRadius(army[i]->type) });
+                        c.push_back(Circle{ army[i]->pos(agent), Army::maxWeaponRadius(army[i]->getType(agent)) });
                     }
                 }
                 targets = SpacialHash::findInRadiiEnemy(c, agent);//SpacialHash::findInRadiusEnemy(coreCenter(agent), armyballRadius() + squadExtraRadius, agent);
@@ -316,7 +316,7 @@ public:
 
     UnitTypeData getStats(Agent *agent) {
         if (stats.unit_type_id == UNIT_TYPEID::INVALID) {
-            stats = Aux::getStats(type,agent);
+            stats = Aux::getStats(getType(agent),agent);
         }
         return stats;
     }
@@ -328,7 +328,7 @@ public:
 
     float priorityAttack(Weapon w, UnitWrapper* op, Agent *agent) {  // HIGHER IS MORE DESIRABLE TO ATTACK
         if (Army::hitsUnit(w.type, op->getComposition(agent))) {
-            return Army::Priority(type, op->type) - 3 * ((op->health + op->shields)/(op->healthMax + op->shieldsMax)); //include health
+            return Army::Priority(getType(agent), op->getType(agent)) - 3 * ((op->health + op->shields)/(op->healthMax + op->shieldsMax)); //include health
         }
         //if (Army::hitsUnit(w.type, Army::unitTypeTargetComposition(op->type))) {
         //    return Army::Priority(type, op->type); //include health

@@ -10,7 +10,7 @@ using namespace std;
 class UnitWrapper {
 private:
     Composition c;
-    
+    UnitTypeID type;
 public:
     float health;
     float healthMax;
@@ -18,7 +18,7 @@ public:
     float shieldsMax;
 
     Tag self;
-    UnitTypeID type;
+    
     Point3D lastPos;
     float radius;
     bool isBuilding;
@@ -39,6 +39,14 @@ public:
     inline bool exists(Agent *agent);
 
     inline const Unit *get(Agent *agent);
+
+    UnitTypeID getType(Agent* agent) {
+        const Unit* unit = agent->Observation()->GetUnit(self);
+        if (unit != nullptr) {
+            type = unit->unit_type;
+        }
+        return type;
+    }
 
     Composition getComposition(Agent* agent) {
         const Unit* selfUnit = get(agent);
@@ -575,7 +583,7 @@ namespace UnitManager {
         float damage = 0;
         if (comp == Composition::Ground || comp == Composition::Any) {
             damage += pointDamage.ground.normal;
-            for (Attribute a : Aux::getStats(unitWrap->type, agent).attributes) {
+            for (Attribute a : Aux::getStats(unitWrap->getType(agent), agent).attributes) {
                 switch (a) {
                 case(Attribute::Light): {
                     damage += pointDamage.ground.light;
@@ -601,7 +609,7 @@ namespace UnitManager {
         }
         if (comp == Composition::Air || comp == Composition::Any) {
             damage += pointDamage.air.normal;
-            for (Attribute a : Aux::getStats(unitWrap->type, agent).attributes) {
+            for (Attribute a : Aux::getStats(unitWrap->getType(agent), agent).attributes) {
                 switch (a) {
                 case(Attribute::Light): {
                     damage += pointDamage.air.light;

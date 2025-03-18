@@ -735,9 +735,9 @@ public:
         for (auto it = UnitManager::enemies.begin(); it != UnitManager::enemies.end(); it++) {
             auto all = it->second;
             for (auto it2 = all.begin(); it2 != all.end(); it2++) {
-                string tot = strprintf("%s", UnitTypeToName((*it2)->type));
+                string tot = strprintf("%s", UnitTypeToName((*it2)->getType(this)));
                 DebugText(this,tot, (*it2)->pos3D(this), {255, 40, 10}, 8);
-                float radius = (float)Aux::structureDiameter((*it2)->type);
+                float radius = (float)Aux::structureDiameter((*it2)->getType(this));
                 if (radius == 0) {
                     radius = 0.5;
                 }
@@ -1469,7 +1469,7 @@ public:
                 }
                 unit->execute(this);
                 Point3D pos = unit->pos3D(this);
-                s += strprintf("%s %.1fs %Ix %c {%.1f,%.1f}\n", UnitTypeToName(unit->type),
+                s += strprintf("%s %.1fs %Ix %c {%.1f,%.1f}\n", UnitTypeToName(unit->getType(this)),
                     unit->get(this)->weapon_cooldown,
                                ((ArmyUnit*)(unit))->targetWrap, squads[i].squadStates[unit->self], unit->posTarget.x, unit->posTarget.y);
                 DebugText(this,strprintf("%c:%c", squads[i].squadStates[unit->self], squads[i].subSquadStates[unit->self]),
@@ -1666,13 +1666,13 @@ public:
                 if ((*it2)->hallucination || (*it2)->get(this) == nullptr) {
                     continue;
                 }
-                std::vector<Weapon> weapons = Aux::getStats((*it2)->type, this).weapons;
+                std::vector<Weapon> weapons = Aux::getStats((*it2)->getType(this), this).weapons;
                 //TODO:
                 // add abilities, oracle, baneling
                 // add psi storm (more damage the more time it has left, prioritzed more since its constant dmag)
                 // add helion line, lurker line, liberator circle
                 // add ravager artillery, tank
-                switch (uint32_t((*it2)->get(this)->unit_type)) {
+                switch (uint32_t((*it2)->getType(this))) {
                     case (uint32_t(UNIT_TYPEID::PROTOSS_ORACLE)): {
                         if ((*it2)->get(this)->energy > Aux::extraWeapons[ABILITY_ID::BEHAVIOR_PULSARBEAMON].energyCostStatic) {
                             weapons.push_back(Aux::extraWeapons[ABILITY_ID::BEHAVIOR_PULSARBEAMON].w);
