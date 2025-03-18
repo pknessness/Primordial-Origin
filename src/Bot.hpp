@@ -713,6 +713,9 @@ public:
             for (auto it2 = all.begin(); it2 != all.end(); it2++) {
                 #define LETTER_DISP -0.07F
                 string s = strprintf("%lx", (*it2)->self);
+                if (mineralDistance.find((*it2)->self) != mineralDistance.end()) {
+                    s += strprintf(" %.1f", mineralDistance[(*it2)->self]);
+                }
                 DebugText(this,s, (*it2)->pos3D(this) + Point3D{s.size() * LETTER_DISP, 0.3F, 0.5F}, Color(210, 55, 55),
                                       8);
             }
@@ -899,7 +902,7 @@ public:
         SpacialHash::initGrid();
         SpacialHash::initGridEnemy();
 
-        strat = &Strategem::pig_stalker_colossus;//&Strategem::hupsaiya_adept_timing;//&Strategem::chargelot_immortal_archon_timing;//
+        strat = &Strategem::shit_stalker_colossus;//&Strategem::pig_stalker_colossus;//&Strategem::hupsaiya_adept_timing;//&Strategem::chargelot_immortal_archon_timing;//
 
         for (int i = 0; i < path_zhang_suen->width(); i++) {
             for (int j = 0; j < path_zhang_suen->height(); j++) {
