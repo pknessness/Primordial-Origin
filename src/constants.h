@@ -1064,6 +1064,127 @@ Point3D addKeepZ(Point3D &a, Point2D &b) {
     return {a.x + b.x, a.y + b.y, a.z};
 }
 
+const char* attributeNames[] = {
+    "Unknown",
+    "Light",
+    "Armored",
+    "Biological",
+    "Mechanical",
+    "Robotic",
+    "Psionic",
+    "Massive",
+    "Structure",
+    "Hover",
+    "Heroic",
+    "Summoned",
+    "Invalid"
+};
+
+const char* targetTypeNames[] = {
+    "Unknown",
+    "Ground",
+    "Air",
+    "Any",
+    "Invalid"
+};
+
+const char* AttributeToName(Attribute a) {
+    return attributeNames[(int)a];
+}
+
+const char* TargetTypeToName(Weapon::TargetType t) {
+    return targetTypeNames[(int)t];
+}
+
+struct ComplexWeapon {
+    Weapon w;
+    float energyCostStatic;
+    float energyCostPerFrame;
+
+    ComplexWeapon() : energyCostStatic(0), energyCostPerFrame(0){
+
+    }
+
+    ComplexWeapon(Weapon::TargetType type_, float damage_, uint32_t attacks_, float range_, float speed_, float energyCostStatic_ = 0, float energyCostPerFrame_ = 0) {
+        w.type = type_;
+        w.damage_ = damage_;
+        w.attacks = attacks_;
+        w.range = range_;
+        w.speed = speed_;
+        energyCostStatic = energyCostStatic_;
+        energyCostPerFrame = energyCostPerFrame_;
+    }
+
+    void setWeapon(Weapon::TargetType type_, float damage_, uint32_t attacks_, float range_, float speed_, float energyCostStatic_ = 0, float energyCostPerFrame_ = 0) {
+        w.type = type_;
+        w.damage_ = damage_;
+        w.attacks = attacks_;
+        w.range = range_;
+        w.speed = speed_;
+        energyCostStatic = energyCostStatic_;
+        energyCostPerFrame = energyCostPerFrame_;
+    }
+    
+    void addDamageBonus(Attribute a, float bonus) {
+        DamageBonus b;
+        b.attribute = a;
+        b.bonus = bonus;
+        w.damage_bonus.push_back(b);
+    }
+};
+
+//BLINDINGCLOUD = 10,
+//CORROSIVEBILE = 11,
+//GUARDIANSHIELD = 2,
+//INVALID = 0,
+//LIBERATORDEFENDERZONE = 9,
+//LIBERATORDEFENDERZONESETUP = 8,
+//LURKERSPINES = 12,
+//NUKEDOT = 7,
+//PSISTORM = 1,
+//SCANNERSWEEP = 6,
+//TEMPORALFIELD = 4,
+//TEMPORALFIELDGROWING = 3,
+//THERMALLANCE = 5,
+
+struct EffectDamage {
+    Weapon w;
+    float lingeringFrames;
+
+    EffectDamage(Weapon::TargetType type_, float damage_, uint32_t attacks_, float range_, float speed_, float lingeringFrames_) {
+        w.type = type_;
+        w.damage_ = damage_;
+        w.attacks = attacks_;
+        w.range = range_;
+        w.speed = speed_;
+        lingeringFrames = lingeringFrames_;
+    }
+
+    void addDamageBonus(Attribute a, float bonus) {
+        DamageBonus b;
+        b.attribute = a;
+        b.bonus = bonus;
+        w.damage_bonus.push_back(b);
+    }
+};
+
+map<AbilityID, ComplexWeapon> extraWeapons;
+map<EffectID, EffectDamage> damageEffects;
+
+void loadExtraDamageSources() {
+    //https://liquipedia.net/starcraft2/Oracle_(Legacy_of_the_Void)
+    ComplexWeapon pulsarBeam(Weapon::TargetType::Ground, 15, 1, 4, 1 / 0.61F, 25, 0.0875);
+    extraWeapons[ABILITY_ID::BEHAVIOR_PULSARBEAMON] = pulsarBeam;
+
+    ComplexWeapon volatileBurst(Weapon::TargetType::Ground, 500, 1, 2.2, 1, 0, 0);
+    extraWeapons[ABILITY_ID::EFFECT_EXPLODE] = volatileBurst;
+
+    ComplexWeapon lurkerSpines(Weapon::TargetType::Ground, 20, 1, 8, 1 / 1.43F);
+    extraWeapons[ABILITY_ID::BEHAVIOR_HOLDFIREON_LURKER] = lurkerSpines;
+}
+
+
+
 }  // namespace Aux
 
 struct Building {
@@ -1074,6 +1195,8 @@ struct Building {
         return Aux::buildAbilityToCost(build, agent);
     }
 };
+
+
 
 constexpr float timeSpeed = 1.4F;
 constexpr float fps = 16 * timeSpeed;

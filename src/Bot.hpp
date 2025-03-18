@@ -878,6 +878,8 @@ public:
 
         Aux::loadPathables(this);
 
+        Aux::loadExtraDamageSources();
+
         Aux::influenceMap = new map2d<int8_t>(mapWidth, mapHeight, true);
         Aux::influenceMapEnemy = new map2d<int8_t>(mapWidth, mapHeight, true);
 
@@ -1041,8 +1043,6 @@ public:
         //after adding the wall preprocessing it reduces to 141ms + 108ms
         //adding wall preprocessing with squared not root makes it 58ms + 39ms
 
-
-
         for (int i = 0; i < PrimordialStar::basePathNodes.size(); i++) {
             PrimordialStar::PathNode* node = PrimordialStar::basePathNodes[i];
             if (Distance2D(node->rawPos(), Observation()->GetCameraPos()) > 300) {
@@ -1054,7 +1054,8 @@ public:
                 DebugLine(this, P3D(node->rawPos()) + Point3D{ 0,0,1 }, P3D(node2->rawPos()) + Point3D{ 0,0,1 }, Colors::Blue);
             }
         }
-        pathVerification();
+
+        //pathVerification();
 
         #if MICRO_TEST == 0
             for (int i = -4; i <= 4; i++) {
@@ -1135,6 +1136,11 @@ public:
         //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_STALKER, middle, 2, 9);
         //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_VOIDRAY, Observation()->GetGameInfo().enemy_start_locations[0], 2, 9);
 
+        //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_PROBE, Observation()->GetGameInfo().enemy_start_locations[0], 1, 12);
+        //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_STALKER, middle, 1, 12);
+        //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_OBSERVER, middle, 1, 1);
+        //Debug()->DebugCreateUnit(UNIT_TYPEID::ZERG_LURKERMPBURROWED, middle, 2, 5);
+            
         #if MICRO_TEST_2
 
             //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_STALKER, middle, 1, 9);
@@ -1149,6 +1155,81 @@ public:
             //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_STALKER, middle, 1, 1);
             //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_ADEPT, Observation()->GetGameInfo().enemy_start_locations[0], 2, 2);
         #endif
+
+#if 1
+        const char* races[] = {
+                "protoss",
+                "terran",
+                "zerg"
+        };
+        int p_c = sizeof(Strategem::ArmyUnitsProtoss) / sizeof(UnitTypeID);
+        vector<UnitTypeID> p(Strategem::ArmyUnitsProtoss, Strategem::ArmyUnitsProtoss + p_c);
+        int t_c = sizeof(Strategem::ArmyUnitsTerran) / sizeof(UnitTypeID);
+        vector<UnitTypeID> t(Strategem::ArmyUnitsTerran, Strategem::ArmyUnitsTerran + t_c);
+        int z_c = sizeof(Strategem::ArmyUnitsZerg) / sizeof(UnitTypeID);
+        vector<UnitTypeID> z(Strategem::ArmyUnitsZerg, Strategem::ArmyUnitsZerg + z_c);
+
+        vector<UnitTypeID> unitLists[3] = { p, t, z };
+
+        for (int f = 0; f < 3; f++) {
+            FILE* fp;
+            fp = fopen(strprintf("data/unitData_%s.txt", races[f]).c_str(), "w");
+            fprintf(fp, "Unit Data:\n");
+
+            //int numU = sizeof(unitLists[f]) / sizeof(UnitTypeID);
+            int numU = unitLists[f].size();
+            fprintf(fp, "%d Units\n\n---------------\n", numU);
+            for (int i = 0; i < numU; i++) {
+                UnitTypeData d = Aux::getStats(unitLists[f][i], this);
+                fprintf(fp, "%s:\nAvailable: %c\nCargo: %d\nMineralCost: %d\nVespeneCost: %d\nAttributes: ",
+                    UnitTypeToName(unitLists[f][i]),
+                    (d.available ? 'Y' : 'N'),
+                    d.cargo_size,
+                    d.mineral_cost,
+                    d.vespene_cost);
+                for (int a = 0; a < d.attributes.size(); a++) {
+                    fprintf(fp, "%s", Aux::AttributeToName(d.attributes[a]));
+                    if (a != d.attributes.size() - 1) {
+                        fprintf(fp, ", ");
+                    }
+                }
+                fprintf(fp, "\nMovementSpeed: %.1f\nArmor: %.1f\nWeapons:\n",
+                    d.movement_speed,
+                    d.armor);
+                for (int w = 0; w < d.weapons.size(); w++) {
+                    fprintf(fp, "-----\n%s\nDamage: %.1f\nAttacks: %d\nRange: %.1f\nSpeed: %.1f\nBonuses: ",
+                        Aux::TargetTypeToName(d.weapons[w].type),
+                        d.weapons[w].damage_,
+                        d.weapons[w].attacks,
+                        d.weapons[w].range,
+                        d.weapons[w].speed);
+                    for (int b = 0; b < d.weapons[w].damage_bonus.size(); b++) {
+                        fprintf(fp, "+%.1f %s", d.weapons[w].damage_bonus[b].bonus, Aux::AttributeToName(d.weapons[w].damage_bonus[b].attribute));
+                    }
+                    fprintf(fp, "\n-----");
+                }
+                fprintf(fp, "\nSupply: %.1f\nSupply+: %.1f\nRace: %d\nBuildTime: %.1f\nSightRange: %.1f\nTechAliases: ",
+                    d.food_required,
+                    d.food_provided,
+                    d.race,
+                    d.build_time,
+                    d.sight_range);
+                for (int a = 0; a < d.tech_alias.size(); a++) {
+                    fprintf(fp, "%s", UnitTypeToName(d.tech_alias[a]));
+                    if (a != d.tech_alias.size() - 1) {
+                        fprintf(fp, ", ");
+                    }
+                }
+                fprintf(fp, "\nAlias: %s\nRequirement: %s\nRequireAttached: %c\n---------------\n",
+                    UnitTypeToName(d.unit_alias),
+                    UnitTypeToName(d.tech_requirement),
+                    (d.require_attached ? 'Y' : 'N'));
+            }
+            fclose(fp);
+        } 
+
+        
+#endif
     }
 
     //! Called when a game has ended.
@@ -1582,7 +1663,7 @@ public:
 
         for (auto it = UnitManager::enemies.begin(); it != UnitManager::enemies.end(); it++) {
             for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
-                if ((*it2)->hallucination) {
+                if ((*it2)->hallucination || (*it2)->get(this) == nullptr) {
                     continue;
                 }
                 std::vector<Weapon> weapons = Aux::getStats((*it2)->type, this).weapons;
@@ -1591,6 +1672,22 @@ public:
                 // add psi storm (more damage the more time it has left, prioritzed more since its constant dmag)
                 // add helion line, lurker line, liberator circle
                 // add ravager artillery, tank
+                switch (uint32_t((*it2)->get(this)->unit_type)) {
+                    case (uint32_t(UNIT_TYPEID::PROTOSS_ORACLE)): {
+                        if ((*it2)->get(this)->energy > Aux::extraWeapons[ABILITY_ID::BEHAVIOR_PULSARBEAMON].energyCostStatic) {
+                            weapons.push_back(Aux::extraWeapons[ABILITY_ID::BEHAVIOR_PULSARBEAMON].w);
+                        }
+                    }
+                    case (uint32_t(UNIT_TYPEID::ZERG_LURKERMPBURROWED)): {
+                        weapons.push_back(Aux::extraWeapons[ABILITY_ID::BEHAVIOR_HOLDFIREON_LURKER].w);
+                    }
+                    case (uint32_t(UNIT_TYPEID::ZERG_BANELING)): {
+                        weapons.push_back(Aux::extraWeapons[ABILITY_ID::EFFECT_EXPLODE].w);
+                    }
+                    default: {
+
+                    }
+                }
                 for (Weapon w : weapons) {
 
                     //TODO: REPLACE WITH WEAPON TO DAMAGELOCATION FUNCTION
@@ -1769,6 +1866,7 @@ public:
 //adept micro
 //cloaked unit micro
 //damagenet detector net
+//fix armored damage calculation
 
 //more complex army splitting, harrasssing army, etc
 

@@ -709,6 +709,9 @@ public:
     }
 
     float searchCost(Point2D p) {
+        if (p.x == 0 && p.y == 0) {
+            return -1;
+        }
         return imRef(Aux::visionMap, (int)(p.x), (int)(p.y));
     }
 
