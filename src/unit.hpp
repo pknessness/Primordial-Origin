@@ -11,6 +11,7 @@ class UnitWrapper {
 private:
     Composition c;
     UnitTypeID type;
+    UnitTypeID storageType;
 public:
     float health;
     float healthMax;
@@ -585,24 +586,24 @@ namespace UnitManager {
             damage += pointDamage.ground.normal;
             for (Attribute a : Aux::getStats(unitWrap->getType(agent), agent).attributes) {
                 switch (a) {
-                case(Attribute::Light): {
-                    damage += pointDamage.ground.light;
-                }
-                case(Attribute::Armored): {
-                    damage += pointDamage.ground.armored;
-                }
-                case(Attribute::Biological): {
-                    damage += pointDamage.ground.biological;
-                }
-                case(Attribute::Mechanical): {
-                    damage += pointDamage.ground.mechanical;
-                }
-                case(Attribute::Massive): {
-                    damage += pointDamage.ground.massive;
-                }
-                case(Attribute::Psionic): {
-                    damage += pointDamage.ground.psionic;
-                }
+                    case(Attribute::Light): {
+                        damage += pointDamage.ground.light;
+                    } break;
+                    case(Attribute::Armored): {
+                        damage += pointDamage.ground.armored;
+                    } break;
+                    case(Attribute::Biological): {
+                        damage += pointDamage.ground.biological;
+                    } break;
+                    case(Attribute::Mechanical): {
+                        damage += pointDamage.ground.mechanical;
+                    } break;
+                    case(Attribute::Massive): {
+                        damage += pointDamage.ground.massive;
+                    } break;
+                    case(Attribute::Psionic): {
+                        damage += pointDamage.ground.psionic;
+                    } break;
                 }
             }
 
@@ -611,24 +612,24 @@ namespace UnitManager {
             damage += pointDamage.air.normal;
             for (Attribute a : Aux::getStats(unitWrap->getType(agent), agent).attributes) {
                 switch (a) {
-                case(Attribute::Light): {
-                    damage += pointDamage.air.light;
-                }
-                case(Attribute::Armored): {
-                    damage += pointDamage.air.armored;
-                }
-                case(Attribute::Biological): {
-                    damage += pointDamage.air.biological;
-                }
-                case(Attribute::Mechanical): {
-                    damage += pointDamage.air.mechanical;
-                }
-                case(Attribute::Massive): {
-                    damage += pointDamage.air.massive;
-                }
-                case(Attribute::Psionic): {
-                    damage += pointDamage.air.psionic;
-                }
+                    case(Attribute::Light): {
+                        damage += pointDamage.air.light;
+                    } break;
+                    case(Attribute::Armored): {
+                        damage += pointDamage.air.armored;
+                    } break;
+                    case(Attribute::Biological): {
+                        damage += pointDamage.air.biological;
+                    } break;
+                    case(Attribute::Mechanical): {
+                        damage += pointDamage.air.mechanical;
+                    } break;
+                    case(Attribute::Massive): {
+                        damage += pointDamage.air.massive;
+                    } break;
+                    case(Attribute::Psionic): {
+                        damage += pointDamage.air.psionic;
+                    } break;
                 }
             }
 
@@ -929,53 +930,94 @@ namespace UnitManager {
 //    UnitManager::units[type].push_back(this);
 //}
 
+map<UnitTypeID, UnitTypeID> superTypes = { 
+    {UNIT_TYPEID::PROTOSS_ASSIMILATORRICH, UNIT_TYPEID::PROTOSS_ASSIMILATOR},
+    {UNIT_TYPEID::PROTOSS_WARPPRISMPHASING, UNIT_TYPEID::PROTOSS_WARPPRISM},
+    {UNIT_TYPEID::PROTOSS_DISRUPTORPHASED, UNIT_TYPEID::PROTOSS_DISRUPTOR},
+    {UNIT_TYPEID::PROTOSS_OBSERVERSIEGEMODE, UNIT_TYPEID::PROTOSS_OBSERVER},
+
+    {UNIT_TYPEID::TERRAN_REFINERYRICH, UNIT_TYPEID::TERRAN_REFINERY},
+    {UNIT_TYPEID::TERRAN_BARRACKSFLYING, UNIT_TYPEID::TERRAN_BARRACKS},
+    {UNIT_TYPEID::TERRAN_BARRACKSREACTOR, UNIT_TYPEID::TERRAN_BARRACKS},
+    {UNIT_TYPEID::TERRAN_BARRACKSTECHLAB, UNIT_TYPEID::TERRAN_BARRACKS},
+    {UNIT_TYPEID::TERRAN_COMMANDCENTERFLYING, UNIT_TYPEID::TERRAN_COMMANDCENTER},
+    {UNIT_TYPEID::TERRAN_FACTORYFLYING, UNIT_TYPEID::TERRAN_FACTORY},
+    {UNIT_TYPEID::TERRAN_FACTORYREACTOR, UNIT_TYPEID::TERRAN_FACTORY},
+    {UNIT_TYPEID::TERRAN_FACTORYTECHLAB, UNIT_TYPEID::TERRAN_FACTORY},
+    {UNIT_TYPEID::TERRAN_HELLIONTANK, UNIT_TYPEID::TERRAN_HELLION},
+    {UNIT_TYPEID::TERRAN_LIBERATORAG, UNIT_TYPEID::TERRAN_LIBERATOR},
+    {UNIT_TYPEID::TERRAN_ORBITALCOMMANDFLYING, UNIT_TYPEID::TERRAN_ORBITALCOMMAND},
+    {UNIT_TYPEID::TERRAN_HELLIONTANK, UNIT_TYPEID::TERRAN_HELLION},
+    {UNIT_TYPEID::TERRAN_SIEGETANKSIEGED, UNIT_TYPEID::TERRAN_SIEGETANK},
+    {UNIT_TYPEID::TERRAN_STARPORTFLYING, UNIT_TYPEID::TERRAN_STARPORT},
+    {UNIT_TYPEID::TERRAN_STARPORTREACTOR, UNIT_TYPEID::TERRAN_STARPORT},
+    {UNIT_TYPEID::TERRAN_STARPORTTECHLAB, UNIT_TYPEID::TERRAN_STARPORT},
+    {UNIT_TYPEID::TERRAN_SUPPLYDEPOTLOWERED, UNIT_TYPEID::TERRAN_SUPPLYDEPOT},
+    {UNIT_TYPEID::TERRAN_THORAP, UNIT_TYPEID::TERRAN_THOR},
+    {UNIT_TYPEID::TERRAN_WIDOWMINEBURROWED, UNIT_TYPEID::TERRAN_WIDOWMINE},
+
+    {UNIT_TYPEID::ZERG_EXTRACTORRICH, UNIT_TYPEID::ZERG_EXTRACTOR},
+    {UNIT_TYPEID::ZERG_BANELINGBURROWED, UNIT_TYPEID::ZERG_BANELING},
+    {UNIT_TYPEID::ZERG_BANELINGCOCOON, UNIT_TYPEID::ZERG_BANELING},
+    {UNIT_TYPEID::ZERG_CHANGELINGMARINE, UNIT_TYPEID::ZERG_CHANGELING},
+    {UNIT_TYPEID::ZERG_CHANGELINGMARINESHIELD, UNIT_TYPEID::ZERG_CHANGELING},
+    {UNIT_TYPEID::ZERG_CHANGELINGZEALOT, UNIT_TYPEID::ZERG_CHANGELING},
+    {UNIT_TYPEID::ZERG_CHANGELINGZERGLING, UNIT_TYPEID::ZERG_CHANGELING},
+    {UNIT_TYPEID::ZERG_CHANGELINGZERGLINGWINGS, UNIT_TYPEID::ZERG_CHANGELING},
+    {UNIT_TYPEID::ZERG_CREEPTUMORBURROWED, UNIT_TYPEID::ZERG_CREEPTUMOR},
+    {UNIT_TYPEID::ZERG_CREEPTUMORQUEEN, UNIT_TYPEID::ZERG_CREEPTUMOR},
+    {UNIT_TYPEID::ZERG_DRONEBURROWED, UNIT_TYPEID::ZERG_DRONE},
+    {UNIT_TYPEID::ZERG_HYDRALISKBURROWED, UNIT_TYPEID::ZERG_HYDRALISK},
+    {UNIT_TYPEID::ZERG_INFESTORBURROWED, UNIT_TYPEID::ZERG_INFESTOR},
+    {UNIT_TYPEID::ZERG_LOCUSTMPFLYING, UNIT_TYPEID::ZERG_LOCUSTMP},
+    {UNIT_TYPEID::ZERG_LURKERMPBURROWED, UNIT_TYPEID::ZERG_LURKERMP},
+    {UNIT_TYPEID::ZERG_OVERLORDCOCOON, UNIT_TYPEID::ZERG_OVERLORD},
+    {UNIT_TYPEID::ZERG_OVERSEERSIEGEMODE, UNIT_TYPEID::ZERG_OVERSEER},
+    {UNIT_TYPEID::ZERG_QUEENBURROWED, UNIT_TYPEID::ZERG_QUEEN},
+    {UNIT_TYPEID::ZERG_RAVAGERCOCOON, UNIT_TYPEID::ZERG_RAVAGER},
+    {UNIT_TYPEID::ZERG_ROACHBURROWED, UNIT_TYPEID::ZERG_ROACH},
+    {UNIT_TYPEID::ZERG_SPINECRAWLERUPROOTED, UNIT_TYPEID::ZERG_SPINECRAWLER},
+    {UNIT_TYPEID::ZERG_SPORECRAWLERUPROOTED, UNIT_TYPEID::ZERG_SPORECRAWLER},
+    {UNIT_TYPEID::ZERG_SWARMHOSTBURROWEDMP, UNIT_TYPEID::ZERG_SWARMHOSTMP},
+    {UNIT_TYPEID::ZERG_ULTRALISKBURROWED, UNIT_TYPEID::ZERG_ULTRALISK},
+    {UNIT_TYPEID::ZERG_TRANSPORTOVERLORDCOCOON, UNIT_TYPEID::ZERG_OVERLORDTRANSPORT},
+    {UNIT_TYPEID::ZERG_ZERGLINGBURROWED, UNIT_TYPEID::ZERG_ZERGLING},
+};
+
 UnitWrapper::UnitWrapper(const Unit *unit) : self(unit->tag), type(unit->unit_type), lastPos{0, 0, 0}, radius(unit->radius), team(unit->alliance), isBuilding(unit->is_building), health(0), healthMax(0), shields(0), shieldsMax(0), hallucination(unit->is_hallucination) {
+    if (superTypes.find(type) == superTypes.end()) {
+        storageType = type;
+    }
+    else {
+        storageType = superTypes.at(type);
+    }
     if (unit->alliance == Unit::Alliance::Self) {
-        if (!UnitManager::checkExist(type)) {
-            UnitManager::units[type] = UnitWrappers();
+        if (!UnitManager::checkExist(storageType)) {
+            UnitManager::units[storageType] = UnitWrappers();
         }
-        UnitManager::units[type].push_back(this);
-        //if (std::find(UnitManager::units[type].begin(), UnitManager::units[type].end(), this) == UnitManager::units[type].end()) {
-        //    UnitManager::units[type].push_back(this);
-        //}
-        //else {
-        //    printf("DuplicateUnit\n");
-        //}
+        UnitManager::units[storageType].push_back(this);
     }else if (unit->alliance == Unit::Alliance::Neutral) {
-        if (!UnitManager::checkExistNeutral(type)) {
-            UnitManager::neutrals[type] = UnitWrappers();
+        if (!UnitManager::checkExistNeutral(storageType)) {
+            UnitManager::neutrals[storageType] = UnitWrappers();
         }
-        UnitManager::neutrals[type].push_back(this);
-        //if (std::find(UnitManager::neutrals[type].begin(), UnitManager::neutrals[type].end(), this) == UnitManager::neutrals[type].end()) {
-        //    UnitManager::neutrals[type].push_back(this);
-        //}
-        //else {
-        //    printf("DuplicateNeutral\n");
-        //}
+        UnitManager::neutrals[storageType].push_back(this);
     }else if (unit->alliance == Unit::Alliance::Enemy) {
-        if (!UnitManager::checkExistEnemy(type)) {
-            UnitManager::enemies[type] = UnitWrappers();
+        if (!UnitManager::checkExistEnemy(storageType)) {
+            UnitManager::enemies[storageType] = UnitWrappers();
         }
-        //UnitManager::enemies[type].push_back(this);
         bool found = false;
-        for (UnitWrapper* wrap : UnitManager::enemies[type]) {
+        for (UnitWrapper* wrap : UnitManager::enemies[storageType]) {
             if (unit->tag == wrap->self) {
                 found = true;
-                //printf("DuplicateEnemy O:%s N:%s\n", UnitTypeToName(wrap->type), UnitTypeToName(unit->unit_type));
                 break;
             }
         }
-        if (found) {
-            //printf("DuplicateEnemy\n", UnitTypeToName());
-        } else {
-            UnitManager::enemies[type].push_back(this);
+        if (!found) {
+            UnitManager::enemies[storageType].push_back(this);
         }
-        //if (std::find(UnitManager::enemies[type].begin(), UnitManager::enemies[type].end(), this) == UnitManager::enemies[type].end()) {
-        //    UnitManager::enemies[type].push_back(this);
-        //}
-        //else {
-        //    printf("DuplicateEnemy\n");
-        //}
+        else {
+            printf("Duplicate Enemy %s %Ix", UnitTypeToName(type), self);
+        }
     }
     ignoreFrames = 0;
     abilities = AvailableAbilities();
@@ -1014,7 +1056,7 @@ inline const Unit* UnitWrapper::get(Agent *agent) {
 }
 
 bool UnitWrapper::equals(UnitWrapper *wrapper) {
-    return (wrapper->self == self) && (wrapper->type == type);
+    return (wrapper->self == self);
 }
 
 //We only care about nexus, probe, gateway, ?zealot?, forge, cybercore, sentry, stalker, adept, shield battery, twilight council, stargate, pheonix, oracle, void ray, robotics facility, observer, warp prism, templar, high templar, archon, dark shrine, dark templar, fleet beacon, ?carrier, mothership, robotics bay, disruptor

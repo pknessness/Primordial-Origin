@@ -56,6 +56,16 @@ public:
         return Point3D(p.x, p.y, Observation()->TerrainHeight(p));
     }
 
+    void displayPath(vector<Point2D> path) {
+        Color c = Aux::randomColor();
+        float z = std::rand() * 2.0F / RAND_MAX;
+        if (path.size() > 0) {
+            for (int i = 0; i < path.size() - 1; i++) {
+                DebugLine(this, P3D(path[i]) + Point3D{ 0,0,1.5F + z }, P3D(path[i + 1]) + Point3D{ 0,0,1.5F + z }, c);
+            }
+        }
+    }
+
     void initializeStartings() {
         GameInfo game_info = Observation()->GetGameInfo();
         if (Observation()->GetStartLocation().x > game_info.width / 2) {
@@ -94,7 +104,10 @@ public:
             //}
             //printf("{%.1f}\n\n", length);
 
-            float length = PrimordialStar::getPathLengthDijkstra(P2D(Aux::staging_location), P2D(point), 0.2F, this);
+            vector<Point2D> path = PrimordialStar::getPathDijkstra(P2D(Aux::staging_location), P2D(point), 0.2F, this);
+            float length = PrimordialStar::getPathLength(path);
+
+            displayPath(path);
 
             constexpr int numsteps = 6;
             Units neut = Observation()->GetUnits(Unit::Alliance::Neutral, Aux::isMineral);
@@ -116,14 +129,19 @@ public:
                 Aux::rankedExpansions.push_back(point);
                 rankedExpansionDistance.push_back(length);
             }
+            bool inserted = false;
             for (int i = 0; i < Aux::rankedExpansions.size(); i ++) {
                 if (rankedExpansionDistance[i] > length) {
                     Aux::rankedExpansions.insert(Aux::rankedExpansions.begin() + i, point);
                     rankedExpansionDistance.insert(rankedExpansionDistance.begin() + i, length);
+                    inserted = true;
                     break;
                 }
             }
-            
+            if (!inserted) {
+                Aux::rankedExpansions.push_back(point);
+                rankedExpansionDistance.push_back(length);
+            }
         }
         printf("\n");
         //Debug()->SendDebug();
@@ -652,6 +670,18 @@ public:
         DebugText(this,tot, Point2D(0.01F, 0.11F), Color(250, 50, 15), 8);
     }
 
+    void listEnemyUnits() {
+        string tot = "ENEMIES:\n";
+        for (auto it = UnitManager::enemies.begin(); it != UnitManager::enemies.end(); it++) {
+            string type = UnitTypeToName(it->first);
+            tot += ("\n" + type + ":\n");
+            for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
+                tot += strprintf("%s %Ix %.1f,%.1f\n", UnitTypeToName((*it2)->getType(this)), (*it2)->self, (*it2)->pos(this).x, (*it2)->pos(this).y);
+            }
+        }
+        DebugText(this, tot, Point2D(0.01F, 0.11F), Color(250, 50, 15), 8);
+    }
+
     void probeLines() {
         auto probes = UnitManager::get(UNIT_TYPEID::PROTOSS_PROBE);
         for (auto it = probes.begin(); it != probes.end(); it++) {
@@ -1092,7 +1122,7 @@ public:
         //Tool::draw_grid(this, map, {}, {}, path, came_from, start, goal);
         initializeStartings();
         initializeExpansions();
-
+        SendDebug(this);
         Strategem::initStrategies();
 
         Point2D middle{Observation()->GetGameInfo().width / 2.0F, Observation()->GetGameInfo().height / 2.0F};
@@ -1400,6 +1430,10 @@ public:
     //! In realtime this function gets called as often as possible after request/responses are received from the game
     //! gathering observation state.
     virtual void OnStep() final {
+        //if (UnitManager::get(UNIT_TYPEID::PROTOSS_CYBERNETICSCORE).size() > 0) {
+        //    printf("SUCCESSS WOOOOOO\n");
+        //    throw 30;
+        //}
         //printf(" ");
         Profiler onStepProfiler("onStep");
         //onStepProfiler.disable();
@@ -1560,7 +1594,7 @@ public:
                     found = true;
                 }
             }
-            if (!found) {
+            if (1 || !found) {
                 Strategem::UnitRatio numUnits;
                 Strategem::UnitRatioFloat percentageUnits;
 
@@ -1611,14 +1645,17 @@ public:
 
                 int mindex = 1;
                 for (int i = 0; i < 18; i++) {
-                    if ((percentPtrStrategy[i] - percentPtr[i]) > (percentPtrStrategy[mindex] - percentPtr[mindex])) {
+                    if (percentPtrStrategy[i] != 0.0 && ((percentPtrStrategy[i] - percentPtr[i]) > (percentPtrStrategy[mindex] - percentPtr[mindex])) && Macro::actions[Strategem::UnitCreators[i]].size() == 0) {
                         mindex = i;
                     }
                 }
 
-                MacroAction* m = Macro::addAction(Strategem::UnitCreators[mindex], Strategem::UnitCreationAbility[mindex]);
-                lastUnitSpawner = m->unit_type;
-                lastUnitIndex = m->index;
+                if (Macro::actions[Strategem::UnitCreators[mindex]].size() == 0) {
+                    MacroAction* m = Macro::addAction(Strategem::UnitCreators[mindex], Strategem::UnitCreationAbility[mindex]);
+                    lastUnitSpawner = m->unit_type;
+                    lastUnitIndex = m->index;
+                }
+                
             }
         }
         
@@ -1680,13 +1717,13 @@ public:
                         if ((*it2)->get(this)->energy > Aux::extraWeapons[ABILITY_ID::BEHAVIOR_PULSARBEAMON].energyCostStatic) {
                             weapons.push_back(Aux::extraWeapons[ABILITY_ID::BEHAVIOR_PULSARBEAMON].w);
                         }
-                    }
+                    } break;
                     case (uint32_t(UNIT_TYPEID::ZERG_LURKERMPBURROWED)): {
                         weapons.push_back(Aux::extraWeapons[ABILITY_ID::BEHAVIOR_HOLDFIREON_LURKER].w);
-                    }
+                    } break;
                     case (uint32_t(UNIT_TYPEID::ZERG_BANELING)): {
                         weapons.push_back(Aux::extraWeapons[ABILITY_ID::EFFECT_EXPLODE].w);
-                    }
+                    } break;
                     default: {
 
                     }
@@ -1732,7 +1769,8 @@ public:
 
         expansionsLoc();
 
-        listMacroActions();
+        //listMacroActions();
+        listEnemyUnits();
 
         probeLines();
 

@@ -136,7 +136,7 @@ int main(int argc, char* argv[])
     coordinator.LoadSettings(argc, argv);
 
     Bot bot;
-    Difficulty diff = Difficulty::Hard;
+    Difficulty diff = Difficulty::HardVeryHard;
 
     if (MICRO_TEST) {
         Race race = Race::Random;
@@ -167,6 +167,7 @@ int main(int argc, char* argv[])
     }
     else {
         Race race = (Race)(std::rand() % 4);  // Race::Random;
+        race = Race::Zerg;
         coordinator.SetParticipants({ CreateParticipant(Race::Protoss, &bot), CreateComputer(race, diff) });
 
         
@@ -181,6 +182,7 @@ int main(int argc, char* argv[])
                                "InterloperAIE.SC2Map",   "ThunderbirdAIE.SC2Map" };
 
         int r = std::rand() % 6;
+        r = 5;
         printf("rand %d [%d %d %d %d %d %d] %d\n", r, std::rand(), std::rand(), std::rand(), std::rand(), std::rand(),
             std::rand(), RAND_MAX);
 
