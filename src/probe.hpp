@@ -262,6 +262,23 @@ public:
                 Cost cos = Aux::buildAbilityToCost(top.build, agent);
                 if (cos.minerals > agent->Observation()->GetMinerals() || cos.vespene > agent->Observation()->GetVespene())
                     return false;
+                UnitTypeData ability_stats = Aux::getStats(Aux::buildAbilityToUnit(top.build), agent);
+                UnitTypeID prerequisite = ability_stats.tech_requirement;
+                if (prerequisite != UNIT_TYPEID::INVALID) {
+                    UnitWrappers prereqs = UnitManager::get(prerequisite);
+
+                    bool built = false;
+
+                    for (int i = 0; i < prereqs.size(); i++) {
+                        if (prereqs[i]->get(agent) != nullptr && prereqs[i]->get(agent)->build_progress == 1.0F) {
+                            built = true;
+                        }
+                    }
+                    if (!built) {
+                        return false;
+                    }
+                }
+
                 if (top.build == ABILITY_ID::BUILD_ASSIMILATOR) {
                     auto vespene = UnitManager::getVespene();
                     for (int i = 0; i < vespene.size(); i++) {
@@ -286,7 +303,7 @@ public:
                     }
                 }
                 buildings.erase(buildings.begin());
-            } else {
+            } else {//TODO: CHECK IF ORDER ALREADY GIVEN AND DONT REASSIGN
                 //agent->Actions()->UnitCommand(self, ABILITY_ID::MOVE_MOVE, top.pos);
                 const Unit *prob = get(agent);
                 if (prob->orders.size() == 0 || prob->orders.front().target_pos != top.pos) {
