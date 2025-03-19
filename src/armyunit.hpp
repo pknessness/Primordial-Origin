@@ -213,7 +213,7 @@ public:
                 Circles c;
                 for (int i = 0; i < army.size(); i++) {
                     if (squadStates[army[i]->self] != 'u') {
-                        c.push_back(Circle{ army[i]->pos(agent), Army::maxWeaponRadius(army[i]->getType(agent)) });
+                        c.push_back(Circle{ army[i]->pos(agent), Aux::getStats(army[i]->getType(agent), agent).sight_range + 8.0F});
                     }
                 }
                 targets = SpacialHash::findInRadiiEnemy(c, agent);//SpacialHash::findInRadiusEnemy(coreCenter(agent), armyballRadius() + squadExtraRadius, agent);
@@ -416,7 +416,7 @@ public:
                 //DebugLine(agent, AP3D(fullpath[i]) + Point3D{ 0,0,1 }, AP3D(fullpath[i + 1]) + Point3D{ 0,0,1 }, Colors::Green);
             }
             for (Point2D p : stepPoints) {
-                DamageLocation d = UnitManager::getRadiusAvgDamage(P2D(p) + Point2D{ 0.5F,0.5F }, radius);
+                DamageLocation d = UnitManager::getRadiusAvgDamage(p, radius);
                 damageCost += UnitManager::getRelevantDamage(this, d, agent) * 0.2F;
 
                 //DebugSphere(agent, AP3D(p), 0.5, { 21,42,220 });
@@ -424,8 +424,8 @@ public:
             }
             //DebugSphere(this, P3D(PrimordialStar::distanceAlongPath(path, 5.5)), 0.5, {21,42,120});
         }
-        damageCost /= (PrimordialStar::getPathLength(fullpath) + 4.0F);
-        damageCost += UnitManager::getRelevantDamage(this, UnitManager::getRadiusAvgDamage(end, radius + 2.0F), agent);
+        //damageCost /= (PrimordialStar::getPathLength(fullpath) + 4.0F);
+        damageCost += UnitManager::getRelevantDamage(this, UnitManager::getRadiusAvgDamage(end, radius + 4.0F), agent);
         return damageCost;
     }
 
