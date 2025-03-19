@@ -200,6 +200,9 @@ public:
     bool execute(Agent *agent) {
         //auto squadEx = Profiler("sE");
         if (mode == ATTACK) {
+            for (int i = 0; i < targets.size(); i++) {
+                DebugBox(agent, targets[i]->pos3D(agent) + Point3D{ -0.125,-0.125,2 - 0.125 }, targets[i]->pos3D(agent) + Point3D{ 0.125,0.125,2.125 }, Colors::Red);
+            }
             if (ignoreFrames > 0) {
                 ignoreFrames--;
                 return false;
