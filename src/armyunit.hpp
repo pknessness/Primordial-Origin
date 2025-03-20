@@ -377,7 +377,7 @@ public:
                     bool inserted = false;
                     float priority = priorityAttack(w, enemy, agent);
                     if (enemyRadius > weaponRadius) {
-                        priority += (weaponRadius - enemyRadius) * 0.1F;
+                        priority += (weaponRadius - enemyRadius) * 2.0F;
                     }
                     if (potentialTargets.size() == 0) {
                         inserted = true;
@@ -614,7 +614,12 @@ public:
             }
 
             if (squad->subSquadStates[self] == 'a') {
-                agent->Actions()->UnitCommand(self, ABILITY_ID::ATTACK, targetWrap->self);
+                if (targetWrap->get(agent) != nullptr) {
+                    agent->Actions()->UnitCommand(self, ABILITY_ID::ATTACK, targetWrap->self);
+                }
+                else {
+                    agent->Actions()->UnitCommand(self, ABILITY_ID::ATTACK, posTarget);
+                }
                 escapeLoc = posTarget;
             }
             else if (squad->subSquadStates[self] == 'k') {
@@ -647,7 +652,7 @@ public:
                         checkPoints.push_back(checkPoint);
                         checkPointDistances.push_back(-1);
                     }
-                    if (position != posTarget) {
+                    if (DistanceSquared2D(position,posTarget) > 4) {
                         vector<Point2D> pathDijkstra = PrimordialStar::getPathDijkstra(position, posTarget, radius, agent);
                         float dijkstraLength = PrimordialStar::getPathLength(pathDijkstra);
                         for (int i = 0; i < alongPurePathBisects - 1; i++) {
