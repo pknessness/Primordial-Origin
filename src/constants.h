@@ -246,7 +246,7 @@ static Point2D getRandomPathable(Agent* agent, float startX = -1, float endX = -
         float x = sX + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eX - sX)));
         float y = sY + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eY - sY)));
         p = Point2D{ x, y };
-    } while (!Aux::checkPathable(p));
+    } while (!Aux::checkPathable(p) || !Aux::isWithin(p, agent));
     return p;
 }
 
@@ -264,7 +264,7 @@ static Point2D getRandomNonPathable(Agent* agent, float startX = -1, float endX 
         float x = sX + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eX - sX)));
         float y = sY + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eY - sY)));
         p = Point2D{ x, y };
-    } while (Aux::checkPathable(p));
+    } while (Aux::checkPathable(p) || !Aux::isWithin(p, agent));
     return p;
 }
 

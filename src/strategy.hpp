@@ -242,6 +242,7 @@ namespace Strategem {
     Strategy pig_stalker_colossus;
     Strategy chargelot_immortal_archon_timing;
     Strategy hupsaiya_adept_timing;
+    Strategy zuka_colossus_voidray;
 
     void initStrategies() {
         shit_stalker_colossus.build_order = {
@@ -438,5 +439,84 @@ namespace Strategem {
 
         hupsaiya_adept_timing.unitRatio.adept = 1; 
         hupsaiya_adept_timing.armyAttackNum = 1; //Hit at 4:37 with 14 Adepts
+
+        zuka_colossus_voidray.build_order = {
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, P2D(Aux::staging_location)), // 14 probes
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}), // 15 probes
+            MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}), // 16 probes
+            MacroBuilding(ABILITY_ID::BUILD_NEXUS, P2D(Aux::rankedExpansions[0])), // 20 probes
+            MacroBuilding(ABILITY_ID::BUILD_CYBERNETICSCORE, {-1,-1}), // 20 probes
+            MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}), // 21 probes
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}), // 22 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER), // 22 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_CYBERNETICSCORE, ABILITY_ID::RESEARCH_WARPGATE), // 23 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER), // 26 probes
+            MacroBuilding(ABILITY_ID::BUILD_STARGATE, {-1,-1}), // 29 probes
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}), // 33 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER), // 33 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_ORACLE), // 37 probes
+            MacroBuilding(ABILITY_ID::BUILD_SHIELDBATTERY, {-1,-1}), // 38 probes
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}), // 43 probes
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}), // 43 probes
+            MacroBuilding(ABILITY_ID::BUILD_ROBOTICSFACILITY, {-1,-1}), // 44 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_VOIDRAY), // 46 probes
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}), // 46 probes
+            MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}), // 51 probes
+            MacroBuilding(ABILITY_ID::BUILD_ROBOTICSBAY, {-1,-1}), // 52 probes
+            MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}), // 53 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_OBSERVER), // 53 probes
+            MacroBuilding(ABILITY_ID::BUILD_SHIELDBATTERY, {-1,-1}), // 53 probes
+            MacroBuilding(ABILITY_ID::BUILD_NEXUS, {-1,-1}), // 57 probes
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}), // 59 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_ROBOTICSBAY, ABILITY_ID::RESEARCH_EXTENDEDTHERMALLANCE), // 59 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_IMMORTAL), // 60 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_VOIDRAY), // 66 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT), // 66 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT), // 66 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_COLOSSUS), // 66 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_OBSERVER), // 78 probes
+            MacroBuilding(ABILITY_ID::BUILD_FORGE, {-1,-1}), // 86 probes
+            MacroBuilding(ABILITY_ID::BUILD_FORGE, {-1,-1}), // 86 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_VOIDRAY), // 88 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER), // 88 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER), // 88 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_COLOSSUS), // 96 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER), // 97 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER), // 97 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER), // 97 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_FORGE, ABILITY_ID::RESEARCH_PROTOSSGROUNDWEAPONSLEVEL1), // 97 probes
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}), // 101 probes
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}), // 101 probes
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}), // 101 probes
+            MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}), // 104 probes
+            MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}), // 104 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_COLOSSUS), // 107 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_VOIDRAY), // 113 probes
+            MacroBuilding(ABILITY_ID::BUILD_FORGE, {-1,-1}), // 104 probes
+            MacroBuilding(ABILITY_ID::BUILD_TWILIGHTCOUNCIL, {-1,-1}), // 107 probes
+            MacroBuilding(ABILITY_ID::BUILD_FORGE, {-1,-1}), // 107 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_VOIDRAY), // 107 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_FORGE, ABILITY_ID::RESEARCH_PROTOSSGROUNDWEAPONSLEVEL2), // 110 probes
+            MacroBuilding(ABILITY_ID::BUILD_SHIELDBATTERY, {-1,-1}), // 110 probes
+            MacroBuilding(ABILITY_ID::BUILD_SHIELDBATTERY, {-1,-1}), // 110 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_FORGE, ABILITY_ID::RESEARCH_PROTOSSGROUNDARMORLEVEL1), // 110 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_OBSERVER), // 110 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER), // 116 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER), // 116 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_IMMORTAL), // 122 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_TWILIGHTCOUNCIL, ABILITY_ID::RESEARCH_CHARGE), // 122 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT), // 122 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT), // 122 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT), // 122 probes
+            MacroBuilding(ABILITY_ID::BUILD_TEMPLARARCHIVE, {-1,-1}), // 122 probes
+            MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_VOIDRAY), // 126 probes
+        };
+
+        zuka_colossus_voidray.unitRatio.stalker = 10;
+        zuka_colossus_voidray.unitRatio.colossus = 4;
+        zuka_colossus_voidray.unitRatio.voidray = 6;
+        zuka_colossus_voidray.unitRatio.observer = 1;
+        zuka_colossus_voidray.unitRatio.immortal = 2;
+        zuka_colossus_voidray.armyAttackNum = 16; //Adjust timing and army composition as needed
     }
 }
