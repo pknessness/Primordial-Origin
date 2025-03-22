@@ -1913,6 +1913,8 @@ public:
 //damagenet detector net
 //fix armored damage calculation
 
+//iteratively cache EVERY DIJKSTRA over the course of a match
+
 //more complex army splitting, harrasssing army, etc
 
 //primordialstar optimizations: 
