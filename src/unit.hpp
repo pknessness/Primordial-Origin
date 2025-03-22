@@ -1016,7 +1016,7 @@ UnitWrapper::UnitWrapper(const Unit *unit) : self(unit->tag), type(unit->unit_ty
             UnitManager::enemies[storageType].push_back(this);
         }
         else {
-            printf("Duplicate Enemy %s %Ix", UnitTypeToName(type), self);
+            //printf("Duplicate Enemy %s %Ix", UnitTypeToName(type), self);
         }
     }
     ignoreFrames = 0;

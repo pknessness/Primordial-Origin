@@ -141,10 +141,89 @@ int buildingPointer = 0;
 
 std::vector<Effect> currentEffects;
 
+sc2::GameInfo cached_gameinfo;
+int global_mapWidth;
+int global_mapHeight;
+
 constexpr float MINERALS_PER_PROBE_PER_SEC = 55.0F / 60;
 constexpr float VESPENE_PER_PROBE_PER_SEC = 61.0F / 60;
 
 constexpr int PYLON_RADIUS = 6;
+
+struct ComplexWeapon {
+    Weapon w;
+    float energyCostStatic;
+    float energyCostPerFrame;
+
+    ComplexWeapon() : energyCostStatic(0), energyCostPerFrame(0) {
+
+    }
+
+    ComplexWeapon(Weapon::TargetType type_, float damage_, uint32_t attacks_, float range_, float speed_, float energyCostStatic_ = 0, float energyCostPerFrame_ = 0) {
+        w.type = type_;
+        w.damage_ = damage_;
+        w.attacks = attacks_;
+        w.range = range_;
+        w.speed = speed_;
+        energyCostStatic = energyCostStatic_;
+        energyCostPerFrame = energyCostPerFrame_;
+    }
+
+    void setWeapon(Weapon::TargetType type_, float damage_, uint32_t attacks_, float range_, float speed_, float energyCostStatic_ = 0, float energyCostPerFrame_ = 0) {
+        w.type = type_;
+        w.damage_ = damage_;
+        w.attacks = attacks_;
+        w.range = range_;
+        w.speed = speed_;
+        energyCostStatic = energyCostStatic_;
+        energyCostPerFrame = energyCostPerFrame_;
+    }
+
+    void addDamageBonus(Attribute a, float bonus) {
+        DamageBonus b;
+        b.attribute = a;
+        b.bonus = bonus;
+        w.damage_bonus.push_back(b);
+    }
+};
+
+//BLINDINGCLOUD = 10,
+//CORROSIVEBILE = 11,
+//GUARDIANSHIELD = 2,
+//INVALID = 0,
+//LIBERATORDEFENDERZONE = 9,
+//LIBERATORDEFENDERZONESETUP = 8,
+//LURKERSPINES = 12,
+//NUKEDOT = 7,
+//PSISTORM = 1,
+//SCANNERSWEEP = 6,
+//TEMPORALFIELD = 4,
+//TEMPORALFIELDGROWING = 3,
+//THERMALLANCE = 5,
+
+struct EffectDamage {
+    Weapon w;
+    float lingeringFrames;
+
+    EffectDamage(Weapon::TargetType type_, float damage_, uint32_t attacks_, float range_, float speed_, float lingeringFrames_) {
+        w.type = type_;
+        w.damage_ = damage_;
+        w.attacks = attacks_;
+        w.range = range_;
+        w.speed = speed_;
+        lingeringFrames = lingeringFrames_;
+    }
+
+    void addDamageBonus(Attribute a, float bonus) {
+        DamageBonus b;
+        b.attribute = a;
+        b.bonus = bonus;
+        w.damage_bonus.push_back(b);
+    }
+};
+
+map<AbilityID, ComplexWeapon> extraWeapons;
+map<EffectID, EffectDamage> damageEffects;
 
 void loadEffects(Agent* agent) {
     currentEffects = agent->Observation()->GetEffects();
@@ -184,6 +263,14 @@ UnitTypeData getStats(UnitTypeID type, Agent *agent) {
         catch (...) {
             printf("Errant Type: %s %ud %ul %d\n", UnitTypeToName(type), static_cast<uint32_t>(type), static_cast<uint32_t>(type), static_cast<uint32_t>(type));
             return UnitTypeData();//agent->Observation()->GetUnitTypeData().at(static_cast<uint32_t>(type));
+        }
+        if (type == UNIT_TYPEID::PROTOSS_VOIDRAY) {
+            ComplexWeapon prismaticBeam(Weapon::TargetType::Any, 6, 1, 6, 1 / 0.36F);
+            prismaticBeam.addDamageBonus(Attribute::Armored, 4);
+            statsMap[UNIT_TYPEID::PROTOSS_VOIDRAY].weapons.push_back(prismaticBeam.w);
+        }else if (type == UNIT_TYPEID::PROTOSS_SENTRY) {
+            ComplexWeapon disruptionBeam(Weapon::TargetType::Any, 6, 1, 5, 1 / 0.71F);
+            statsMap[UNIT_TYPEID::PROTOSS_SENTRY].weapons.push_back(disruptionBeam.w);
         }
     }
     return statsMap[type];
@@ -246,7 +333,7 @@ static Point2D getRandomPathable(Agent* agent, float startX = -1, float endX = -
         float x = sX + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eX - sX)));
         float y = sY + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eY - sY)));
         p = Point2D{ x, y };
-    } while (!Aux::checkPathable(p));
+    } while (!Aux::checkPathable(p) || !Aux::isWithin(p, agent));
     return p;
 }
 
@@ -264,7 +351,7 @@ static Point2D getRandomNonPathable(Agent* agent, float startX = -1, float endX 
         float x = sX + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eX - sX)));
         float y = sY + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eY - sY)));
         p = Point2D{ x, y };
-    } while (Aux::checkPathable(p));
+    } while (Aux::checkPathable(p) || !Aux::isWithin(p, agent));
     return p;
 }
 
@@ -1095,81 +1182,6 @@ const char* AttributeToName(Attribute a) {
 const char* TargetTypeToName(Weapon::TargetType t) {
     return targetTypeNames[(int)t];
 }
-
-struct ComplexWeapon {
-    Weapon w;
-    float energyCostStatic;
-    float energyCostPerFrame;
-
-    ComplexWeapon() : energyCostStatic(0), energyCostPerFrame(0){
-
-    }
-
-    ComplexWeapon(Weapon::TargetType type_, float damage_, uint32_t attacks_, float range_, float speed_, float energyCostStatic_ = 0, float energyCostPerFrame_ = 0) {
-        w.type = type_;
-        w.damage_ = damage_;
-        w.attacks = attacks_;
-        w.range = range_;
-        w.speed = speed_;
-        energyCostStatic = energyCostStatic_;
-        energyCostPerFrame = energyCostPerFrame_;
-    }
-
-    void setWeapon(Weapon::TargetType type_, float damage_, uint32_t attacks_, float range_, float speed_, float energyCostStatic_ = 0, float energyCostPerFrame_ = 0) {
-        w.type = type_;
-        w.damage_ = damage_;
-        w.attacks = attacks_;
-        w.range = range_;
-        w.speed = speed_;
-        energyCostStatic = energyCostStatic_;
-        energyCostPerFrame = energyCostPerFrame_;
-    }
-    
-    void addDamageBonus(Attribute a, float bonus) {
-        DamageBonus b;
-        b.attribute = a;
-        b.bonus = bonus;
-        w.damage_bonus.push_back(b);
-    }
-};
-
-//BLINDINGCLOUD = 10,
-//CORROSIVEBILE = 11,
-//GUARDIANSHIELD = 2,
-//INVALID = 0,
-//LIBERATORDEFENDERZONE = 9,
-//LIBERATORDEFENDERZONESETUP = 8,
-//LURKERSPINES = 12,
-//NUKEDOT = 7,
-//PSISTORM = 1,
-//SCANNERSWEEP = 6,
-//TEMPORALFIELD = 4,
-//TEMPORALFIELDGROWING = 3,
-//THERMALLANCE = 5,
-
-struct EffectDamage {
-    Weapon w;
-    float lingeringFrames;
-
-    EffectDamage(Weapon::TargetType type_, float damage_, uint32_t attacks_, float range_, float speed_, float lingeringFrames_) {
-        w.type = type_;
-        w.damage_ = damage_;
-        w.attacks = attacks_;
-        w.range = range_;
-        w.speed = speed_;
-        lingeringFrames = lingeringFrames_;
-    }
-
-    void addDamageBonus(Attribute a, float bonus) {
-        DamageBonus b;
-        b.attribute = a;
-        b.bonus = bonus;
-        w.damage_bonus.push_back(b);
-    }
-};
-
-map<AbilityID, ComplexWeapon> extraWeapons;
-map<EffectID, EffectDamage> damageEffects;
 
 void loadExtraDamageSources() {
     //https://liquipedia.net/starcraft2/Oracle_(Legacy_of_the_Void)

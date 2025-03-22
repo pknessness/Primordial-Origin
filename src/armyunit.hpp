@@ -133,7 +133,7 @@ public:
             UnitWrapper* newCore = nullptr;
             float dist2 = -1;
             for (auto wrap : army) {
-                if (c == Composition::Air || (wrap->get(agent) != nullptr && !wrap->get(agent)->is_flying)) {
+                if ((c == Composition::Air || (wrap->get(agent) != nullptr && !wrap->get(agent)->is_flying)) && squadStates[wrap->self] != 'm') {
                     Point2D pos = wrap->pos(agent);
                     float distWrap = DistanceSquared2D(pos, numCenter);
                     if (dist2 == -1 || distWrap < dist2) {
@@ -522,10 +522,14 @@ public:
             /*
             * . for nothing
             * a for attacking
-            * r for retreating
+            * r for retreating/going to safety
+            * c for go to squad (no targets for them)
             * j for joining
             * k for attack joining
-            * m for moving (with squad)
+            * m for moving (with squad) //NOTUSED
+            * l for no shields escape attack
+            * p for no shields escape 
+            * h for GET THE FUCK OUT YOU'RE LOW
             */
             //char mode = '.';
             squad->subSquadStates[self] = '.';
@@ -564,8 +568,17 @@ public:
                 //UnitWrappers potentialTargets = getTargetEnemy(personalTargets, agent);
 
                 UnitWrappers potentialTargets = getTargetEnemy(squad->targets, agent);
-                
-                if (potentialTargets.size() != 0 && getStats(agent).weapons.size() > 0) {
+                if ((health + shields) / (healthMax + shieldsMax) < 0.25) {
+                    squad->subSquadStates[self] = 'h';
+                } else if (shields < 0.05) {
+                    if (get(agent)->weapon_cooldown > 0) {
+                        squad->subSquadStates[self] = 'p';
+                    }
+                    else {
+                        squad->subSquadStates[self] = 'l';
+                    }
+                }
+                else if (potentialTargets.size() != 0 && getStats(agent).weapons.size() > 0) {
                     targetWrap = potentialTargets.front();
 
                     Weapon weap = getStats(agent).weapons[0];
@@ -588,7 +601,7 @@ public:
                         squad->subSquadStates[self] = 'a';
                     }
                     else {
-                        posTarget = pos(agent);
+                        posTarget = squad->coreCenter(agent);//posTarget = pos(agent);
                         //mode = 'r';
                         squad->subSquadStates[self] = 'c';
                     }
@@ -625,6 +638,35 @@ public:
             else if (squad->subSquadStates[self] == 'k') {
                 agent->Actions()->UnitCommand(self, ABILITY_ID::ATTACK, posTarget);
                 escapeLoc = posTarget;
+            }
+            else if (squad->subSquadStates[self] == 'p' || squad->subSquadStates[self] == 'h' || squad->subSquadStates[self] == 'l') {
+                if (!Aux::isWithin(escapeLoc, agent)) {
+                    escapeLoc = position;
+                }
+                escapeCost = calculatePathDamage(position, escapeLoc, agent);
+
+                for (int i = 0; i < escapePointChecks; i++) {
+                    Point2D checkPoint = randomPointRadius(position, escapePointRadius);
+                    if (!Aux::isWithin(checkPoint, agent)) {
+                        i--;
+                        continue;
+                    }
+                    float checkCost = calculatePathDamage(position, checkPoint, agent);
+                    if (escapeCost > checkCost) {
+                        escapeLoc = checkPoint;
+                        escapeCost = checkCost;
+                    }
+                    else if (escapeCost == checkCost) {
+                        if (imRef(PrimordialStar::minDistanceGrid, (int)escapeLoc.x, (int)escapeLoc.y).distance < imRef(PrimordialStar::minDistanceGrid, (int)escapeLoc.x, (int)escapeLoc.y).distance) {
+                            escapeLoc = checkPoint;
+                            escapeCost = checkCost;
+                        }
+                    }
+                }
+
+                agent->Actions()->UnitCommand(self, ABILITY_ID::MOVE_MOVE, escapeLoc);
+                DebugLine(agent, Point3D{ escapeLoc.x,escapeLoc.y, pos3D(agent).z }, Point3D{ escapeLoc.x,escapeLoc.y, pos3D(agent).z + 1.5F }, Colors::Purple);
+
             }
             else if (squad->subSquadStates[self] == 'j' || squad->subSquadStates[self] == 'r' || squad->subSquadStates[self] == 'c') {
                 if (!Aux::isWithin(escapeLoc,agent)) {
@@ -742,7 +784,10 @@ public:
         //        }
         //    }
         //}
-        float cost = searchCost(posTarget);
+        float cost = -1;
+        if (Aux::isWithin(posTarget, agent)) {
+            cost = searchCost(posTarget);
+        }
         //posTarget = { 0,0 };
         for (int i = 0; i < numChecksSearch; i++) {
             Point2D check;
