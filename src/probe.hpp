@@ -11,7 +11,6 @@ map<Tag, bool> nexusNearby;
 
 Point2D getBuildingLocation(Agent *agent) {
     if (Aux::buildingPointer >= Aux::buildingLocations.size()) {
-        GameInfo game_info = agent->Observation()->GetGameInfo();
         auto pylons = UnitManager::get(UNIT_TYPEID::PROTOSS_PYLON);
         Point2D diffuse[] = {{2.5, 0.5}, {-0.5, 2.5}, {-2.5, -0.5}, {0.5, -2.5}};
         bool found = false;
@@ -52,7 +51,6 @@ Point2D getBuildingLocation(Agent *agent) {
 
 Point2D getPylonLocation(Agent *agent) {
     if (Aux::pylonPointer >= Aux::pylonLocations.size()) {
-        GameInfo game_info = agent->Observation()->GetGameInfo();
         auto pylons = UnitManager::get(UNIT_TYPEID::PROTOSS_PYLON);
         Point2D diffuse[] = { {6, -7}, {-7, -6}, {-6, 7}, {7, 6} };
         bool found = false;
@@ -70,8 +68,8 @@ Point2D getPylonLocation(Agent *agent) {
         }
         if (!found) {
             for (int i = 0; i < 5000; i++) {
-                float x = ((float)std::rand()) * game_info.width / RAND_MAX;
-                float y = ((float)std::rand()) * game_info.height / RAND_MAX;
+                float x = ((float)std::rand()) * Aux::global_mapWidth / RAND_MAX;
+                float y = ((float)std::rand()) * Aux::global_mapHeight / RAND_MAX;
 
                 Point2D p{ x, y };
 
