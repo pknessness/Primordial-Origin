@@ -133,7 +133,7 @@ public:
             UnitWrapper* newCore = nullptr;
             float dist2 = -1;
             for (auto wrap : army) {
-                if (c == Composition::Air || (wrap->get(agent) != nullptr && !wrap->get(agent)->is_flying)) {
+                if ((c == Composition::Air || (wrap->get(agent) != nullptr && !wrap->get(agent)->is_flying)) && squadStates[wrap->self] != 'm') {
                     Point2D pos = wrap->pos(agent);
                     float distWrap = DistanceSquared2D(pos, numCenter);
                     if (dist2 == -1 || distWrap < dist2) {
