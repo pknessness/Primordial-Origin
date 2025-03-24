@@ -42,7 +42,7 @@ struct gridCell {
     }
 
     void clear() {
-        memset(wrappers, 0, cellCapacity * sizeof(UnitWrapper*));
+        //memset(wrappers, 0, cellCapacity * sizeof(UnitWrapper*));
         size = 0;
     }
 };
@@ -124,7 +124,7 @@ Bounds fillSpacialModify(Point2D pos, float radius, Agent* agent) {
 void resetGridModify() {
     //for (int i = 0; i < grid->width(); i++) {
     //    for (int j = 0; j < grid->height(); j++) {
-    //        imRef(grid, i, j).clear();
+    //        imRef(gridModify, i, j) = 0;
     //    }
     //}
     gridModify->clear();
@@ -140,12 +140,12 @@ void initGridSelf() {
 }
 
 void resetGridSelf() {
-    //for (int i = 0; i < grid->width(); i++) {
-    //    for (int j = 0; j < grid->height(); j++) {
-    //        imRef(grid, i, j).clear();
-    //    }
-    //}
-    grid->clear();
+    for (int i = 0; i < grid->width(); i++) {
+        for (int j = 0; j < grid->height(); j++) {
+            imRef(grid, i, j).clear();
+        }
+    }
+    //grid->clear();
 }
 
 void updateGridSelf(Agent *agent) {
@@ -192,7 +192,7 @@ UnitWrappers findInRadiiSelf(Circles c, Agent* agent) {
     if (c.size() == 0) {
         return UnitWrappers();
     }
-    gridModify->clear();
+    resetGridModify();
 
     Bounds bound = fillSpacialModify(c[0].pos, c[0].radius, agent);
     for (int i = 1; i < c.size(); i++) {
@@ -212,12 +212,12 @@ void initGridEnemy() {
 }
 
 void resetGridEnemy() {
-    //for (int i = 0; i < gridEnemy->width(); i++) {
-    //    for (int j = 0; j < gridEnemy->height(); j++) {
-    //        imRef(gridEnemy, i, j).clear();
-    //    }
-    //}
-    gridEnemy->clear();
+    for (int i = 0; i < gridEnemy->width(); i++) {
+        for (int j = 0; j < gridEnemy->height(); j++) {
+            imRef(gridEnemy, i, j).clear();
+        }
+    }
+    //gridEnemy->clear();
 }
 
 void updateGridEnemy(Agent* agent) {
@@ -264,7 +264,7 @@ UnitWrappers findInRadiiEnemy(Circles c, Agent* agent) {
     if (c.size() == 0) {
         return UnitWrappers();
     }
-    gridModify->clear();
+    resetGridModify();
 
     Bounds bound = fillSpacialModify(c[0].pos, c[0].radius, agent);
     for (int i = 1; i < c.size(); i++) {

@@ -898,19 +898,7 @@ public:
             }
         }
 
-        std::string words[] = {
-            "wrath", "beans", "power", "soul", "rage", "fire",
-            "energy", "love", "fury", "passion", "spirit",
-            "micro", "strength", "presence", "heart", "truth",
-            "macro", "pulse", "force", "breath", "light",
-            "essence", "grace", "wisdom", "cheese", "embrace",
-            "resolve", "might", "aura", "unity"
-        };
-        int numWords = sizeof(words) / sizeof(words[0]);
-
         printf("Playing on %s\n", Aux::cached_gameinfo.map_name.c_str());
-        Actions()->SendChat("My Origin? Its Primordial, baby! (protoss)");
-        Actions()->SendChat(strprintf("Feel the %s of my Protoss (pheart)", words[std::rand() % numWords].c_str()));
 
         Units units = Observation()->GetUnits(sc2::Unit::Alliance::Neutral);
         for (char c : Aux::cached_gameinfo.map_name) {
@@ -1231,6 +1219,7 @@ public:
     //! Called when a Unit has been created by the player.
     //!< \param unit The created unit.
     virtual void OnUnitCreated(const Unit* unit) {
+        Profiler onStepProfiler("onUnitCreated");
         if (unit->tag == NullTag) {
             return;
         }
@@ -1246,8 +1235,9 @@ public:
                 new Zealot(unit);
             } else if (unit->unit_type == UNIT_TYPEID::PROTOSS_HIGHTEMPLAR) {
                 new HighTemplar(unit);
-            }
-            else {
+            } else if (unit->unit_type == UNIT_TYPEID::PROTOSS_ORACLE) {
+                new Oracle(unit);
+            } else {
                 new ArmyUnit(unit);
             }
         } else if (unit->unit_type == UNIT_TYPEID::PROTOSS_NEXUS) {
@@ -1290,6 +1280,7 @@ public:
     //! Called whenever one of the player's units has been destroyed.
     //!< \param unit The destroyed unit.
     virtual void OnUnitDestroyed(const Unit* unit) {
+        Profiler onStepProfiler("onUnitDestroyed");
         if (unit->alliance == Unit::Alliance::Self) {
             UnitWrapper* u = UnitManager::find(unit->unit_type, unit->tag);
             delete u;
@@ -1347,6 +1338,7 @@ public:
     //! both OnUnitCreated and OnUnitIdle if it does not have a rally set.
     //!< \param unit The idle unit.
     virtual void OnUnitIdle(const Unit* unit) {
+        Profiler onStepProfiler("onUnitIdle");
         //UnitManager::find(unit->unit_type, unit->tag)->execute(this);
     }
 
@@ -1390,6 +1382,22 @@ public:
         //    throw 30;
         //}
         //printf(" ");
+
+        if (Observation()->GetGameLoop() == 10) {
+            std::string words[] = {
+                "wrath", "beans", "power", "soul", "rage", "fire",
+                "energy", "love", "fury", "passion", "spirit",
+                "micro", "strength", "presence", "heart", "truth",
+                "macro", "pulse", "force", "breath", "light",
+                "essence", "grace", "wisdom", "cheese", "embrace",
+                "resolve", "might", "aura", "unity"
+            };
+            int numWords = sizeof(words) / sizeof(words[0]);
+
+            Actions()->SendChat("My Origin? Its Primordial, baby! (protoss)");
+            Actions()->SendChat(strprintf("Feel the %s of my Protoss (pheart)", words[std::rand() % numWords].c_str()));
+        }
+
         Profiler onStepProfiler("onStep");
         //onStepProfiler.disable();
 
@@ -1735,20 +1743,20 @@ public:
 
         //displayNewSpacialHashGridTEST();
 
-        expansionsLoc();
+        //expansionsLoc();
 
-        listMacroActions();
+        //listMacroActions();
         //listEnemyUnits();
 
-        probeLines();
+        //probeLines();
 
-        orderDisplay();
+        //orderDisplay();
 
         //tagDisplay();
         
-        neutralDisplay();
+        //neutralDisplay();
 
-        buildingDisplay();
+        //buildingDisplay();
 
         //enemiesDisplay();
 
@@ -1798,6 +1806,7 @@ public:
     //!  Called when a neutral unit is created. For example, mineral fields observed for the first time
     //!< \param unit The observed unit.
     virtual void OnNeutralUnitCreated(const Unit* unit) {
+        Profiler onStepProfiler("onNeutralUnitCreated");
         if (Aux::isVespene(*unit)) {
             Vespene* u = new Vespene(unit);
             u->execute(this);
@@ -1824,6 +1833,7 @@ public:
     //!< \param health The change in health (damage is positive)
     //!< \param shields The change in shields (damage is positive)
     virtual void OnUnitDamaged(const Unit* unit, float health, float shields) {
+        Profiler onStepProfiler("onUnitDamaged");
         UnitWrapper* wrap = UnitManager::find(unit->unit_type, unit->tag);
         if (unit->alliance == Unit::Alliance::Self && wrap != nullptr) {
             wrap->executeDamaged(this, health, shields);
@@ -1841,6 +1851,7 @@ public:
     //! Called when an enemy unit enters vision from out of fog of war.
     //!< \param unit The unit entering vision.
     virtual void OnUnitEnterVision(const Unit* unit) {
+        Profiler onStepProfiler("onUnitEnterVision");
         UnitWrapper* u = new UnitWrapper(unit);
         u->execute(this);
         Aux::addPlacement(unit->pos, unit->unit_type);
@@ -1881,6 +1892,9 @@ public:
 //classify warpgates as gateways in storagetype
 
 //more complex army splitting, harrasssing army, etc
+
+//anti cannon rush
+//https://www.reddit.com/r/allthingsprotoss/comments/1j99tv4/comment/mhg72h5/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
 
 //primordialstar optimizations: 
 //-check max num of paths from nodes and max length of a path to optimize

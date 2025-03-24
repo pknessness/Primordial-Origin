@@ -1112,7 +1112,9 @@ void UnitWrapper::loadAbilities(Agent *agent) {
         }
     }
     vector<AvailableAbilities> allAb = agent->Query()->GetAbilitiesForUnits(all);
-    for (AvailableAbilities abil : allAb) {
+    while(allAb.size() > 0) {
+        AvailableAbilities abil = allAb.back();
+        allAb.pop_back();
         if (abil.unit_tag != NullTag) {
             UnitWrapper* u = UnitManager::find(abil.unit_type_id, abil.unit_tag);
             if (u == nullptr) {

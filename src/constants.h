@@ -18,6 +18,9 @@
 
 using namespace sc2;
 
+constexpr float timeSpeed = 1.4F;
+constexpr float fps = 16 * timeSpeed;
+
 //enum Composition { NONE, AIR, GND, BOTH };
 
 int8_t diagULBR[10][10] = {
@@ -261,11 +264,11 @@ UnitTypeData getStats(UnitTypeID type, Agent *agent) {
             return UnitTypeData();//agent->Observation()->GetUnitTypeData().at(static_cast<uint32_t>(type));
         }
         if (type == UNIT_TYPEID::PROTOSS_VOIDRAY) {
-            ComplexWeapon prismaticBeam(Weapon::TargetType::Any, 6, 1, 6, 1 / 0.36F);
+            ComplexWeapon prismaticBeam(Weapon::TargetType::Any, 6, 1, 6, 0.36F * timeSpeed);
             prismaticBeam.addDamageBonus(Attribute::Armored, 4);
             statsMap[UNIT_TYPEID::PROTOSS_VOIDRAY].weapons.push_back(prismaticBeam.w);
         }else if (type == UNIT_TYPEID::PROTOSS_SENTRY) {
-            ComplexWeapon disruptionBeam(Weapon::TargetType::Any, 6, 1, 5, 1 / 0.71F);
+            ComplexWeapon disruptionBeam(Weapon::TargetType::Any, 6, 1, 5, 0.71F * timeSpeed);
             statsMap[UNIT_TYPEID::PROTOSS_SENTRY].weapons.push_back(disruptionBeam.w);
         }
     }
@@ -1179,13 +1182,13 @@ const char* TargetTypeToName(Weapon::TargetType t) {
 
 void loadExtraDamageSources() {
     //https://liquipedia.net/starcraft2/Oracle_(Legacy_of_the_Void)
-    ComplexWeapon pulsarBeam(Weapon::TargetType::Ground, 15, 1, 4, 1 / 0.61F, 25, 0.0875);
+    ComplexWeapon pulsarBeam(Weapon::TargetType::Ground, 15, 1, 4, 0.61F * timeSpeed, 25, 0.0875);
     extraWeapons[ABILITY_ID::BEHAVIOR_PULSARBEAMON] = pulsarBeam;
 
-    ComplexWeapon volatileBurst(Weapon::TargetType::Ground, 500, 1, 2.2, 1, 0, 0);
+    ComplexWeapon volatileBurst(Weapon::TargetType::Ground, 100, 1, 2.2, 1, 0, 0);
     extraWeapons[ABILITY_ID::EFFECT_EXPLODE] = volatileBurst;
 
-    ComplexWeapon lurkerSpines(Weapon::TargetType::Ground, 20, 1, 8, 1 / 1.43F);
+    ComplexWeapon lurkerSpines(Weapon::TargetType::Ground, 20, 1, 8, 1.43F * timeSpeed);
     extraWeapons[ABILITY_ID::BEHAVIOR_HOLDFIREON_LURKER] = lurkerSpines;
 }
 
@@ -1202,10 +1205,6 @@ struct Building {
     }
 };
 
-
-
-constexpr float timeSpeed = 1.4F;
-constexpr float fps = 16 * timeSpeed;
 
 //BUILDINGS
 constexpr int COST_NEXUS[2] = {400, 0};

@@ -33,6 +33,7 @@ struct lastfew {
 
 using timeus = std::chrono::time_point<std::chrono::steady_clock>;
 map<string, long long> profilerMap;
+map<string, long long> profilerMax;
 map<string, int> profilerCoumt;
 map<string, lastfew> profilerLast;
 
@@ -69,11 +70,13 @@ public:
             profilerMap[sname] = dt;
             profilerCoumt[sname] = 1;
             profilerLast[sname].add(dt);
+            profilerMax[sname] = dt;
         }
         else {
             profilerMap[sname] += dt;
             profilerCoumt[sname] += 1;
             profilerLast[sname].add(dt);
+            profilerMax[sname] = max(profilerMax[sname], dt);
         }
     }
 
