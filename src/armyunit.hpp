@@ -6,7 +6,7 @@
 #include "constants.h"
 #include "profiler.hpp"
 #include "unit.hpp"
-#include "spacialhashgrid.hpp"
+//#include "spacialhashgrid.hpp"
 #include "newspacialhashgrid.hpp"
 #include "unitpriority.hpp"
 #include "debugging.hpp"
@@ -217,7 +217,7 @@ public:
                         c.push_back(Circle{ army[i]->pos(agent), Aux::getStats(army[i]->getType(agent), agent).sight_range + 8.0F});
                     }
                 }
-                targets = SpacialHash::findInRadiiEnemy(c, agent);//SpacialHash::findInRadiusEnemy(coreCenter(agent), armyballRadius() + squadExtraRadius, agent);
+                targets = NewSpacialHash::findInRadiiEnemy(c, agent);//SpacialHash::findInRadiusEnemy(coreCenter(agent), armyballRadius() + squadExtraRadius, agent);
             }
             //targets = SpacialHash::findInRadiusEnemy(coreCenter(agent), armyballRadius() + squadExtraRadius, agent);
 

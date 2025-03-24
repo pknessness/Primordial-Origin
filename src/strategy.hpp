@@ -443,6 +443,7 @@ namespace Strategem {
         zuka_colossus_voidray.build_order = {
             MacroBuilding(ABILITY_ID::BUILD_PYLON, P2D(Aux::staging_location)), // 14 probes
             MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}), // 15 probes
+            MacroBuilding(ABILITY_ID::GENERAL_MOVE, Aux::enemyLoc),
             MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}), // 16 probes
             MacroBuilding(ABILITY_ID::BUILD_NEXUS, P2D(Aux::rankedExpansions[0])), // 20 probes
             MacroBuilding(ABILITY_ID::BUILD_CYBERNETICSCORE, {-1,-1}), // 20 probes

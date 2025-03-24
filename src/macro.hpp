@@ -61,9 +61,12 @@ struct MacroAction {
 };
 
 namespace Macro {
+
     map<UnitTypeID, vector<MacroAction>> actions;
     int lastChecked = 0;
     string diagnostics = "";
+
+    int lastPylonMade = 0;
 
     void addAction(MacroAction m) {
         if (actions.find(m.unit_type) == actions.end()) {
@@ -252,10 +255,13 @@ namespace Macro {
                         continue;
                     }
 
-                    addBuildingTop(ABILITY_ID::BUILD_PYLON, Point2D{-1, -1}, 0);
-                    diagnostics += "PYLON REQUESTED\n\n";
-                    macroProfiler.midLog("PYLON REQUESTED");
-                    break;
+                    if (gt > (uint32_t)(lastPylonMade + 30)) {
+                        addBuildingTop(ABILITY_ID::BUILD_PYLON, Point2D{ -1, -1 }, 0);
+                        diagnostics += "PYLON REQUESTED\n\n";
+                        macroProfiler.midLog("PYLON REQUESTED");
+                        break;
+                    }
+                    continue;
                 }
             }
 
@@ -640,6 +646,9 @@ namespace Macro {
                         if (topAct.unit_type == UNIT_TYPEID::PROTOSS_PROBE) {
                             for (UnitWrapper *probe : probes) {
                                 if (probe->self == actionUnit->tag) {
+                                    if (topAct.ability == ABILITY_ID::BUILD_PYLON) {
+                                        lastPylonMade = gt;
+                                    }
                                     ((Probe *)probe)->addBuilding(topAct);
                                     break;
                                 }

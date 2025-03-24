@@ -10,7 +10,7 @@
 #include "unitmanager.hpp"
 #include "zhangSuen.hpp"
 #include "newspacialhashgrid.hpp"
-#include "spacialhashgrid.hpp"
+//#include "spacialhashgrid.hpp"
 #include "BoudaoudSiderTariThinning.hpp"
 #include <sc2api/sc2_gametypes.h>
 #include <sc2utils/sc2_arg_parser.h>
@@ -274,108 +274,6 @@ public:
         }
     }
 
-    void displaySpacialHashGrid() {
-        GameInfo game_info = Aux::cached_gameinfo;
-
-        int global_mapWidth = game_info.width;
-        int global_mapHeight = game_info.height;
-
-        Point2D center = Observation()->GetCameraPos();
-        int wS = int(center.x) - 10;
-        if (wS < 0)
-            wS = 0;
-        int hS = int(center.y) - 5;
-        if (hS < 0)
-            hS = 0;
-        int wE = int(center.x) + 11;
-        if (wE > global_mapWidth)
-            wE = global_mapWidth;
-        int hE = int(center.y) + 14;
-        if (hE > global_mapHeight)
-            hE = global_mapHeight;
-
-        #define BOX_BORDER 0.02F
-
-        for (int w = wS; w < wE; w++) {
-            for (int h = hS; h < hE; h++) {
-                Point2DI point = Point2DI(w, h);
-                float boxHeight = 0;
-                Color c(255, 255, 255);
-
-                // for (auto loc : path) {
-                //     if (loc.x == w && loc.y == h) {
-                //         c = Color(120, 23, 90);
-                //         break;
-                //     }
-                // }
-
-                if (imRef(SpacialHash::grid, w, h).size() != 0) {
-                        c = {20, 200, 210};
-                } else if (imRef(SpacialHash::gridEnemy, w, h).size() != 0) {
-                        c = {210, 200, 20};
-                }
-
-                if (0 || !(c.r == 255 && c.g == 255 && c.b == 255)) {
-                    float height = Observation()->TerrainHeight(Point2D{ w + 0.5F, h + 0.5F });
-
-                    DebugBox(this,Point3D(w + BOX_BORDER, h + BOX_BORDER, height + 0.01F),
-                                            Point3D(w + 1 - BOX_BORDER, h + 1 - BOX_BORDER, height + boxHeight), c);
-                }
-            }
-        }
-    }
-
-    void displaySpacialHashGridTEST() {
-        GameInfo game_info = Aux::cached_gameinfo;
-
-        int global_mapWidth = game_info.width;
-        int global_mapHeight = game_info.height;
-
-        Point2D center = Observation()->GetCameraPos();
-        int wS = int(center.x) - 10;
-        if (wS < 0)
-            wS = 0;
-        int hS = int(center.y) - 5;
-        if (hS < 0)
-            hS = 0;
-        int wE = int(center.x) + 11;
-        if (wE > global_mapWidth)
-            wE = global_mapWidth;
-        int hE = int(center.y) + 14;
-        if (hE > global_mapHeight)
-            hE = global_mapHeight;
-
-        #define BOX_BORDER 0.02F
-
-        for (int w = wS; w < wE; w++) {
-            for (int h = hS; h < hE; h++) {
-                Point2DI point = Point2DI(w, h);
-                float boxHeight = 0;
-                Color c(255, 255, 255);
-
-                if (imRef(SpacialHash::gridModify, w, h) != 0) {
-                    c = { 20, 200, 210 };
-                }
-
-                if (0 || !(c.r == 255 && c.g == 255 && c.b == 255)) {
-                    float height = Observation()->TerrainHeight(Point2D{ w + 0.5F, h + 0.5F });
-
-                    DebugBox(this, Point3D(w + BOX_BORDER, h + BOX_BORDER, height + 0.01F),
-                        Point3D(w + 1 - BOX_BORDER, h + 1 - BOX_BORDER, height + boxHeight), c);
-                #if MICRO_TEST
-                    DebugText(this, strprintf("%d, %d", w, h),
-                        Point3D(w + BOX_BORDER, h + 0.2 + BOX_BORDER, height + 0.1),
-                        Color(200, 90, 15), 4);
-                #endif
-                    /*std::string cs = imRef(display, w, h);
-                    float disp = cs.length() * 0.0667 * fontSize / 15;
-                    DebugText(this,cs, Point3D(w + 0.5 - disp, h + 0.5, height + 0.1 + displace),
-                                            Color(200, 190, 115), fontSize);*/
-                }
-            }
-        }
-    }
-
     void displayNewSpacialHashGridTEST() {
         GameInfo game_info = Aux::cached_gameinfo;
 
@@ -411,7 +309,7 @@ public:
                 }
 
                 if (0 || !(c.r == 255 && c.g == 255 && c.b == 255)) {
-                    float height = Observation()->TerrainHeight(Point2D{ w + NewSpacialHash::cellSize * 0.5F, h + NewSpacialHash::cellSize * 0.5F });
+                    float height = Observation()->TerrainHeight(Point2D{ w + 0.5F, h + 0.5F });
 
                     DebugBox(this, Point3D(w + BOX_BORDER, h + BOX_BORDER, height + 0.01F),
                         Point3D(w + NewSpacialHash::cellSize - BOX_BORDER, h + NewSpacialHash::cellSize - BOX_BORDER, height + boxHeight), c);
@@ -962,9 +860,9 @@ public:
         NewSpacialHash::gridEnemy = new map2d<NewSpacialHash::gridCell>(Aux::global_mapWidth / NewSpacialHash::cellSize + 1, Aux::global_mapHeight / NewSpacialHash::cellSize + 1, true);
         NewSpacialHash::gridModify = new map2d<int8_t>(Aux::global_mapWidth / NewSpacialHash::cellSize + 1, Aux::global_mapHeight / NewSpacialHash::cellSize + 1, true);
 
-        SpacialHash::grid = new map2d<UnitWrappers>(Aux::global_mapWidth, Aux::global_mapHeight, true);
-        SpacialHash::gridEnemy = new map2d<UnitWrappers>(Aux::global_mapWidth, Aux::global_mapHeight, true);
-        SpacialHash::gridModify = new map2d<int8_t>(Aux::global_mapWidth, Aux::global_mapHeight, true);
+        //SpacialHash::grid = new map2d<UnitWrappers>(Aux::global_mapWidth, Aux::global_mapHeight, true);
+        //SpacialHash::gridEnemy = new map2d<UnitWrappers>(Aux::global_mapWidth, Aux::global_mapHeight, true);
+        //SpacialHash::gridModify = new map2d<int8_t>(Aux::global_mapWidth, Aux::global_mapHeight, true);
 
         Aux::buildingBlocked = new map2d<int8_t>(Aux::global_mapWidth, Aux::global_mapHeight, true);
         Aux::pathingMap = new map2d<int8_t>(Aux::global_mapWidth, Aux::global_mapHeight, true);
@@ -989,10 +887,10 @@ public:
         UnitManager::enemyDamageNetModify = new map2d<int8_t>(Aux::global_mapWidth * UnitManager::damageNetPrecision, Aux::global_mapHeight * UnitManager::damageNetPrecision, true);
         UnitManager::enemyDamageNetTemp = new map2d<float>(Aux::global_mapWidth * UnitManager::damageNetPrecision, Aux::global_mapHeight * UnitManager::damageNetPrecision, true);
 
-        SpacialHash::initGrid();
-        SpacialHash::initGridEnemy();
+        NewSpacialHash::initGridSelf();
+        NewSpacialHash::initGridEnemy();
 
-        strat = &Strategem::shit_stalker_colossus;//&Strategem::zuka_colossus_voidray;//&Strategem::pig_stalker_colossus;//&Strategem::hupsaiya_adept_timing;//&Strategem::chargelot_immortal_archon_timing;//
+        strat = &Strategem::zuka_colossus_voidray;//&Strategem::shit_stalker_colossus;//&Strategem::pig_stalker_colossus;//&Strategem::hupsaiya_adept_timing;//&Strategem::chargelot_immortal_archon_timing;//
 
         for (int i = 0; i < path_zhang_suen->width(); i++) {
             for (int j = 0; j < path_zhang_suen->height(); j++) {
@@ -1286,22 +1184,22 @@ public:
                         fprintf(fp, ", ");
                     }
                 }
-                fprintf(fp, "\nMovementSpeed: %.1f\nArmor: %.1f\nWeapons:\n",
-                    d.movement_speed,
+                fprintf(fp, "\nMovementSpeed: %.2f\nArmor: %.1f\nWeapons:\n",
+                    d.movement_speed / timeSpeed,
                     d.armor);
                 for (int w = 0; w < d.weapons.size(); w++) {
-                    fprintf(fp, "-----\n%s\nDamage: %.1f\nAttacks: %d\nRange: %.1f\nSpeed: %.1f\nBonuses: ",
+                    fprintf(fp, "-----\n%s\nDamage: %.2f\nAttacks: %d\nRange: %.2f\nCooldown: %.2fs\nBonuses: ",
                         Aux::TargetTypeToName(d.weapons[w].type),
                         d.weapons[w].damage_,
                         d.weapons[w].attacks,
                         d.weapons[w].range,
-                        d.weapons[w].speed);
+                        d.weapons[w].speed / timeSpeed);
                     for (int b = 0; b < d.weapons[w].damage_bonus.size(); b++) {
                         fprintf(fp, "+%.1f %s", d.weapons[w].damage_bonus[b].bonus, Aux::AttributeToName(d.weapons[w].damage_bonus[b].attribute));
                     }
                     fprintf(fp, "\n-----");
                 }
-                fprintf(fp, "\nSupply: %.1f\nSupply+: %.1f\nRace: %d\nBuildTime: %.1f\nSightRange: %.1f\nTechAliases: ",
+                fprintf(fp, "\nSupply: %.1f\nSupply+: %.1f\nRace: %d\nBuildTime: %.2f\nSightRange: %.1f\nTechAliases: ",
                     d.food_required,
                     d.food_provided,
                     d.race,
@@ -1517,11 +1415,11 @@ public:
 
         onStepProfiler.midLog("ProbeExecute");
 
-        SpacialHash::updateGrid(this);
+        NewSpacialHash::updateGridSelf(this);
 
-        onStepProfiler.midLog("SpacialFriendly");
+        onStepProfiler.midLog("SpacialSelf");
 
-        SpacialHash::updateGridEnemy(this);
+        NewSpacialHash::updateGridEnemy(this);
 
         onStepProfiler.midLog("SpacialEnemy");
 
@@ -1830,12 +1728,12 @@ public:
         }
         //rads = 0.375;
 
-        NewSpacialHash::resetGridModify();
-        NewSpacialHash::fillSpacialModify(Observation()->GetCameraPos(), rads, this);
-        
-        DebugSphere(this, P3D(Observation()->GetCameraPos()), rads);
+        //NewSpacialHash::resetGridModify();
+        //NewSpacialHash::fillSpacialModify(Observation()->GetCameraPos(), rads, this);
+        //
+        //DebugSphere(this, P3D(Observation()->GetCameraPos()), rads);
 
-        displayNewSpacialHashGridTEST();
+        //displayNewSpacialHashGridTEST();
 
         expansionsLoc();
 
@@ -1980,6 +1878,8 @@ public:
 
 //iteratively cache EVERY DIJKSTRA over the course of a match
 
+//classify warpgates as gateways in storagetype
+
 //more complex army splitting, harrasssing army, etc
 
 //primordialstar optimizations: 
@@ -1987,6 +1887,10 @@ public:
 //-modify max dist to not include rocks
 
 //add chrono
+
+//add damagegrid avoidance to search mode
+
+//add ramp code
 
 //-rework enemy squads code
 

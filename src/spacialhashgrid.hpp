@@ -8,14 +8,14 @@
 #include "unit.hpp"
 #include "debugging.hpp"
 
-struct Circle {
+struct OCircle {
     Point2D pos;
     float radius;
 };
 
-using Circles = vector<Circle>;
+using OCircles = vector<OCircle>;
 
-namespace SpacialHash {
+namespace OSpacialHash {
 
 map2d<UnitWrappers> *grid;
 map2d<UnitWrappers> *gridEnemy;
