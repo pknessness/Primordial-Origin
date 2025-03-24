@@ -7,7 +7,7 @@ set(bot_sources
 
 find_library(BFD_LIBRARY NAMES libbfd.a PATHS /usr/lib /usr/lib/x86_64-linux-gnu lib)
 find_library(IBERTY_LIBRARY NAMES libiberty.a PATHS /usr/lib /usr/lib/x86_64-linux-gnu lib)
-find_library(DL_LIBRARY NAMES libdl.a PATHS /usr/lib /usr/lib/x86_64-linux-gnu)
+#find_library(DL_LIBRARY NAMES libdl.a PATHS /usr/lib /usr/lib/x86_64-linux-gnu)
 find_library(SFRAME_LIBRARY NAMES libsframe.a PATHS /usr/lib /usr/lib/x86_64-linux-gnu lib)
 find_library(ZSTD_LIBRARY NAMES libzstd.a PATHS /usr/lib /usr/lib/x86_64-linux-gnu lib)
 #find_library(OPCODES_LIBRARY NAMES libopcodes.a PATHS /usr/lib /usr/lib/x86_64-linux-gnu)
@@ -33,5 +33,5 @@ elseif (APPLE)
     target_link_libraries(BlankBot PRIVATE "-framework Carbon")
 # Building on Linux
 elseif (UNIX AND NOT APPLE)
-    target_link_libraries(BlankBot PRIVATE pthread ${BFD_LIBRARY} ${IBERTY_LIBRARY} ${DL_LIBRARY} ${ZSTD_LIBRARY} ${ZLIB_LIBRARY} ${SFRAME_LIBRARY})
+    target_link_libraries(BlankBot PRIVATE pthread ${BFD_LIBRARY} ${IBERTY_LIBRARY} dl ${ZSTD_LIBRARY} ${ZLIB_LIBRARY} ${SFRAME_LIBRARY})
 endif ()
