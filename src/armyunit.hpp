@@ -7,6 +7,7 @@
 #include "profiler.hpp"
 #include "unit.hpp"
 #include "spacialhashgrid.hpp"
+#include "newspacialhashgrid.hpp"
 #include "unitpriority.hpp"
 #include "debugging.hpp"
 #include "primordialstar.hpp"
@@ -640,14 +641,14 @@ public:
                 escapeLoc = posTarget;
             }
             else if (squad->subSquadStates[self] == 'p' || squad->subSquadStates[self] == 'h' || squad->subSquadStates[self] == 'l') {
-                if (!Aux::isWithin(escapeLoc, agent)) {
+                if (!Aux::isWithin(escapeLoc)) {
                     escapeLoc = position;
                 }
                 escapeCost = calculatePathDamage(position, escapeLoc, agent);
 
                 for (int i = 0; i < escapePointChecks; i++) {
                     Point2D checkPoint = randomPointRadius(position, escapePointRadius);
-                    if (!Aux::isWithin(checkPoint, agent)) {
+                    if (!Aux::isWithin(checkPoint)) {
                         i--;
                         continue;
                     }
@@ -669,7 +670,7 @@ public:
 
             }
             else if (squad->subSquadStates[self] == 'j' || squad->subSquadStates[self] == 'r' || squad->subSquadStates[self] == 'c') {
-                if (!Aux::isWithin(escapeLoc,agent)) {
+                if (!Aux::isWithin(escapeLoc)) {
                     escapeLoc = position;
                 }
                 escapeCost = calculatePathDamage(position, escapeLoc, agent);
@@ -785,17 +786,17 @@ public:
         //    }
         //}
         float cost = -1;
-        if (Aux::isWithin(posTarget, agent)) {
+        if (Aux::isWithin(posTarget)) {
             cost = searchCost(posTarget);
         }
         //posTarget = { 0,0 };
         for (int i = 0; i < numChecksSearch; i++) {
             Point2D check;
             if (get(agent)->is_flying) {
-                check = Aux::getRandomNonPathable(agent);
+                check = Aux::getRandomNonPathable();
             }
             else {
-                check = Aux::getRandomPathable(agent);
+                check = Aux::getRandomPathable();
             }
             float cos = searchCost(check);
             if (cos < cost || cost == -1) {

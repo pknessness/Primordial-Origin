@@ -125,7 +125,7 @@ void fillGridModify2(Point2D pos, float radius, Agent *agent) {
     float y = pos.y - radius;
     for (int i = 0; i < radius * 2 + 1; i++) {
         for (int j = 0; j < radius * 2 + 1; j++) {
-            if (!Aux::isWithin((int)(i + x), (int)(j + y), agent)) {
+            if (!Aux::isWithin((int)(i + x), (int)(j + y))) {
                 continue;
             }
             bool activate = false;
@@ -181,7 +181,7 @@ static UnitWrappers findInRadius_INTERNAL(Bounds b, Agent *agent) {
     UnitWrappers found;
     for (int i = b.xmin; i < b.xmax; i++) {
         for (int j = b.ymin; j < b.ymax; j++) {
-            if (!Aux::isWithin(i, j, agent)) {
+            if (!Aux::isWithin(i, j)) {
                 continue;
             }
             if (imRef(gridModify, i, j) == 1) {
@@ -288,7 +288,7 @@ static UnitWrappers findInRadiusEnemy_INTERNAL(Bounds b, Agent* agent, bool excl
     UnitWrappers found;
     for (int i = b.xmin; i < b.xmax; i++) {
         for (int j = b.ymin; j < b.ymax; j++) {
-            if (!Aux::isWithin(i, j, agent)) {
+            if (!Aux::isWithin(i, j)) {
                 continue;
             }
             if (imRef(gridModify, i, j) == 1) {

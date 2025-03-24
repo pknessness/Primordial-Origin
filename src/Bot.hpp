@@ -9,6 +9,7 @@
 #include "primordialstar.hpp"
 #include "unitmanager.hpp"
 #include "zhangSuen.hpp"
+#include "newspacialhashgrid.hpp"
 #include "spacialhashgrid.hpp"
 #include "BoudaoudSiderTariThinning.hpp"
 #include <sc2api/sc2_gametypes.h>
@@ -51,6 +52,8 @@ public:
     clock_t last_time;
 
     string fileName = "";
+
+    float rads = 0.375;
 
     Point3D P3D(const Point2D& p) {
         return Point3D(p.x, p.y, Observation()->TerrainHeight(p));
@@ -350,13 +353,6 @@ public:
                 float boxHeight = 0;
                 Color c(255, 255, 255);
 
-                // for (auto loc : path) {
-                //     if (loc.x == w && loc.y == h) {
-                //         c = Color(120, 23, 90);
-                //         break;
-                //     }
-                // }
-
                 if (imRef(SpacialHash::gridModify, w, h) != 0) {
                     c = { 20, 200, 210 };
                 }
@@ -371,6 +367,59 @@ public:
                         Point3D(w + BOX_BORDER, h + 0.2 + BOX_BORDER, height + 0.1),
                         Color(200, 90, 15), 4);
                 #endif
+                    /*std::string cs = imRef(display, w, h);
+                    float disp = cs.length() * 0.0667 * fontSize / 15;
+                    DebugText(this,cs, Point3D(w + 0.5 - disp, h + 0.5, height + 0.1 + displace),
+                                            Color(200, 190, 115), fontSize);*/
+                }
+            }
+        }
+    }
+
+    void displayNewSpacialHashGridTEST() {
+        GameInfo game_info = Aux::cached_gameinfo;
+
+        int global_mapWidth = NewSpacialHash::gridModify->width() * NewSpacialHash::cellSize;
+        int global_mapHeight = NewSpacialHash::gridModify->height() * NewSpacialHash::cellSize;
+
+        Point2D center = Observation()->GetCameraPos();
+        int wS = int(center.x) - 10;
+        wS -= (wS % NewSpacialHash::cellSize);
+        if (wS < 0)
+            wS = 0;
+        int hS = int(center.y) - 5;
+        hS -= (hS % NewSpacialHash::cellSize);
+        if (hS < 0)
+            hS = 0;
+        int wE = int(center.x) + 11;
+        if (wE > global_mapWidth)
+            wE = global_mapWidth;
+        int hE = int(center.y) + 14;
+        if (hE > global_mapHeight)
+            hE = global_mapHeight;
+
+#define BOX_BORDER 0.02F
+
+        for (int w = wS; w < wE; w += NewSpacialHash::cellSize) {
+            for (int h = hS; h < hE; h += NewSpacialHash::cellSize) {
+                Point2DI point = Point2DI(w, h);
+                float boxHeight = 0;
+                Color c(255, 255, 255);
+
+                if (imRef(NewSpacialHash::gridModify, w / NewSpacialHash::cellSize, h / NewSpacialHash::cellSize) != 0) {
+                    c = { 20, 200, 210 };
+                }
+
+                if (0 || !(c.r == 255 && c.g == 255 && c.b == 255)) {
+                    float height = Observation()->TerrainHeight(Point2D{ w + NewSpacialHash::cellSize * 0.5F, h + NewSpacialHash::cellSize * 0.5F });
+
+                    DebugBox(this, Point3D(w + BOX_BORDER, h + BOX_BORDER, height + 0.01F),
+                        Point3D(w + NewSpacialHash::cellSize - BOX_BORDER, h + NewSpacialHash::cellSize - BOX_BORDER, height + boxHeight), c);
+#if MICRO_TEST
+                    DebugText(this, strprintf("%d, %d", w, h),
+                        Point3D(w + BOX_BORDER, h + 0.2 + BOX_BORDER, height + 0.1),
+                        Color(200, 90, 15), 4);
+#endif
                     /*std::string cs = imRef(display, w, h);
                     float disp = cs.length() * 0.0667 * fontSize / 15;
                     DebugText(this,cs, Point3D(w + 0.5 - disp, h + 0.5, height + 0.1 + displace),
@@ -554,7 +603,7 @@ public:
         pts.reserve(NUM_PTS_RT);
 
         for (int asd = 0; asd < NUM_PTS_RT; asd++) {
-            pts.push_back( Aux::getRandomPathable(this));
+            pts.push_back( Aux::getRandomPathable());
         }
 
         vector<float> differenceInDistance;
@@ -908,6 +957,10 @@ public:
 
         lastUnitIndex = 0;
         lastUnitSpawner = UNIT_TYPEID::PROTOSS_GATEWAY;
+
+        NewSpacialHash::grid = new map2d<NewSpacialHash::gridCell>(Aux::global_mapWidth / NewSpacialHash::cellSize + 1, Aux::global_mapHeight / NewSpacialHash::cellSize + 1, true);
+        NewSpacialHash::gridEnemy = new map2d<NewSpacialHash::gridCell>(Aux::global_mapWidth / NewSpacialHash::cellSize + 1, Aux::global_mapHeight / NewSpacialHash::cellSize + 1, true);
+        NewSpacialHash::gridModify = new map2d<int8_t>(Aux::global_mapWidth / NewSpacialHash::cellSize + 1, Aux::global_mapHeight / NewSpacialHash::cellSize + 1, true);
 
         SpacialHash::grid = new map2d<UnitWrappers>(Aux::global_mapWidth, Aux::global_mapHeight, true);
         SpacialHash::gridEnemy = new map2d<UnitWrappers>(Aux::global_mapWidth, Aux::global_mapHeight, true);
@@ -1771,6 +1824,18 @@ public:
         //listUnitWraps();
         //listUnitWrapsNeutral();
         //listUnitWrapsEnemies();
+
+        if (Observation()->GetGameLoop() % 100 == 0) {
+            rads = rand() * 5.0F / RAND_MAX;
+        }
+        //rads = 0.375;
+
+        NewSpacialHash::resetGridModify();
+        NewSpacialHash::fillSpacialModify(Observation()->GetCameraPos(), rads, this);
+        
+        DebugSphere(this, P3D(Observation()->GetCameraPos()), rads);
+
+        displayNewSpacialHashGridTEST();
 
         expansionsLoc();
 

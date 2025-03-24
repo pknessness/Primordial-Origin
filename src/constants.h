@@ -229,19 +229,15 @@ void loadEffects(Agent* agent) {
     currentEffects = agent->Observation()->GetEffects();
 }
 
-bool isWithin(Point2D p, Agent* agent) {
-    int mapWidth = agent->Observation()->GetGameInfo().width;
-    int mapHeight = agent->Observation()->GetGameInfo().height;
-    if (p.x < 0 || p.x >= mapWidth || p.y < 0 || p.y >= mapHeight) {
+bool isWithin(Point2D p) {
+    if (p.x < 0 || p.x >= global_mapWidth || p.y < 0 || p.y >= global_mapHeight) {
         return false;
     }
     return true;
 }
 
-bool isWithin(int x, int y, Agent* agent) {
-    int mapWidth = agent->Observation()->GetGameInfo().width;
-    int mapHeight = agent->Observation()->GetGameInfo().height;
-    if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) {
+bool isWithin(int x, int y) {
+    if (x < 0 || x >= global_mapWidth || y < 0 || y >= global_mapHeight) {
         return false;
     }
     return true;
@@ -277,10 +273,8 @@ UnitTypeData getStats(UnitTypeID type, Agent *agent) {
 }
 
 static void loadPathables(Agent *agent) {
-    int mapWidth = agent->Observation()->GetGameInfo().width;
-    int mapHeight = agent->Observation()->GetGameInfo().height;
-    for (int i = 0; i < mapWidth; i++) {
-        for (int j = 0; j < mapHeight; j++) {
+    for (int i = 0; i < global_mapWidth; i++) {
+        for (int j = 0; j < global_mapHeight; j++) {
             if (!agent->Observation()->IsPathable({ float(i), float(j) })) {
                 imRef(pathingMap, i, j) = 127;
             }
@@ -319,51 +313,51 @@ static int8_t getPathable(Point2D p) {
     return getPathable(int(p.x), int(p.y));
 }
 
-static Point2D getRandomPathable(Agent* agent, float startX = -1, float endX = -1, float startY = -1, float endY = -1) {
+static Point2D getRandomPathable(float startX = -1, float endX = -1, float startY = -1, float endY = -1) {
     float sX = startX;
     float eX = endX;
     float sY = startY; 
     float eY = endY;
     if (sX == -1) sX = 0;
-    if (eX == -1) eX = (float)agent->Observation()->GetGameInfo().width;
+    if (eX == -1) eX = (float)global_mapWidth;
     if (sY == -1) sY = 0;
-    if (eY == -1) eY = (float)agent->Observation()->GetGameInfo().height;
+    if (eY == -1) eY = (float)global_mapHeight;
     Point2D p;
     do {
         float x = sX + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eX - sX)));
         float y = sY + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eY - sY)));
         p = Point2D{ x, y };
-    } while (!Aux::checkPathable(p) || !Aux::isWithin(p, agent));
+    } while (!Aux::checkPathable(p) || !Aux::isWithin(p));
     return p;
 }
 
-static Point2D getRandomNonPathable(Agent* agent, float startX = -1, float endX = -1, float startY = -1, float endY = -1) {
+static Point2D getRandomNonPathable(float startX = -1, float endX = -1, float startY = -1, float endY = -1) {
     float sX = startX;
     float eX = endX;
     float sY = startY;
     float eY = endY;
     if (sX == -1) sX = 0;
-    if (eX == -1) eX = (float)agent->Observation()->GetGameInfo().width;
+    if (eX == -1) eX = (float)global_mapWidth;
     if (sY == -1) sY = 0;
-    if (eY == -1) eY = (float)agent->Observation()->GetGameInfo().height;
+    if (eY == -1) eY = (float)global_mapHeight;
     Point2D p;
     do {
         float x = sX + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eX - sX)));
         float y = sY + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eY - sY)));
         p = Point2D{ x, y };
-    } while (Aux::checkPathable(p) || !Aux::isWithin(p, agent));
+    } while (Aux::checkPathable(p) || !Aux::isWithin(p));
     return p;
 }
 
-static Point2D getRandomPoint(Agent* agent, float startX = -1, float endX = -1, float startY = -1, float endY = -1) {
+static Point2D getRandomPoint(float startX = -1, float endX = -1, float startY = -1, float endY = -1) {
     float sX = startX;
     float eX = endX;
     float sY = startY;
     float eY = endY;
     if (sX == -1) sX = 0;
-    if (eX == -1) eX = (float)agent->Observation()->GetGameInfo().width;
+    if (eX == -1) eX = (float)global_mapWidth;
     if (sY == -1) sY = 0;
-    if (eY == -1) eY = (float)agent->Observation()->GetGameInfo().height;
+    if (eY == -1) eY = (float)global_mapHeight;
     float x = sX + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eX - sX)));
     float y = sY + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eY - sY)));
     return Point2D{ x, y };
