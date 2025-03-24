@@ -1767,6 +1767,7 @@ public:
         static int max2 = 0;
         static int max3 = 0;
         static int max4 = 0;
+        static int max5 = 0;
         for (auto itr = profilerMap.begin(); itr != profilerMap.end(); itr ++) {
             string name = itr->first;
             int strlen = (int)(name.size());
@@ -1786,13 +1787,19 @@ public:
             for (int i = 0; i < (max3 - strlen); i++) {
                 totstr += " ";
             }
-            string lateststr = strprintf("LAT:%.3f", profilerLast[itr->first].time()/1000.0);
+            string lateststr = strprintf("LAT:%.3f", profilerLast[itr->first].time() / 1000.0);
             strlen = (int)(lateststr.size());
             max4 = max(strlen + 1, max4);
             for (int i = 0; i < (max4 - strlen); i++) {
                 lateststr += " ";
             }
-            profilestr += (name + lateststr + dtstr + totstr + "\n");
+            string maxstr = strprintf("MAX:%.3f", profilerMax[itr->first] / 1000.0);
+            strlen = (int)(maxstr.size());
+            max5 = max(strlen + 1, max5);
+            for (int i = 0; i < (max4 - strlen); i++) {
+                maxstr += " ";
+            }
+            profilestr += (name + lateststr + dtstr + maxstr + "\n");
         }
         DebugText(this,profilestr, Point2D(0.61F, 0.41F), Color(1, 212, 41), 8);
 
