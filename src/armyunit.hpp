@@ -6,7 +6,8 @@
 #include "constants.h"
 #include "profiler.hpp"
 #include "unit.hpp"
-#include "spacialhashgrid.hpp"
+//#include "spacialhashgrid.hpp"
+#include "newspacialhashgrid.hpp"
 #include "unitpriority.hpp"
 #include "debugging.hpp"
 #include "primordialstar.hpp"
@@ -216,7 +217,7 @@ public:
                         c.push_back(Circle{ army[i]->pos(agent), Aux::getStats(army[i]->getType(agent), agent).sight_range + 8.0F});
                     }
                 }
-                targets = SpacialHash::findInRadiiEnemy(c, agent);//SpacialHash::findInRadiusEnemy(coreCenter(agent), armyballRadius() + squadExtraRadius, agent);
+                targets = NewSpacialHash::findInRadiiEnemy(c, agent);//SpacialHash::findInRadiusEnemy(coreCenter(agent), armyballRadius() + squadExtraRadius, agent);
             }
             //targets = SpacialHash::findInRadiusEnemy(coreCenter(agent), armyballRadius() + squadExtraRadius, agent);
 
@@ -377,7 +378,7 @@ public:
                     bool inserted = false;
                     float priority = priorityAttack(w, enemy, agent);
                     if (enemyRadius > weaponRadius) {
-                        priority += (weaponRadius - enemyRadius) * 2.0F;
+                        priority += (weaponRadius - enemyRadius) * 4.0F;
                     }
                     if (potentialTargets.size() == 0) {
                         inserted = true;
@@ -640,14 +641,14 @@ public:
                 escapeLoc = posTarget;
             }
             else if (squad->subSquadStates[self] == 'p' || squad->subSquadStates[self] == 'h' || squad->subSquadStates[self] == 'l') {
-                if (!Aux::isWithin(escapeLoc, agent)) {
+                if (!Aux::isWithin(escapeLoc)) {
                     escapeLoc = position;
                 }
                 escapeCost = calculatePathDamage(position, escapeLoc, agent);
 
                 for (int i = 0; i < escapePointChecks; i++) {
                     Point2D checkPoint = randomPointRadius(position, escapePointRadius);
-                    if (!Aux::isWithin(checkPoint, agent)) {
+                    if (!Aux::isWithin(checkPoint)) {
                         i--;
                         continue;
                     }
@@ -669,7 +670,7 @@ public:
 
             }
             else if (squad->subSquadStates[self] == 'j' || squad->subSquadStates[self] == 'r' || squad->subSquadStates[self] == 'c') {
-                if (!Aux::isWithin(escapeLoc,agent)) {
+                if (!Aux::isWithin(escapeLoc)) {
                     escapeLoc = position;
                 }
                 escapeCost = calculatePathDamage(position, escapeLoc, agent);
@@ -785,17 +786,17 @@ public:
         //    }
         //}
         float cost = -1;
-        if (Aux::isWithin(posTarget, agent)) {
+        if (Aux::isWithin(posTarget)) {
             cost = searchCost(posTarget);
         }
         //posTarget = { 0,0 };
         for (int i = 0; i < numChecksSearch; i++) {
             Point2D check;
             if (get(agent)->is_flying) {
-                check = Aux::getRandomNonPathable(agent);
+                check = Aux::getRandomNonPathable();
             }
             else {
-                check = Aux::getRandomPathable(agent);
+                check = Aux::getRandomPathable();
             }
             float cos = searchCost(check);
             if (cos < cost || cost == -1) {
@@ -950,6 +951,49 @@ public:
     // virtual bool execute(Agent *agent) {
     //
     // }
+};
+
+class Oracle : public ArmyUnit {
+private:
+public:
+    Oracle(const Unit* unit) : ArmyUnit(unit) {
+    }
+
+    //https://www.reddit.com/r/starcraft/comments/a1o9r4/the_curious_case_of_the_oracles_dps/
+    virtual bool execute(Agent* agent) {
+        const Unit* uni = get(agent);
+        if (uni == nullptr) {
+            return false;
+        }
+        if (targetWrap != nullptr && Distance2D(targetWrap->pos(agent), uni->pos) < (Aux::extraWeapons[ABILITY_ID::BEHAVIOR_PULSARBEAMON].w.range + radius + targetWrap->radius)) {
+            DebugBox(agent, uni->pos + Point3D{ -0.125,-0.125,2 - 0.125 }, uni->pos + Point3D{ 0.125,0.125,2.125 }, Colors::Green);
+            if (checkAbility(ABILITY_ID::BEHAVIOR_PULSARBEAMON)) {
+                agent->Actions()->UnitCommand(self, ABILITY_ID::BEHAVIOR_PULSARBEAMON);
+            }
+        }
+        else {
+            DebugBox(agent, uni->pos + Point3D{ -0.125,-0.125,2 - 0.125 }, uni->pos + Point3D{ 0.125,0.125,2.125 }, Colors::Blue);
+            if (checkAbility(ABILITY_ID::BEHAVIOR_PULSARBEAMOFF)) {
+                agent->Actions()->UnitCommand(self, ABILITY_ID::BEHAVIOR_PULSARBEAMOFF);
+            }
+        }
+        if (squad->mode == ATTACK) {
+            return executeAttack(agent);
+        }
+        else if (squad->mode == RETREAT) {
+            return executeRetreat(agent);
+        }
+        else if (squad->mode == DEFEND) {
+            return executeDefend(agent);
+        }
+        else if (squad->mode == FULL_RETREAT) {
+            return executeFullRetreat(agent);
+        }
+        else if (squad->mode == SEARCH) {
+            return executeSearch(agent);
+        }
+        return false;
+    }
 };
 
 class HighTemplar : public ArmyUnit {

@@ -667,7 +667,7 @@ namespace PrimordialStar {
 
 	vector<Point2D> getPath(Point2D start, Point2D end, float radius, Agent* agent) {
 		Profiler profiler("getPath");
-
+		profiler.disable();
 		if (checkWallDistanceSquared(start, (start - end)) >= DistanceSquared2D(start, end)) {
 			vector<Point2D> p;
 			p.push_back(start);
@@ -846,6 +846,7 @@ namespace PrimordialStar {
 
 	vector<Point2D> getPathDijkstra(Point2D start, Point2D end, float radius, Agent* agent) {
 		Profiler profiler("getDijkstra");
+		profiler.disable();
 		float wallDist = checkWallDistanceSquared(start, (start - end));
 		if (wallDist >= DistanceSquared2D(start, end)) {
 			vector<Point2D> p;

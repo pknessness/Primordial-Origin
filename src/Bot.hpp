@@ -9,7 +9,8 @@
 #include "primordialstar.hpp"
 #include "unitmanager.hpp"
 #include "zhangSuen.hpp"
-#include "spacialhashgrid.hpp"
+#include "newspacialhashgrid.hpp"
+//#include "spacialhashgrid.hpp"
 #include "BoudaoudSiderTariThinning.hpp"
 #include <sc2api/sc2_gametypes.h>
 #include <sc2utils/sc2_arg_parser.h>
@@ -51,6 +52,8 @@ public:
     clock_t last_time;
 
     string fileName = "";
+
+    float rads = 0.375;
 
     Point3D P3D(const Point2D& p) {
         return Point3D(p.x, p.y, Observation()->TerrainHeight(p));
@@ -271,17 +274,19 @@ public:
         }
     }
 
-    void displaySpacialHashGrid() {
+    void displayNewSpacialHashGridTEST() {
         GameInfo game_info = Aux::cached_gameinfo;
 
-        int global_mapWidth = game_info.width;
-        int global_mapHeight = game_info.height;
+        int global_mapWidth = NewSpacialHash::gridModify->width() * NewSpacialHash::cellSize;
+        int global_mapHeight = NewSpacialHash::gridModify->height() * NewSpacialHash::cellSize;
 
         Point2D center = Observation()->GetCameraPos();
         int wS = int(center.x) - 10;
+        wS -= (wS % NewSpacialHash::cellSize);
         if (wS < 0)
             wS = 0;
         int hS = int(center.y) - 5;
+        hS -= (hS % NewSpacialHash::cellSize);
         if (hS < 0)
             hS = 0;
         int wE = int(center.x) + 11;
@@ -291,73 +296,15 @@ public:
         if (hE > global_mapHeight)
             hE = global_mapHeight;
 
-        #define BOX_BORDER 0.02F
+#define BOX_BORDER 0.02F
 
-        for (int w = wS; w < wE; w++) {
-            for (int h = hS; h < hE; h++) {
+        for (int w = wS; w < wE; w += NewSpacialHash::cellSize) {
+            for (int h = hS; h < hE; h += NewSpacialHash::cellSize) {
                 Point2DI point = Point2DI(w, h);
                 float boxHeight = 0;
                 Color c(255, 255, 255);
 
-                // for (auto loc : path) {
-                //     if (loc.x == w && loc.y == h) {
-                //         c = Color(120, 23, 90);
-                //         break;
-                //     }
-                // }
-
-                if (imRef(SpacialHash::grid, w, h).size() != 0) {
-                        c = {20, 200, 210};
-                } else if (imRef(SpacialHash::gridEnemy, w, h).size() != 0) {
-                        c = {210, 200, 20};
-                }
-
-                if (0 || !(c.r == 255 && c.g == 255 && c.b == 255)) {
-                    float height = Observation()->TerrainHeight(Point2D{ w + 0.5F, h + 0.5F });
-
-                    DebugBox(this,Point3D(w + BOX_BORDER, h + BOX_BORDER, height + 0.01F),
-                                            Point3D(w + 1 - BOX_BORDER, h + 1 - BOX_BORDER, height + boxHeight), c);
-                }
-            }
-        }
-    }
-
-    void displaySpacialHashGridTEST() {
-        GameInfo game_info = Aux::cached_gameinfo;
-
-        int global_mapWidth = game_info.width;
-        int global_mapHeight = game_info.height;
-
-        Point2D center = Observation()->GetCameraPos();
-        int wS = int(center.x) - 10;
-        if (wS < 0)
-            wS = 0;
-        int hS = int(center.y) - 5;
-        if (hS < 0)
-            hS = 0;
-        int wE = int(center.x) + 11;
-        if (wE > global_mapWidth)
-            wE = global_mapWidth;
-        int hE = int(center.y) + 14;
-        if (hE > global_mapHeight)
-            hE = global_mapHeight;
-
-        #define BOX_BORDER 0.02F
-
-        for (int w = wS; w < wE; w++) {
-            for (int h = hS; h < hE; h++) {
-                Point2DI point = Point2DI(w, h);
-                float boxHeight = 0;
-                Color c(255, 255, 255);
-
-                // for (auto loc : path) {
-                //     if (loc.x == w && loc.y == h) {
-                //         c = Color(120, 23, 90);
-                //         break;
-                //     }
-                // }
-
-                if (imRef(SpacialHash::gridModify, w, h) != 0) {
+                if (imRef(NewSpacialHash::gridModify, w / NewSpacialHash::cellSize, h / NewSpacialHash::cellSize) != 0) {
                     c = { 20, 200, 210 };
                 }
 
@@ -365,12 +312,12 @@ public:
                     float height = Observation()->TerrainHeight(Point2D{ w + 0.5F, h + 0.5F });
 
                     DebugBox(this, Point3D(w + BOX_BORDER, h + BOX_BORDER, height + 0.01F),
-                        Point3D(w + 1 - BOX_BORDER, h + 1 - BOX_BORDER, height + boxHeight), c);
-                #if MICRO_TEST
+                        Point3D(w + NewSpacialHash::cellSize - BOX_BORDER, h + NewSpacialHash::cellSize - BOX_BORDER, height + boxHeight), c);
+#if MICRO_TEST
                     DebugText(this, strprintf("%d, %d", w, h),
                         Point3D(w + BOX_BORDER, h + 0.2 + BOX_BORDER, height + 0.1),
                         Color(200, 90, 15), 4);
-                #endif
+#endif
                     /*std::string cs = imRef(display, w, h);
                     float disp = cs.length() * 0.0667 * fontSize / 15;
                     DebugText(this,cs, Point3D(w + 0.5 - disp, h + 0.5, height + 0.1 + displace),
@@ -554,7 +501,7 @@ public:
         pts.reserve(NUM_PTS_RT);
 
         for (int asd = 0; asd < NUM_PTS_RT; asd++) {
-            pts.push_back( Aux::getRandomPathable(this));
+            pts.push_back( Aux::getRandomPathable());
         }
 
         vector<float> differenceInDistance;
@@ -909,9 +856,13 @@ public:
         lastUnitIndex = 0;
         lastUnitSpawner = UNIT_TYPEID::PROTOSS_GATEWAY;
 
-        SpacialHash::grid = new map2d<UnitWrappers>(Aux::global_mapWidth, Aux::global_mapHeight, true);
-        SpacialHash::gridEnemy = new map2d<UnitWrappers>(Aux::global_mapWidth, Aux::global_mapHeight, true);
-        SpacialHash::gridModify = new map2d<int8_t>(Aux::global_mapWidth, Aux::global_mapHeight, true);
+        NewSpacialHash::grid = new map2d<NewSpacialHash::gridCell>(Aux::global_mapWidth / NewSpacialHash::cellSize + 1, Aux::global_mapHeight / NewSpacialHash::cellSize + 1, true);
+        NewSpacialHash::gridEnemy = new map2d<NewSpacialHash::gridCell>(Aux::global_mapWidth / NewSpacialHash::cellSize + 1, Aux::global_mapHeight / NewSpacialHash::cellSize + 1, true);
+        NewSpacialHash::gridModify = new map2d<int8_t>(Aux::global_mapWidth / NewSpacialHash::cellSize + 1, Aux::global_mapHeight / NewSpacialHash::cellSize + 1, true);
+
+        //SpacialHash::grid = new map2d<UnitWrappers>(Aux::global_mapWidth, Aux::global_mapHeight, true);
+        //SpacialHash::gridEnemy = new map2d<UnitWrappers>(Aux::global_mapWidth, Aux::global_mapHeight, true);
+        //SpacialHash::gridModify = new map2d<int8_t>(Aux::global_mapWidth, Aux::global_mapHeight, true);
 
         Aux::buildingBlocked = new map2d<int8_t>(Aux::global_mapWidth, Aux::global_mapHeight, true);
         Aux::pathingMap = new map2d<int8_t>(Aux::global_mapWidth, Aux::global_mapHeight, true);
@@ -936,10 +887,10 @@ public:
         UnitManager::enemyDamageNetModify = new map2d<int8_t>(Aux::global_mapWidth * UnitManager::damageNetPrecision, Aux::global_mapHeight * UnitManager::damageNetPrecision, true);
         UnitManager::enemyDamageNetTemp = new map2d<float>(Aux::global_mapWidth * UnitManager::damageNetPrecision, Aux::global_mapHeight * UnitManager::damageNetPrecision, true);
 
-        SpacialHash::initGrid();
-        SpacialHash::initGridEnemy();
+        NewSpacialHash::initGridSelf();
+        NewSpacialHash::initGridEnemy();
 
-        strat = &Strategem::shit_stalker_colossus;//&Strategem::zuka_colossus_voidray;//&Strategem::pig_stalker_colossus;//&Strategem::hupsaiya_adept_timing;//&Strategem::chargelot_immortal_archon_timing;//
+        strat = &Strategem::zuka_colossus_voidray;//&Strategem::shit_stalker_colossus;//&Strategem::pig_stalker_colossus;//&Strategem::hupsaiya_adept_timing;//&Strategem::chargelot_immortal_archon_timing;//
 
         for (int i = 0; i < path_zhang_suen->width(); i++) {
             for (int j = 0; j < path_zhang_suen->height(); j++) {
@@ -947,19 +898,7 @@ public:
             }
         }
 
-        std::string words[] = {
-            "wrath", "beans", "power", "soul", "rage", "fire",
-            "energy", "love", "fury", "passion", "spirit",
-            "micro", "strength", "presence", "heart", "truth",
-            "macro", "pulse", "force", "breath", "light",
-            "essence", "grace", "wisdom", "cheese", "embrace",
-            "resolve", "might", "aura", "unity"
-        };
-        int numWords = sizeof(words) / sizeof(words[0]);
-
         printf("Playing on %s\n", Aux::cached_gameinfo.map_name.c_str());
-        Actions()->SendChat("My Origin? Its Primordial, baby! (protoss)");
-        Actions()->SendChat(strprintf("Feel the %s of my Protoss (pheart)", words[std::rand() % numWords].c_str()));
 
         Units units = Observation()->GetUnits(sc2::Unit::Alliance::Neutral);
         for (char c : Aux::cached_gameinfo.map_name) {
@@ -1233,22 +1172,22 @@ public:
                         fprintf(fp, ", ");
                     }
                 }
-                fprintf(fp, "\nMovementSpeed: %.1f\nArmor: %.1f\nWeapons:\n",
-                    d.movement_speed,
+                fprintf(fp, "\nMovementSpeed: %.2f\nArmor: %.1f\nWeapons:\n",
+                    d.movement_speed / timeSpeed,
                     d.armor);
                 for (int w = 0; w < d.weapons.size(); w++) {
-                    fprintf(fp, "-----\n%s\nDamage: %.1f\nAttacks: %d\nRange: %.1f\nSpeed: %.1f\nBonuses: ",
+                    fprintf(fp, "-----\n%s\nDamage: %.2f\nAttacks: %d\nRange: %.2f\nCooldown: %.2fs\nBonuses: ",
                         Aux::TargetTypeToName(d.weapons[w].type),
                         d.weapons[w].damage_,
                         d.weapons[w].attacks,
                         d.weapons[w].range,
-                        d.weapons[w].speed);
+                        d.weapons[w].speed / timeSpeed);
                     for (int b = 0; b < d.weapons[w].damage_bonus.size(); b++) {
                         fprintf(fp, "+%.1f %s", d.weapons[w].damage_bonus[b].bonus, Aux::AttributeToName(d.weapons[w].damage_bonus[b].attribute));
                     }
                     fprintf(fp, "\n-----");
                 }
-                fprintf(fp, "\nSupply: %.1f\nSupply+: %.1f\nRace: %d\nBuildTime: %.1f\nSightRange: %.1f\nTechAliases: ",
+                fprintf(fp, "\nSupply: %.1f\nSupply+: %.1f\nRace: %d\nBuildTime: %.2f\nSightRange: %.1f\nTechAliases: ",
                     d.food_required,
                     d.food_provided,
                     d.race,
@@ -1280,6 +1219,7 @@ public:
     //! Called when a Unit has been created by the player.
     //!< \param unit The created unit.
     virtual void OnUnitCreated(const Unit* unit) {
+        Profiler onStepProfiler("onUnitCreated");
         if (unit->tag == NullTag) {
             return;
         }
@@ -1295,8 +1235,9 @@ public:
                 new Zealot(unit);
             } else if (unit->unit_type == UNIT_TYPEID::PROTOSS_HIGHTEMPLAR) {
                 new HighTemplar(unit);
-            }
-            else {
+            } else if (unit->unit_type == UNIT_TYPEID::PROTOSS_ORACLE) {
+                new Oracle(unit);
+            } else {
                 new ArmyUnit(unit);
             }
         } else if (unit->unit_type == UNIT_TYPEID::PROTOSS_NEXUS) {
@@ -1339,6 +1280,7 @@ public:
     //! Called whenever one of the player's units has been destroyed.
     //!< \param unit The destroyed unit.
     virtual void OnUnitDestroyed(const Unit* unit) {
+        Profiler onStepProfiler("onUnitDestroyed");
         if (unit->alliance == Unit::Alliance::Self) {
             UnitWrapper* u = UnitManager::find(unit->unit_type, unit->tag);
             delete u;
@@ -1396,6 +1338,7 @@ public:
     //! both OnUnitCreated and OnUnitIdle if it does not have a rally set.
     //!< \param unit The idle unit.
     virtual void OnUnitIdle(const Unit* unit) {
+        Profiler onStepProfiler("onUnitIdle");
         //UnitManager::find(unit->unit_type, unit->tag)->execute(this);
     }
 
@@ -1439,6 +1382,22 @@ public:
         //    throw 30;
         //}
         //printf(" ");
+
+        if (Observation()->GetGameLoop() == 10) {
+            std::string words[] = {
+                "wrath", "beans", "power", "soul", "rage", "fire",
+                "energy", "love", "fury", "passion", "spirit",
+                "micro", "strength", "presence", "heart", "truth",
+                "macro", "pulse", "force", "breath", "light",
+                "essence", "grace", "wisdom", "cheese", "embrace",
+                "resolve", "might", "aura", "unity"
+            };
+            int numWords = sizeof(words) / sizeof(words[0]);
+
+            Actions()->SendChat("My Origin? Its Primordial, baby! (protoss)");
+            Actions()->SendChat(strprintf("Feel the %s of my Protoss (pheart)", words[std::rand() % numWords].c_str()));
+        }
+
         Profiler onStepProfiler("onStep");
         //onStepProfiler.disable();
 
@@ -1464,11 +1423,11 @@ public:
 
         onStepProfiler.midLog("ProbeExecute");
 
-        SpacialHash::updateGrid(this);
+        NewSpacialHash::updateGridSelf(this);
 
-        onStepProfiler.midLog("SpacialFriendly");
+        onStepProfiler.midLog("SpacialSelf");
 
-        SpacialHash::updateGridEnemy(this);
+        NewSpacialHash::updateGridEnemy(this);
 
         onStepProfiler.midLog("SpacialEnemy");
 
@@ -1772,20 +1731,32 @@ public:
         //listUnitWrapsNeutral();
         //listUnitWrapsEnemies();
 
-        expansionsLoc();
+        if (Observation()->GetGameLoop() % 100 == 0) {
+            rads = rand() * 5.0F / RAND_MAX;
+        }
+        //rads = 0.375;
 
-        listMacroActions();
+        //NewSpacialHash::resetGridModify();
+        //NewSpacialHash::fillSpacialModify(Observation()->GetCameraPos(), rads, this);
+        //
+        //DebugSphere(this, P3D(Observation()->GetCameraPos()), rads);
+
+        //displayNewSpacialHashGridTEST();
+
+        //expansionsLoc();
+
+        //listMacroActions();
         //listEnemyUnits();
 
-        probeLines();
+        //probeLines();
 
-        orderDisplay();
+        //orderDisplay();
 
         //tagDisplay();
         
-        neutralDisplay();
+        //neutralDisplay();
 
-        buildingDisplay();
+        //buildingDisplay();
 
         //enemiesDisplay();
 
@@ -1796,6 +1767,7 @@ public:
         static int max2 = 0;
         static int max3 = 0;
         static int max4 = 0;
+        static int max5 = 0;
         for (auto itr = profilerMap.begin(); itr != profilerMap.end(); itr ++) {
             string name = itr->first;
             int strlen = (int)(name.size());
@@ -1815,13 +1787,19 @@ public:
             for (int i = 0; i < (max3 - strlen); i++) {
                 totstr += " ";
             }
-            string lateststr = strprintf("LAT:%.3f", profilerLast[itr->first].time()/1000.0);
+            string lateststr = strprintf("LAT:%.3f", profilerLast[itr->first].time() / 1000.0);
             strlen = (int)(lateststr.size());
             max4 = max(strlen + 1, max4);
             for (int i = 0; i < (max4 - strlen); i++) {
                 lateststr += " ";
             }
-            profilestr += (name + lateststr + dtstr + totstr + "\n");
+            string maxstr = strprintf("MAX:%.3f", profilerMax[itr->first] / 1000.0);
+            strlen = (int)(maxstr.size());
+            max5 = max(strlen + 1, max5);
+            for (int i = 0; i < (max4 - strlen); i++) {
+                maxstr += " ";
+            }
+            profilestr += (name + lateststr + dtstr + maxstr + "\n");
         }
         DebugText(this,profilestr, Point2D(0.61F, 0.41F), Color(1, 212, 41), 8);
 
@@ -1835,6 +1813,7 @@ public:
     //!  Called when a neutral unit is created. For example, mineral fields observed for the first time
     //!< \param unit The observed unit.
     virtual void OnNeutralUnitCreated(const Unit* unit) {
+        Profiler onStepProfiler("onNeutralUnitCreated");
         if (Aux::isVespene(*unit)) {
             Vespene* u = new Vespene(unit);
             u->execute(this);
@@ -1861,6 +1840,7 @@ public:
     //!< \param health The change in health (damage is positive)
     //!< \param shields The change in shields (damage is positive)
     virtual void OnUnitDamaged(const Unit* unit, float health, float shields) {
+        Profiler onStepProfiler("onUnitDamaged");
         UnitWrapper* wrap = UnitManager::find(unit->unit_type, unit->tag);
         if (unit->alliance == Unit::Alliance::Self && wrap != nullptr) {
             wrap->executeDamaged(this, health, shields);
@@ -1878,6 +1858,7 @@ public:
     //! Called when an enemy unit enters vision from out of fog of war.
     //!< \param unit The unit entering vision.
     virtual void OnUnitEnterVision(const Unit* unit) {
+        Profiler onStepProfiler("onUnitEnterVision");
         UnitWrapper* u = new UnitWrapper(unit);
         u->execute(this);
         Aux::addPlacement(unit->pos, unit->unit_type);
@@ -1915,13 +1896,22 @@ public:
 
 //iteratively cache EVERY DIJKSTRA over the course of a match
 
+//classify warpgates as gateways in storagetype
+
 //more complex army splitting, harrasssing army, etc
+
+//anti cannon rush
+//https://www.reddit.com/r/allthingsprotoss/comments/1j99tv4/comment/mhg72h5/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
 
 //primordialstar optimizations: 
 //-check max num of paths from nodes and max length of a path to optimize
 //-modify max dist to not include rocks
 
 //add chrono
+
+//add damagegrid avoidance to search mode
+
+//add ramp code
 
 //-rework enemy squads code
 

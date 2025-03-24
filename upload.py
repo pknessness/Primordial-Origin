@@ -21,18 +21,6 @@ def get_bot_description() -> str:
         f"# Primordial Origin" "\nMade from scratch in C++"
     )
 
-
-def retrieve_value_from_config(string: str) -> Union[str, bool, None]:
-    __user_config_location__: str = path.abspath(".")
-    user_config_path: str = path.join(__user_config_location__, CONFIG_FILE)
-    # attempt to get race and bot name from config file if they exist
-    if path.isfile(user_config_path):
-        with open(user_config_path) as config_file:
-            config: dict = yaml.safe_load(config_file)
-            if string in config:
-                return config[string]
-
-
 if __name__ == "__main__":
 
     # datetime object containing current date and time
