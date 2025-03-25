@@ -110,7 +110,7 @@ public:
             vector<Point2D> path = PrimordialStar::getPathDijkstra(P2D(Aux::staging_location), P2D(point), 0.2F, this);
             float length = PrimordialStar::getPathLength(path);
 
-            displayPath(path);
+            //displayPath(path);
 
             constexpr int numsteps = 6;
             Units neut = Observation()->GetUnits(Unit::Alliance::Neutral, Aux::isMineral);
@@ -148,6 +148,15 @@ public:
         }
         printf("\n");
         //Debug()->SendDebug();
+    }
+
+    void preloadStats(Agent* agent) {
+        for (int i = 0; i < sizeof(Strategem::ArmyUnitsProtoss)/sizeof(UnitTypeID); i++) {
+            Aux::getStats(Strategem::ArmyUnitsProtoss[i], this);
+        }
+        for (int i = 0; i < sizeof(Strategem::NonArmyProtoss) / sizeof(UnitTypeID); i++) {
+            Aux::getStats(Strategem::NonArmyProtoss[i], this);
+        }
     }
 
     void grid(bool nearbyOnly = true) {
@@ -1068,7 +1077,7 @@ public:
         //Tool::draw_grid(this, map, {}, {}, path, came_from, start, goal);
         initializeStartings();
         initializeExpansions();
-        SendDebug(this);
+        //SendDebug(this);
         Strategem::initStrategies();
 
         Point2D middle{Aux::global_mapWidth / 2.0F, Aux::global_mapHeight / 2.0F};
@@ -1135,7 +1144,8 @@ public:
             //Debug()->DebugCreateUnit(UNIT_TYPEID::PROTOSS_ADEPT, Observation()->GetGameInfo().enemy_start_locations[0], 2, 2);
         #endif
 
-#if 1
+        preloadStats(this);
+#if 0
         const char* races[] = {
                 "protoss",
                 "terran",
