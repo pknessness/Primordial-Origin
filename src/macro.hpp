@@ -111,7 +111,6 @@ namespace Macro {
             return;
         }
         lastChecked = gt;
-        Profiler macroProfiler("macroExecute");
         macroProfiler.disable();
         vector<MacroAction> topActions = vector<MacroAction>();
         macroProfiler.midLog("mE-SETUP");
