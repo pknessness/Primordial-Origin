@@ -266,9 +266,9 @@ public:
                     DebugBox(this, Point3D(w + BOX_BORDER, h + BOX_BORDER, height + 0.01F),
                         Point3D(w + 1 - BOX_BORDER, h + 1 - BOX_BORDER, height + boxHeight), c);
 
-                    DebugText(this, strprintf("%d, %d", w, h),
-                        Point3D(w + BOX_BORDER, h + 0.2F + BOX_BORDER, height + 0.1F),
-                        Color(200, 90, 15), 8);
+                    //DebugText(this, strprintf("%d, %d", w, h),
+                    //    Point3D(w + BOX_BORDER, h + 0.2F + BOX_BORDER, height + 0.1F),
+                    //    Color(200, 90, 15), 8);
                 }
             }
         }
@@ -496,7 +496,7 @@ public:
     }
 
     void pathVerification() {
-        #define NUM_PTS_RT 40
+        #define NUM_PTS_RT 10
         vector<Point2D> pts;
         pts.reserve(NUM_PTS_RT);
 
@@ -513,7 +513,7 @@ public:
             DebugSphere(this, P3D(from), 0.25, { 61,102,220 });
             for (int b = 0; b < NUM_PTS_RT; b++) {
                 Point2D to = pts[b];
-                auto path = PrimordialStar::getPathDijkstra(from, to, 0, this);
+                auto path = PrimordialStar::getPath(from, to, 0, this);
                 float dist = PrimordialStar::getPathLength(path);
                 float sc2dist = Query()->PathingDistance(from, to);
                 float diff = dist - sc2dist;
@@ -890,7 +890,7 @@ public:
         NewSpacialHash::initGridSelf();
         NewSpacialHash::initGridEnemy();
 
-        strat = &Strategem::zuka_colossus_voidray;//&Strategem::shit_stalker_colossus;//&Strategem::pig_stalker_colossus;//&Strategem::hupsaiya_adept_timing;//&Strategem::chargelot_immortal_archon_timing;//
+        strat = &Strategem::shit_stalker_colossus;//&Strategem::zuka_colossus_voidray;//&Strategem::pig_stalker_colossus;//&Strategem::hupsaiya_adept_timing;//&Strategem::chargelot_immortal_archon_timing;//
 
         for (int i = 0; i < path_zhang_suen->width(); i++) {
             for (int j = 0; j < path_zhang_suen->height(); j++) {
@@ -1002,7 +1002,7 @@ public:
             [this](int i, int j) {return pathingMapToColor(Aux::getPathable(i, j)).b;});
 
         //grid(false);
-        displayMaxDistanceGrid(maximalMax, false);
+        //displayMaxDistanceGrid(maximalMax, false);
 
         timeus startPathNoding = std::chrono::steady_clock::now();
 
