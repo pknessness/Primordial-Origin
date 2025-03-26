@@ -4195,6 +4195,7 @@ public:
       SIGTRAP, // Trace/breakpoint trap
       SIGXCPU, // CPU time limit exceeded (4.2BSD)
       SIGXFSZ, // File size limit exceeded (4.2BSD)
+      SIGTERM, // ADDED BY ANSHALAJ, CATCH LADDER TIMEOUTS
 #if defined(BACKWARD_SYSTEM_DARWIN)
       SIGEMT, // emulation instruction executed
 #endif
