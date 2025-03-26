@@ -1149,23 +1149,23 @@ void UnitWrapper::loadAbilities(Agent *agent) {
 
 UnitWrapper::~UnitWrapper() {
     if (team == Unit::Alliance::Self) {
-        for (auto it = UnitManager::units[type].begin(); it != UnitManager::units[type].end(); it++) {
+        for (auto it = UnitManager::units[storageType].begin(); it != UnitManager::units[storageType].end(); it++) {
             if ((*it)->self == self) {
-                UnitManager::units[type].erase(it);
+                UnitManager::units[storageType].erase(it);
                 break;
             }
         }
     } else if (team == Unit::Alliance::Neutral) {
-        for (auto it = UnitManager::neutrals[type].begin(); it != UnitManager::neutrals[type].end(); it++) {
+        for (auto it = UnitManager::neutrals[storageType].begin(); it != UnitManager::neutrals[storageType].end(); it++) {
             if ((*it)->self == self) {
-                UnitManager::neutrals[type].erase(it);
+                UnitManager::neutrals[storageType].erase(it);
                 break;
             }
         }
     } else if (team == Unit::Alliance::Enemy) {
-        for (auto it = UnitManager::enemies[type].begin(); it != UnitManager::enemies[type].end(); it++) {
+        for (auto it = UnitManager::enemies[storageType].begin(); it != UnitManager::enemies[storageType].end(); it++) {
             if ((*it)->self == self) {
-                UnitManager::enemies[type].erase(it);
+                UnitManager::enemies[storageType].erase(it);
                 break;
             }
         }
