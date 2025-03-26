@@ -4294,6 +4294,11 @@ public:
     printer.address = true;
     printer.print(st, stderr);
 
+    FILE* fp;
+    fp = fopen("data/crash.txt", "w");
+    printer.print(st, fp);
+    fclose(fp);
+
 #if (defined(_XOPEN_SOURCE) && _XOPEN_SOURCE >= 700) || \
     (defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 200809L)
     psiginfo(info, nullptr);
