@@ -2,7 +2,7 @@ name: Makefile CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "alting", "alting-2"]
   pull_request:
     branches: [ "main" ]
 
