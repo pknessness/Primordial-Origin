@@ -952,6 +952,49 @@ public:
     // }
 };
 
+class Oracle : public ArmyUnit {
+private:
+public:
+    Oracle(const Unit* unit) : ArmyUnit(unit) {
+    }
+
+    //https://www.reddit.com/r/starcraft/comments/a1o9r4/the_curious_case_of_the_oracles_dps/ 
+    virtual bool execute(Agent* agent) {
+        const Unit* uni = get(agent);
+        if (uni == nullptr) {
+            return false;
+        }
+        if (targetWrap != nullptr && Distance2D(targetWrap->pos(agent), uni->pos) < (Aux::extraWeapons[ABILITY_ID::BEHAVIOR_PULSARBEAMON].w.range + radius + targetWrap->radius)) {
+            DebugBox(agent, uni->pos + Point3D{ -0.125,-0.125,2 - 0.125 }, uni->pos + Point3D{ 0.125,0.125,2.125 }, Colors::Green);
+            if (checkAbility(ABILITY_ID::BEHAVIOR_PULSARBEAMON)) {
+                agent->Actions()->UnitCommand(self, ABILITY_ID::BEHAVIOR_PULSARBEAMON);
+            }
+        }
+        else {
+            DebugBox(agent, uni->pos + Point3D{ -0.125,-0.125,2 - 0.125 }, uni->pos + Point3D{ 0.125,0.125,2.125 }, Colors::Blue);
+            if (checkAbility(ABILITY_ID::BEHAVIOR_PULSARBEAMOFF)) {
+                agent->Actions()->UnitCommand(self, ABILITY_ID::BEHAVIOR_PULSARBEAMOFF);
+            }
+        }
+        if (squad->mode == ATTACK) {
+            return executeAttack(agent);
+        }
+        else if (squad->mode == RETREAT) {
+            return executeRetreat(agent);
+        }
+        else if (squad->mode == DEFEND) {
+            return executeDefend(agent);
+        }
+        else if (squad->mode == FULL_RETREAT) {
+            return executeFullRetreat(agent);
+        }
+        else if (squad->mode == SEARCH) {
+            return executeSearch(agent);
+        }
+        return false;
+    }
+};
+
 class HighTemplar : public ArmyUnit {
 private:
 public:

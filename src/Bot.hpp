@@ -1295,6 +1295,8 @@ public:
                 new Zealot(unit);
             } else if (unit->unit_type == UNIT_TYPEID::PROTOSS_HIGHTEMPLAR) {
                 new HighTemplar(unit);
+            } else if (unit->unit_type == UNIT_TYPEID::PROTOSS_ORACLE) {
+                new Oracle(unit);
             }
             else {
                 new ArmyUnit(unit);
