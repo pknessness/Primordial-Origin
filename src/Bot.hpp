@@ -1506,12 +1506,18 @@ public:
                 }
                 unit->execute(this);
                 Point3D pos = unit->pos3D(this);
+
+                Tag targTag = 0;
+                if (((ArmyUnit*)(unit))->targetWrap != nullptr) {
+                    targTag = ((ArmyUnit*)(unit))->targetWrap->self;
+                }
+
                 s += strprintf("%s %.1fs %Ix %c {%.1f,%.1f}\n", UnitTypeToName(unit->getType(this)),
                     unit->get(this)->weapon_cooldown,
-                               ((ArmyUnit*)(unit))->targetWrap, squads[i].squadStates[unit->self], unit->posTarget.x, unit->posTarget.y);
-                DebugText(this,strprintf("%c:%c", squads[i].squadStates[unit->self], squads[i].subSquadStates[unit->self]),
-                                      pos,
-                                      Color(210, 55, 55), 8);
+                    targTag, squads[i].squadStates[unit->self], unit->posTarget.x, unit->posTarget.y);
+                DebugText(this, strprintf("%c:%c", squads[i].squadStates[unit->self], squads[i].subSquadStates[unit->self]),
+                    pos,
+                    Color(210, 55, 55), 8);
                 
                 DebugLine(this, pos + Point3D{ 0,0,1 }, P3D(unit->posTarget) + Point3D{0,0,1}, {255, 150, 150});
                 DebugLine(this, pos + Point3D{ 0,0,1 }, P3D(unit->escapeLoc) + Point3D{ 0,0,1 }, { 10, 150, 255 });
