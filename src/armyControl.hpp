@@ -55,7 +55,7 @@ namespace ArmyControl {
             int squadPointer = 0;
             while (allEnemies.size() > 0){
                 for (int i = 0; i < enemySquads[squadPointer].army.size(); i ++) {
-                    UnitWrappers found = SpacialHash::findInRadiusEnemy(enemySquads[squadPointer].army[i]->pos(agent), enemyRadius, agent);
+                    UnitWrappers found = SpatialHash::findInRadiusEnemy(enemySquads[squadPointer].army[i]->pos(agent), enemyRadius, agent);
                     bool added = false;
                     if (found.size() != 0) {
                         for (UnitWrapper* enemy : found) {

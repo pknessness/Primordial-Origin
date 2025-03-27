@@ -216,7 +216,7 @@ public:
                         c.push_back(Circle{ army[i]->pos(agent), Aux::getStats(army[i]->getType(agent), agent).sight_range + 8.0F});
                     }
                 }
-                targets = SpacialHash::findInRadiiEnemy(c, agent);//SpacialHash::findInRadiusEnemy(coreCenter(agent), armyballRadius() + squadExtraRadius, agent);
+                targets = SpatialHash::findInRadiiEnemy(c, agent);//SpacialHash::findInRadiusEnemy(coreCenter(agent), armyballRadius() + squadExtraRadius, agent);
             }
             //targets = SpacialHash::findInRadiusEnemy(coreCenter(agent), armyballRadius() + squadExtraRadius, agent);
 
@@ -699,8 +699,10 @@ public:
                         float dijkstraLength = PrimordialStar::getPathLength(pathDijkstra);
                         for (int i = 0; i < alongPurePathBisects - 1; i++) {
                             Point2D checkPoint = PrimordialStar::distanceAlongPath(pathDijkstra, (i + 1) * dijkstraLength / alongPurePathBisects);
-                            checkPoints.push_back(checkPoint);
-                            checkPointDistances.push_back((3 - i) * dijkstraLength / alongPurePathBisects);
+                            if (!isinf(checkPoint.x) && !isinf(checkPoint.y)) {
+                                checkPoints.push_back(checkPoint);
+                                checkPointDistances.push_back((3 - i) * dijkstraLength / alongPurePathBisects);
+                            }
                         }
                     }
 

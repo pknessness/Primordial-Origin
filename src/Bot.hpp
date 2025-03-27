@@ -306,9 +306,9 @@ public:
                 //     }
                 // }
 
-                if (imRef(SpacialHash::grid, w, h).size() != 0) {
+                if (imRef(SpatialHash::grid, w, h).size() != 0) {
                         c = {20, 200, 210};
-                } else if (imRef(SpacialHash::gridEnemy, w, h).size() != 0) {
+                } else if (imRef(SpatialHash::gridEnemy, w, h).size() != 0) {
                         c = {210, 200, 20};
                 }
 
@@ -357,7 +357,7 @@ public:
                 //     }
                 // }
 
-                if (imRef(SpacialHash::gridModify, w, h) != 0) {
+                if (imRef(SpatialHash::gridModify, w, h) != 0) {
                     c = { 20, 200, 210 };
                 }
 
@@ -909,9 +909,9 @@ public:
         lastUnitIndex = 0;
         lastUnitSpawner = UNIT_TYPEID::PROTOSS_GATEWAY;
 
-        SpacialHash::grid = new map2d<UnitWrappers>(Aux::global_mapWidth, Aux::global_mapHeight, true);
-        SpacialHash::gridEnemy = new map2d<UnitWrappers>(Aux::global_mapWidth, Aux::global_mapHeight, true);
-        SpacialHash::gridModify = new map2d<int8_t>(Aux::global_mapWidth, Aux::global_mapHeight, true);
+        SpatialHash::grid = new map2d<UnitWrappers>(Aux::global_mapWidth, Aux::global_mapHeight, true);
+        SpatialHash::gridEnemy = new map2d<UnitWrappers>(Aux::global_mapWidth, Aux::global_mapHeight, true);
+        SpatialHash::gridModify = new map2d<int8_t>(Aux::global_mapWidth, Aux::global_mapHeight, true);
 
         Aux::buildingBlocked = new map2d<int8_t>(Aux::global_mapWidth, Aux::global_mapHeight, true);
         Aux::pathingMap = new map2d<int8_t>(Aux::global_mapWidth, Aux::global_mapHeight, true);
@@ -936,8 +936,8 @@ public:
         UnitManager::enemyDamageNetModify = new map2d<int8_t>(Aux::global_mapWidth * UnitManager::damageNetPrecision, Aux::global_mapHeight * UnitManager::damageNetPrecision, true);
         UnitManager::enemyDamageNetTemp = new map2d<float>(Aux::global_mapWidth * UnitManager::damageNetPrecision, Aux::global_mapHeight * UnitManager::damageNetPrecision, true);
 
-        SpacialHash::initGrid();
-        SpacialHash::initGridEnemy();
+        SpatialHash::initGrid();
+        SpatialHash::initGridEnemy();
 
         strat = &Strategem::shit_stalker_colossus;//&Strategem::zuka_colossus_voidray;//&Strategem::pig_stalker_colossus;//&Strategem::hupsaiya_adept_timing;//&Strategem::chargelot_immortal_archon_timing;//
 
@@ -1466,11 +1466,11 @@ public:
 
         onStepProfiler.midLog("ProbeExecute");
 
-        SpacialHash::updateGrid(this);
+        SpatialHash::updateGrid(this);
 
         onStepProfiler.midLog("SpacialFriendly");
 
-        SpacialHash::updateGridEnemy(this);
+        SpatialHash::updateGridEnemy(this);
 
         onStepProfiler.midLog("SpacialEnemy");
 
@@ -1516,6 +1516,9 @@ public:
                 Tag targTag = 0;
                 if (((ArmyUnit*)(unit))->targetWrap != nullptr) {
                     targTag = ((ArmyUnit*)(unit))->targetWrap->self;
+                }
+                else {
+                    //printf("r\n");
                 }
 
                 s += strprintf("%s %.1fs %Ix %c {%.1f,%.1f}\n", UnitTypeToName(unit->getType(this)),
