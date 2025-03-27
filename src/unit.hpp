@@ -971,6 +971,7 @@ map<UnitTypeID, UnitTypeID> superTypes = {
     {UNIT_TYPEID::ZERG_INFESTORBURROWED, UNIT_TYPEID::ZERG_INFESTOR},
     {UNIT_TYPEID::ZERG_LOCUSTMPFLYING, UNIT_TYPEID::ZERG_LOCUSTMP},
     {UNIT_TYPEID::ZERG_LURKERMPBURROWED, UNIT_TYPEID::ZERG_LURKERMP},
+    {UNIT_TYPEID::ZERG_LURKERMPEGG, UNIT_TYPEID::ZERG_LURKERMP},
     {UNIT_TYPEID::ZERG_OVERLORDCOCOON, UNIT_TYPEID::ZERG_OVERLORD},
     {UNIT_TYPEID::ZERG_OVERSEERSIEGEMODE, UNIT_TYPEID::ZERG_OVERSEER},
     {UNIT_TYPEID::ZERG_QUEENBURROWED, UNIT_TYPEID::ZERG_QUEEN},
@@ -1145,26 +1146,39 @@ void UnitWrapper::loadAbilities(Agent *agent) {
 //}
 
 UnitWrapper::~UnitWrapper() {
+    bool removed = false;
     if (team == Unit::Alliance::Self) {
-        for (auto it = UnitManager::units[type].begin(); it != UnitManager::units[type].end(); it++) {
+        for (auto it = UnitManager::units[storageType].begin(); it != UnitManager::units[storageType].end(); it++) {
             if ((*it)->self == self) {
-                UnitManager::units[type].erase(it);
+                UnitManager::units[storageType].erase(it);
+                removed = true;
                 break;
             }
+        }
+        if (!removed) {
+            printf("NOT REMOVED SELF\n");
         }
     } else if (team == Unit::Alliance::Neutral) {
-        for (auto it = UnitManager::neutrals[type].begin(); it != UnitManager::neutrals[type].end(); it++) {
+        for (auto it = UnitManager::neutrals[storageType].begin(); it != UnitManager::neutrals[storageType].end(); it++) {
             if ((*it)->self == self) {
-                UnitManager::neutrals[type].erase(it);
+                UnitManager::neutrals[storageType].erase(it);
+                removed = true;
                 break;
             }
         }
+        if (!removed) {
+            printf("NOT REMOVED NEUTRAL\n");
+        }
     } else if (team == Unit::Alliance::Enemy) {
-        for (auto it = UnitManager::enemies[type].begin(); it != UnitManager::enemies[type].end(); it++) {
+        for (auto it = UnitManager::enemies[storageType].begin(); it != UnitManager::enemies[storageType].end(); it++) {
             if ((*it)->self == self) {
-                UnitManager::enemies[type].erase(it);
+                UnitManager::enemies[storageType].erase(it);
+                removed = true;
                 break;
             }
+        }
+        if (!removed) {
+            printf("NOT REMOVED ENEMY\n");
         }
     } else {
         printf("WHAT THE FUCK TEAM IS THIS UNIT ON\n");
