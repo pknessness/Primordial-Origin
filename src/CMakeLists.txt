@@ -33,5 +33,5 @@ elseif (APPLE)
     target_link_libraries(BlankBot PRIVATE "-framework Carbon")
 # Building on Linux
 elseif (UNIX AND NOT APPLE)
-    target_link_libraries(BlankBot PRIVATE pthread ${BFD_LIBRARY} ${IBERTY_LIBRARY} ${DL_LIBRARY} ${ZSTD_LIBRARY} ${ZLIB_LIBRARY} ${SFRAME_LIBRARY})
+    target_link_libraries(BlankBot PRIVATE pthread ${BFD_LIBRARY} ${IBERTY_LIBRARY} dl ${ZSTD_LIBRARY} ${ZLIB_LIBRARY} ${SFRAME_LIBRARY})
 endif ()
