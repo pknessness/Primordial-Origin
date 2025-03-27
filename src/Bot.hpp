@@ -9,7 +9,7 @@
 #include "primordialstar.hpp"
 #include "unitmanager.hpp"
 #include "zhangSuen.hpp"
-#include "spacialhashgrid.hpp"
+#include "spatialhashgrid.hpp"
 #include "BoudaoudSiderTariThinning.hpp"
 #include <sc2api/sc2_gametypes.h>
 #include <sc2utils/sc2_arg_parser.h>
@@ -939,7 +939,7 @@ public:
         SpatialHash::initGrid();
         SpatialHash::initGridEnemy();
 
-        strat = &Strategem::shit_stalker_colossus;//&Strategem::zuka_colossus_voidray;//&Strategem::pig_stalker_colossus;//&Strategem::hupsaiya_adept_timing;//&Strategem::chargelot_immortal_archon_timing;//
+        strat = &Strategem::zuka_colossus_voidray;//&Strategem::shit_stalker_colossus;//&Strategem::pig_stalker_colossus;//&Strategem::hupsaiya_adept_timing;//&Strategem::chargelot_immortal_archon_timing;//
 
         for (int i = 0; i < path_zhang_suen->width(); i++) {
             for (int j = 0; j < path_zhang_suen->height(); j++) {

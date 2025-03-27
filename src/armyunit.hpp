@@ -6,7 +6,7 @@
 #include "constants.h"
 #include "profiler.hpp"
 #include "unit.hpp"
-#include "spacialhashgrid.hpp"
+#include "spatialhashgrid.hpp"
 #include "unitpriority.hpp"
 #include "debugging.hpp"
 #include "primordialstar.hpp"
