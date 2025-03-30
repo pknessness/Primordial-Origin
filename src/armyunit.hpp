@@ -649,8 +649,13 @@ public:
                         float dijkstraLength = PrimordialStar::getPathLength(pathDijkstra);
                         for (int i = 0; i < alongPurePathBisects - 1; i++) {
                             Point2D checkPoint = PrimordialStar::distanceAlongPath(pathDijkstra, (i + 1) * dijkstraLength / alongPurePathBisects);
-                            checkPoints.push_back(checkPoint);
-                            checkPointDistances.push_back((3 - i) * dijkstraLength / alongPurePathBisects);
+                            if (!isinf(checkPoint.x) && !isinf(checkPoint.y) && (checkPoint.x == checkPoint.x) && (checkPoint.y == checkPoint.y)) {
+                                checkPoints.push_back(checkPoint);
+                                checkPointDistances.push_back((3 - i) * dijkstraLength / alongPurePathBisects);
+                            }
+                            else {
+                                printf("INFINF\n");
+                            }
                         }
                     }
 

@@ -262,7 +262,7 @@ namespace PrimordialStar {
 
 	Point2D getWall(Point2D origin, Point2D dir, int maxSteps = 255) {
 		//var delta = Vector2.Normalize(direction - origin);
-		Point2D delta = dir;
+		Point2D delta = normalize(dir);
 
 		float dxdy = delta.y == 0 ? 0 : delta.x / delta.y;
 		float dydx = delta.x == 0 ? 0 : delta.y / delta.x;
@@ -855,6 +855,15 @@ namespace PrimordialStar {
 
 	vector<Point2D> getPathDijkstra(Point2D start, Point2D end, float radius, Agent* agent) {
 		Profiler profiler("getDijkstra");
+		float wallDist = checkWallDistanceSquared(start, (start - end));
+		if (wallDist >= DistanceSquared2D(start, end)) {
+			vector<Point2D> p;
+			p.push_back(start);
+			p.push_back(end);
+			profiler.midLog("getPath.quickEnd");
+			return p;
+		}
+
 		PathNode* startNode = new PathNode(start, INVALID, agent);
 
 		PathNode* endNode = new PathNode(end, INVALID, agent);
@@ -864,6 +873,35 @@ namespace PrimordialStar {
 
 		vector<Point2D> points;
 		profiler.midLog("getDijkstra.init");
+
+		if (startNode->connected.size() == 0) {
+			Point2D loc = basePathNodes[0]->rawPos();
+			float mindist = DistanceSquared2D(loc, start);
+			for (int i = 1; i < basePathNodes.size() - 2; i++) {
+				float dist = DistanceSquared2D(basePathNodes[i]->rawPos(), start);
+				if (dist < mindist || (dist == mindist && (DistanceSquared2D(loc, end) > DistanceSquared2D(basePathNodes[i]->rawPos(), end)))) {
+					mindist = dist;
+					loc = basePathNodes[i]->rawPos();
+				}
+			}
+			startNode->updatePos(loc);
+			calculateNewConnection(startNode, agent);
+		}
+		if (endNode->connected.size() == 0) {
+			Point2D loc = basePathNodes[0]->rawPos();
+			float mindist = DistanceSquared2D(loc, end);
+			for (int i = 1; i < basePathNodes.size() - 2; i++) {
+				float dist = DistanceSquared2D(basePathNodes[i]->rawPos(), end);
+				if (dist < mindist || (dist == mindist && (DistanceSquared2D(loc, start) > DistanceSquared2D(basePathNodes[i]->rawPos(), start)))) {
+					mindist = dist;
+					loc = basePathNodes[i]->rawPos();
+				}
+			}
+			endNode->updatePos(loc);
+			calculateNewConnection(endNode, agent);
+		}
+		profiler.midLog("getDijkstra.correction");
+
 		if (startNode->connected.size() == 0 || endNode->connected.size() == 0) {
 
 		}
