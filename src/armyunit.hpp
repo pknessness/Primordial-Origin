@@ -374,7 +374,7 @@ public:
                     bool inserted = false;
                     float priority = priorityAttack(w, enemy, agent);
                     if (enemyRadius > weaponRadius) {
-                        priority += (weaponRadius - enemyRadius) * 0.1F;
+                        priority += (weaponRadius - enemyRadius) * 4.0F;
                     }
                     if (potentialTargets.size() == 0) {
                         inserted = true;
