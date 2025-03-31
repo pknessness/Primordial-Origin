@@ -739,7 +739,10 @@ public:
         //        }
         //    }
         //}
-        float cost = searchCost(posTarget);
+        float cost = -1;
+        if (Aux::isWithin(posTarget, agent)) {
+            cost = searchCost(posTarget);
+        }
         //posTarget = { 0,0 };
         for (int i = 0; i < numChecksSearch; i++) {
             Point2D check;
