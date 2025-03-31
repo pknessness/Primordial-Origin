@@ -15,8 +15,8 @@ namespace ArmyControl {
         void add(UnitWrapper* unitWrap) {
             army.push_back(unitWrap);
 
-            if (std::find(unitComp.begin(), unitComp.end(), unitWrap->type) == unitComp.end()) {
-                unitComp.push_back(unitWrap->type);
+            if (std::find(unitComp.begin(), unitComp.end(), unitWrap->getStorageType()) == unitComp.end()) {
+                unitComp.push_back(unitWrap->getStorageType());
             }
         }
 

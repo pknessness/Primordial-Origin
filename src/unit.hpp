@@ -11,6 +11,9 @@ class UnitWrapper {
 private:
     Composition c;
     
+    UnitTypeID type;
+    UnitTypeID actualType;
+
 public:
     float health;
     float healthMax;
@@ -18,7 +21,6 @@ public:
     float shieldsMax;
 
     Tag self;
-    UnitTypeID type;
     Point3D lastPos;
     float radius;
     bool isBuilding;
@@ -39,6 +41,18 @@ public:
     inline bool exists(Agent *agent);
 
     inline const Unit *get(Agent *agent);
+
+    UnitTypeID getType(Agent* agent) {
+        const Unit* selfUnit = get(agent);
+        if (selfUnit != nullptr) {
+            actualType = selfUnit->unit_type;
+        }
+        return actualType;
+    }
+
+    UnitTypeID getStorageType() {
+        return type;
+    }
 
     Composition getComposition(Agent* agent) {
         const Unit* selfUnit = get(agent);
@@ -575,7 +589,7 @@ namespace UnitManager {
         float damage = 0;
         if (comp == Composition::Ground || comp == Composition::Any) {
             damage += pointDamage.ground.normal;
-            for (Attribute a : Aux::getStats(unitWrap->type, agent).attributes) {
+            for (Attribute a : Aux::getStats(unitWrap->getType(agent), agent).attributes) {
                 switch (a) {
                     case(Attribute::Light): {
                         damage += pointDamage.ground.light;
@@ -601,7 +615,7 @@ namespace UnitManager {
         }
         if (comp == Composition::Air || comp == Composition::Any) {
             damage += pointDamage.air.normal;
-            for (Attribute a : Aux::getStats(unitWrap->type, agent).attributes) {
+            for (Attribute a : Aux::getStats(unitWrap->getType(agent), agent).attributes) {
                 switch (a) {
                     case(Attribute::Light): {
                         damage += pointDamage.air.light;
@@ -981,23 +995,11 @@ UnitWrapper::UnitWrapper(const Unit *unit) : self(unit->tag), type(unit->unit_ty
             UnitManager::units[type] = UnitWrappers();
         }
         UnitManager::units[type].push_back(this);
-        //if (std::find(UnitManager::units[type].begin(), UnitManager::units[type].end(), this) == UnitManager::units[type].end()) {
-        //    UnitManager::units[type].push_back(this);
-        //}
-        //else {
-        //    printf("DuplicateUnit\n");
-        //}
     }else if (unit->alliance == Unit::Alliance::Neutral) {
         if (!UnitManager::checkExistNeutral(type)) {
             UnitManager::neutrals[type] = UnitWrappers();
         }
         UnitManager::neutrals[type].push_back(this);
-        //if (std::find(UnitManager::neutrals[type].begin(), UnitManager::neutrals[type].end(), this) == UnitManager::neutrals[type].end()) {
-        //    UnitManager::neutrals[type].push_back(this);
-        //}
-        //else {
-        //    printf("DuplicateNeutral\n");
-        //}
     }else if (unit->alliance == Unit::Alliance::Enemy) {
         if (!UnitManager::checkExistEnemy(type)) {
             UnitManager::enemies[type] = UnitWrappers();
@@ -1016,12 +1018,6 @@ UnitWrapper::UnitWrapper(const Unit *unit) : self(unit->tag), type(unit->unit_ty
         } else {
             UnitManager::enemies[type].push_back(this);
         }
-        //if (std::find(UnitManager::enemies[type].begin(), UnitManager::enemies[type].end(), this) == UnitManager::enemies[type].end()) {
-        //    UnitManager::enemies[type].push_back(this);
-        //}
-        //else {
-        //    printf("DuplicateEnemy\n");
-        //}
     }
     ignoreFrames = 0;
     abilities = AvailableAbilities();
