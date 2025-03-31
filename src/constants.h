@@ -115,6 +115,17 @@ Point2D normalize(const Point2D& p) {
 
 namespace Aux {
 
+/*
+* 0 is pathable
+* 64 is rocks
+* 101 is self buildings
+* 102 is opponent buildings
+* 105 is minerals
+* 106 is vespene
+* 121 is cliffs
+* 122 is pathable cliffs
+* 127 is unpathables
+*/
 map2d<int8_t>* pathingMap;
 map2d<int8_t> *buildingBlocked;
 map2d<int8_t> *influenceMap;
