@@ -293,7 +293,7 @@ static UnitWrappers findInRadiusEnemy_INTERNAL(Bounds b, Agent* agent, bool excl
             if (imRef(gridModify, i, j) == 1) {
                 UnitWrappers cell = imRef(gridEnemy, i, j);
                 for (auto it = cell.begin(); it != cell.end(); it++) {
-                    if (std::find(found.begin(), found.end(), *it) == found.end() && (!excludeHallucination || (*it)->hallucination)) {
+                    if (std::find(found.begin(), found.end(), *it) == found.end() && !(excludeHallucination && (*it)->hallucination)) {
                         found.push_back(*it);
                     }
                 }
