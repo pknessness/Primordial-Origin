@@ -796,8 +796,13 @@ public:
         }
     }
 
-    void loadEnemyHealth() {
+    void loadHealth() {
         for (auto it = UnitManager::enemies.begin(); it != UnitManager::enemies.end(); it++) {
+            for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
+                (*it2)->loadHealth(this);
+            }
+        }
+        for (auto it = UnitManager::units.begin(); it != UnitManager::units.end(); it++) {
             for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
                 (*it2)->loadHealth(this);
             }
@@ -937,7 +942,7 @@ public:
         SpacialHash::initGrid();
         SpacialHash::initGridEnemy();
 
-        strat = &Strategem::pig_stalker_colossus;//&Strategem::hupsaiya_adept_timing;//&Strategem::chargelot_immortal_archon_timing;//
+        strat = &Strategem::zuka_colossus_voidray;//&Strategem::pig_stalker_colossus;//&Strategem::shit_stalker_colossus;//&Strategem::hupsaiya_adept_timing;//&Strategem::chargelot_immortal_archon_timing;//
 
         for (int i = 0; i < path_zhang_suen->width(); i++) {
             for (int j = 0; j < path_zhang_suen->height(); j++) {
@@ -1574,74 +1579,72 @@ public:
         }
 
         if (Observation()->GetGameLoop() > 20) {
-            bool found = false;
-            for (int i = 0; i < Macro::actions[lastUnitSpawner].size(); i++) {
-                if (Macro::actions[lastUnitSpawner][i].index == lastUnitIndex) {
-                    found = true;
+            bool found = false;//TODO: GET RID
+            for (int i = 0; i < Macro::actions[lastUnitSpawner].size(); i++) {//TODO: GET RID
+                if (Macro::actions[lastUnitSpawner][i].index == lastUnitIndex) {//TODO: GET RID
+                    found = true;//TODO: GET RID
+                }//TODO: GET RID
+            }//TODO: GET RID
+
+            Strategem::UnitRatio numUnits;
+            Strategem::UnitRatioFloat percentageUnits;
+
+            Strategem::UnitRatioFloat percentageUnitsStrategy;
+
+            numUnits.zealot = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_ZEALOT).size());
+            numUnits.stalker = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_STALKER).size());
+            numUnits.sentry = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_SENTRY).size());
+            numUnits.adept = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_ADEPT).size());
+            numUnits.darktemplar = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_DARKTEMPLAR).size());
+            numUnits.hightemplar = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_HIGHTEMPLAR).size());
+            numUnits.archon = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_ARCHON).size());
+
+            numUnits.observer = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_OBSERVER).size());
+            numUnits.immortal = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_IMMORTAL).size());
+            numUnits.warpprism = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_WARPPRISM).size());
+            numUnits.colossus = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_COLOSSUS).size());
+            numUnits.disruptor = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_DISRUPTOR).size());
+
+            numUnits.pheonix = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_PHOENIX).size());
+            numUnits.oracle = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_ORACLE).size());
+            numUnits.voidray = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_VOIDRAY).size());
+            numUnits.tempest = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_TEMPEST).size());
+            numUnits.carrier = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_CARRIER).size());
+            numUnits.mothership = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_MOTHERSHIP).size());
+
+            int8_t* numPtr = (int8_t*)&numUnits;
+            int8_t* numPtrStrategy = (int8_t*)&(strat->unitRatio);
+            float* percentPtr = (float*)&percentageUnits;
+            float* percentPtrStrategy = (float*)&percentageUnitsStrategy;
+
+            int totalUnits = 0;
+            int totalUnitsStrategy = 0;
+            for (int i = 0; i < 18; i++) {
+                totalUnits += numPtr[i];
+                totalUnitsStrategy += numPtrStrategy[i];
+            }
+
+            for (int i = 0; i < 18; i++) {
+                percentPtr[i] = ((float)numPtr[i]) / totalUnits;
+                percentPtrStrategy[i] = ((float)numPtrStrategy[i]) / totalUnitsStrategy;
+            }
+
+            int mindex = 1;
+            for (int i = 0; i < 18; i++) {
+                if (percentPtrStrategy[i] != 0.0 && ((percentPtrStrategy[i] - percentPtr[i]) > (percentPtrStrategy[mindex] - percentPtr[mindex])) && Macro::actions[Strategem::UnitCreators[i]].size() == 0) {
+                    mindex = i;
                 }
             }
-            if (1 || !found) {
-                Strategem::UnitRatio numUnits;
-                Strategem::UnitRatioFloat percentageUnits;
 
-                Strategem::UnitRatioFloat percentageUnitsStrategy;
-
-                numUnits.zealot = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_ZEALOT).size());
-                numUnits.stalker = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_STALKER).size());
-                numUnits.sentry = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_SENTRY).size());
-                numUnits.adept = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_ADEPT).size());
-                numUnits.darktemplar = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_DARKTEMPLAR).size());
-                numUnits.hightemplar = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_HIGHTEMPLAR).size());
-                numUnits.archon = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_ARCHON).size());
-
-                numUnits.observer = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_OBSERVER).size());
-                numUnits.immortal = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_IMMORTAL).size());
-                numUnits.warpprism = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_WARPPRISM).size());
-                numUnits.colossus = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_COLOSSUS).size());
-                numUnits.disruptor = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_DISRUPTOR).size());
-
-                numUnits.pheonix = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_PHOENIX).size());
-                numUnits.oracle = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_ORACLE).size());
-                numUnits.voidray = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_VOIDRAY).size());
-                numUnits.tempest = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_TEMPEST).size());
-                numUnits.carrier = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_CARRIER).size());
-                numUnits.mothership = (int8_t)(UnitManager::get(UNIT_TYPEID::PROTOSS_MOTHERSHIP).size());
-
-                int8_t* numPtr = (int8_t*)&numUnits;
-                int8_t* numPtrStrategy = (int8_t*)&(strat->unitRatio);
-                float* percentPtr = (float*)&percentageUnits;
-                float* percentPtrStrategy = (float*)&percentageUnitsStrategy;
-
-                int totalUnits = 0;
-                int totalUnitsStrategy = 0;
+            if (Macro::actions[Strategem::UnitCreators[mindex]].size() == 0) {
+                printf("Strategy Profile:\n");
                 for (int i = 0; i < 18; i++) {
-                    totalUnits += numPtr[i];
-                    totalUnitsStrategy += numPtrStrategy[i];
+                    printf("%s   \t%.1f\t%.1f\n", UnitTypeToName(Strategem::UnitOrder[i]), percentPtrStrategy[i] * 100, percentPtr[i] * 100);
                 }
-
-                for (int i = 0; i < 18; i++) {
-                    percentPtr[i] = ((float)numPtr[i]) / totalUnits;
-                    percentPtrStrategy[i] = ((float)numPtrStrategy[i]) / totalUnitsStrategy;
-                }
-
-                int mindex = 1;
-                for (int i = 0; i < 18; i++) {
-                    if (percentPtrStrategy[i] != 0.0 && ((percentPtrStrategy[i] - percentPtr[i]) > (percentPtrStrategy[mindex] - percentPtr[mindex])) && Macro::actions[Strategem::UnitCreators[i]].size() == 0) {
-                        mindex = i;
-                    }
-                }
-
-                if (Macro::actions[Strategem::UnitCreators[mindex]].size() == 0) {
-                    printf("Strategy Profile:\n");
-                    for (int i = 0; i < 18; i++) {
-                        printf("%s   \t%.1f\t%.1f\n", UnitTypeToName(Strategem::UnitOrder[i]), percentPtrStrategy[i] * 100, percentPtr[i] * 100);
-                    }
-
-                    MacroAction* m = Macro::addAction(Strategem::UnitCreators[mindex], Strategem::UnitCreationAbility[mindex]);
-                    lastUnitSpawner = m->unit_type;
-                    lastUnitIndex = m->index;
-                }
-                
+                printf("%s\n", AbilityTypeToName(Strategem::UnitCreationAbility[mindex]));
+                MacroAction* m = Macro::addAction(Strategem::UnitCreators[mindex], Strategem::UnitCreationAbility[mindex]);
+                lastUnitSpawner = m->unit_type; //TODO: GET RID
+                lastUnitIndex = m->index; //TODO: GET RID
             }
         }
         
@@ -1672,7 +1675,7 @@ public:
 
         onStepProfiler.midLog("DamageGridReset");
 
-        loadEnemyHealth();
+        loadHealth();
 
         onStepProfiler.midLog("LoadHealth");
 
@@ -1701,6 +1704,7 @@ public:
                 switch (uint32_t((*it2)->getType(this))) {
                     case (uint32_t(UNIT_TYPEID::PROTOSS_ORACLE)): {
                         if ((*it2)->get(this)->energy > Aux::extraWeapons[ABILITY_ID::BEHAVIOR_PULSARBEAMON].energyCostStatic) {
+                            weapons.clear();
                             weapons.push_back(Aux::extraWeapons[ABILITY_ID::BEHAVIOR_PULSARBEAMON].w);
                         }
                     } break;
@@ -1755,8 +1759,8 @@ public:
 
         expansionsLoc();
 
-        //listMacroActions();
-        listEnemyUnits();
+        listMacroActions();
+        //listEnemyUnits();
 
         probeLines();
 
