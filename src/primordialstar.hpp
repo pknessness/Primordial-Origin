@@ -373,11 +373,9 @@ namespace PrimordialStar {
 	}
 
 	float generateMaxDistanceGrid(Agent* agent) {
-		int mapWidth = agent->Observation()->GetGameInfo().width;
-		int mapHeight = agent->Observation()->GetGameInfo().height;
 		float maximum = 0;
-		for (int i = 0; i < mapWidth; i++) {
-			for (int j = 0; j < mapHeight; j++) {
+		for (int i = 0; i < Aux::global_mapWidth; i++) {
+			for (int j = 0; j < Aux::global_mapHeight; j++) {
 				bool center = Aux::getPathable(i, j) != 127;
 				if (center) {
 					float max = 0;
@@ -415,11 +413,9 @@ namespace PrimordialStar {
 	}
 
 	float generateMinDistanceGrid(Agent* agent) {
-		int mapWidth = agent->Observation()->GetGameInfo().width;
-		int mapHeight = agent->Observation()->GetGameInfo().height;
 		float maximum = 0;
-		for (int i = 0; i < mapWidth; i++) {
-			for (int j = 0; j < mapHeight; j++) {
+		for (int i = 0; i < Aux::global_mapWidth; i++) {
+			for (int j = 0; j < Aux::global_mapHeight; j++) {
 				bool center = Aux::getPathable(i, j) != 127;
 				if (center) {
 					float min = 255;
@@ -606,10 +602,8 @@ namespace PrimordialStar {
 	}
 
 	void generatePathNodes(Agent *agent) {
-		int mapWidth = agent->Observation()->GetGameInfo().width;
-		int mapHeight = agent->Observation()->GetGameInfo().height;
-		for (int i = 1; i < mapWidth - 1; i++) {
-			for (int j = 1; j < mapHeight - 1; j++) {
+		for (int i = 1; i < Aux::global_mapWidth - 1; i++) {
+			for (int j = 1; j < Aux::global_mapHeight - 1; j++) {
 				bool center = Aux::checkPathable(i, j);
 				if (!center) {
 					//bool up =		Aux::checkPathable(i	, j + 1	, agent);

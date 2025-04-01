@@ -67,7 +67,7 @@ public:
     }
 
     void initializeStartings() {
-        GameInfo game_info = Observation()->GetGameInfo();
+        GameInfo game_info = Aux::cached_gameinfo;
         if (Observation()->GetStartLocation().x > game_info.width / 2) {
             Aux::staging_location.x = Observation()->GetStartLocation().x - 6;
         } else {
@@ -80,7 +80,7 @@ public:
             Aux::staging_location.y = Observation()->GetStartLocation().y + 6;
         }
         Aux::startLoc = Observation()->GetStartLocation();
-        Aux::enemyLoc = Observation()->GetGameInfo().enemy_start_locations[0];
+        Aux::enemyLoc = Aux::cached_gameinfo.enemy_start_locations[0];
     }
 
     void initializeExpansions() {
@@ -148,10 +148,10 @@ public:
     }
 
     void grid(bool nearbyOnly = true) {
-        GameInfo game_info = Observation()->GetGameInfo();
+        GameInfo game_info = Aux::cached_gameinfo;
 
-        int mapWidth = game_info.width;
-        int mapHeight = game_info.height - 1;
+        int global_mapWidth = game_info.width;
+        int global_mapHeight = game_info.height - 1;
 
         Point2D center = Observation()->GetCameraPos();
         int wS = int(center.x) - 10;
@@ -161,11 +161,11 @@ public:
         if (hS < 0 || !nearbyOnly)
             hS = 0;
         int wE = int(center.x) + 11;
-        if (wE > mapWidth || !nearbyOnly)
-            wE = mapWidth;
+        if (wE > global_mapWidth || !nearbyOnly)
+            wE = global_mapWidth;
         int hE = int(center.y) + 14;
-        if (hE > mapHeight || !nearbyOnly)
-            hE = mapHeight;
+        if (hE > global_mapHeight || !nearbyOnly)
+            hE = global_mapHeight;
 
         #define BOX_BORDER 0.02F
 
@@ -224,10 +224,10 @@ public:
     }
 
     void displayMaxDistanceGrid(float maximal, bool nearbyOnly = true) {
-        GameInfo game_info = Observation()->GetGameInfo();
+        GameInfo game_info = Aux::cached_gameinfo;
 
-        int mapWidth = game_info.width;
-        int mapHeight = game_info.height - 1;
+        int global_mapWidth = game_info.width;
+        int global_mapHeight = game_info.height - 1;
 
         Point2D center = Observation()->GetCameraPos();
         int wS = int(center.x) - 10;
@@ -237,11 +237,11 @@ public:
         if (hS < 0 || !nearbyOnly)
             hS = 0;
         int wE = int(center.x) + 11;
-        if (wE > mapWidth || !nearbyOnly)
-            wE = mapWidth;
+        if (wE > global_mapWidth || !nearbyOnly)
+            wE = global_mapWidth;
         int hE = int(center.y) + 14;
-        if (hE > mapHeight || !nearbyOnly)
-            hE = mapHeight;
+        if (hE > global_mapHeight || !nearbyOnly)
+            hE = global_mapHeight;
 
         #define BOX_BORDER 0.02F
 
@@ -272,10 +272,10 @@ public:
     }
 
     void displaySpacialHashGrid() {
-        GameInfo game_info = Observation()->GetGameInfo();
+        GameInfo game_info = Aux::cached_gameinfo;
 
-        int mapWidth = game_info.width;
-        int mapHeight = game_info.height;
+        int global_mapWidth = game_info.width;
+        int global_mapHeight = game_info.height;
 
         Point2D center = Observation()->GetCameraPos();
         int wS = int(center.x) - 10;
@@ -285,11 +285,11 @@ public:
         if (hS < 0)
             hS = 0;
         int wE = int(center.x) + 11;
-        if (wE > mapWidth)
-            wE = mapWidth;
+        if (wE > global_mapWidth)
+            wE = global_mapWidth;
         int hE = int(center.y) + 14;
-        if (hE > mapHeight)
-            hE = mapHeight;
+        if (hE > global_mapHeight)
+            hE = global_mapHeight;
 
         #define BOX_BORDER 0.02F
 
@@ -323,10 +323,10 @@ public:
     }
 
     void displaySpacialHashGridTEST() {
-        GameInfo game_info = Observation()->GetGameInfo();
+        GameInfo game_info = Aux::cached_gameinfo;
 
-        int mapWidth = game_info.width;
-        int mapHeight = game_info.height;
+        int global_mapWidth = game_info.width;
+        int global_mapHeight = game_info.height;
 
         Point2D center = Observation()->GetCameraPos();
         int wS = int(center.x) - 10;
@@ -336,11 +336,11 @@ public:
         if (hS < 0)
             hS = 0;
         int wE = int(center.x) + 11;
-        if (wE > mapWidth)
-            wE = mapWidth;
+        if (wE > global_mapWidth)
+            wE = global_mapWidth;
         int hE = int(center.y) + 14;
-        if (hE > mapHeight)
-            hE = mapHeight;
+        if (hE > global_mapHeight)
+            hE = global_mapHeight;
 
         #define BOX_BORDER 0.02F
 
@@ -381,10 +381,10 @@ public:
     }
 
     void displayEnemyDamageGrid2() {
-        GameInfo game_info = Observation()->GetGameInfo();
+        GameInfo game_info = Aux::cached_gameinfo;
 
-        int mapWidth = game_info.width;
-        int mapHeight = game_info.height;
+        int global_mapWidth = game_info.width;
+        int global_mapHeight = game_info.height;
 
         Point2D center = Observation()->GetCameraPos();
         int wS = int(center.x) - 10;
@@ -394,11 +394,11 @@ public:
         if (hS < 0)
             hS = 0;
         int wE = int(center.x) + 11;
-        if (wE > mapWidth)
-            wE = mapWidth;
+        if (wE > global_mapWidth)
+            wE = global_mapWidth;
         int hE = int(center.y) + 14;
-        if (hE > mapHeight)
-            hE = mapHeight;
+        if (hE > global_mapHeight)
+            hE = global_mapHeight;
 
         #define BOX_BORDER_S 0.002F
 
@@ -432,10 +432,10 @@ public:
     }
 
     void displayEnemyDamageGrid() {
-        GameInfo game_info = Observation()->GetGameInfo();
+        GameInfo game_info = Aux::cached_gameinfo;
 
-        int mapWidth = game_info.width * UnitManager::damageNetPrecision;
-        int mapHeight = game_info.height * UnitManager::damageNetPrecision;
+        int global_mapWidth = game_info.width * UnitManager::damageNetPrecision;
+        int global_mapHeight = game_info.height * UnitManager::damageNetPrecision;
 
         Point2D center = Observation()->GetCameraPos() * UnitManager::damageNetPrecision;
         int wS = int(center.x) - 10 * UnitManager::damageNetPrecision;
@@ -445,11 +445,11 @@ public:
         if (hS < 0)
             hS = 0;
         int wE = int(center.x) + 11 * UnitManager::damageNetPrecision;
-        if (wE > mapWidth)
-            wE = mapWidth;
+        if (wE > global_mapWidth)
+            wE = global_mapWidth;
         int hE = int(center.y) + 14 * UnitManager::damageNetPrecision;
-        if (hE > mapHeight)
-            hE = mapHeight;
+        if (hE > global_mapHeight)
+            hE = global_mapHeight;
 
         #define BOX_BORDER_SD 0.002F
 
@@ -906,43 +906,45 @@ public:
         profilerThreshold = 10;
         last_time = clock();
 
-        int mapWidth = Observation()->GetGameInfo().width;
-        int mapHeight = Observation()->GetGameInfo().height;
+        Aux::cached_gameinfo = Observation()->GetGameInfo();
+
+        Aux::global_mapWidth = Aux::cached_gameinfo.width;
+        Aux::global_mapHeight = Aux::cached_gameinfo.height;
 
         lastUnitIndex = 0;
         lastUnitSpawner = UNIT_TYPEID::PROTOSS_GATEWAY;
 
-        SpacialHash::grid = new map2d<UnitWrappers>(mapWidth, mapHeight, true);
-        SpacialHash::gridEnemy = new map2d<UnitWrappers>(mapWidth, mapHeight, true);
-        SpacialHash::gridModify = new map2d<int8_t>(mapWidth, mapHeight, true);
+        SpacialHash::grid = new map2d<UnitWrappers>(Aux::global_mapWidth, Aux::global_mapHeight, true);
+        SpacialHash::gridEnemy = new map2d<UnitWrappers>(Aux::global_mapWidth, Aux::global_mapHeight, true);
+        SpacialHash::gridModify = new map2d<int8_t>(Aux::global_mapWidth, Aux::global_mapHeight, true);
 
-        Aux::buildingBlocked = new map2d<int8_t>(mapWidth, mapHeight, true);
-        Aux::pathingMap = new map2d<int8_t>(mapWidth, mapHeight, true);
+        Aux::buildingBlocked = new map2d<int8_t>(Aux::global_mapWidth, Aux::global_mapHeight, true);
+        Aux::pathingMap = new map2d<int8_t>(Aux::global_mapWidth, Aux::global_mapHeight, true);
 
         Aux::loadPathables(this);
 
         Aux::loadExtraDamageSources();
 
-        Aux::influenceMap = new map2d<int8_t>(mapWidth, mapHeight, true);
-        Aux::influenceMapEnemy = new map2d<int8_t>(mapWidth, mapHeight, true);
+        Aux::influenceMap = new map2d<int8_t>(Aux::global_mapWidth, Aux::global_mapHeight, true);
+        Aux::influenceMapEnemy = new map2d<int8_t>(Aux::global_mapWidth, Aux::global_mapHeight, true);
 
-        Aux::visionMap = new map2d<int16_t>(mapWidth, mapHeight, true);
+        Aux::visionMap = new map2d<int16_t>(Aux::global_mapWidth, Aux::global_mapHeight, true);
 
-        path_zhang_suen = new map2d<int8_t>(mapWidth, mapHeight, true);
+        path_zhang_suen = new map2d<int8_t>(Aux::global_mapWidth, Aux::global_mapHeight, true);
 
-        PrimordialStar::blobGrid = new map2d<int8_t>(mapWidth, mapHeight, true);
-        PrimordialStar::minDistanceGrid = new map2d<MinDistanceNode>(mapWidth, mapHeight, true);
-        PrimordialStar::maxDistanceGrid = new map2d<DistanceNode>(mapWidth, mapHeight, true);
+        PrimordialStar::blobGrid = new map2d<int8_t>(Aux::global_mapWidth, Aux::global_mapHeight, true);
+        PrimordialStar::minDistanceGrid = new map2d<MinDistanceNode>(Aux::global_mapWidth, Aux::global_mapHeight, true);
+        PrimordialStar::maxDistanceGrid = new map2d<DistanceNode>(Aux::global_mapWidth, Aux::global_mapHeight, true);
         
-        UnitManager::enemyDamageNetReal = new map2d<int8_t>(mapWidth * UnitManager::damageNetPrecision, mapHeight * UnitManager::damageNetPrecision, true);
-        UnitManager::enemyDamageNet = new map2d<DamageLocation>(mapWidth * UnitManager::damageNetPrecision, mapHeight * UnitManager::damageNetPrecision, true);
-        UnitManager::enemyDamageNetModify = new map2d<int8_t>(mapWidth * UnitManager::damageNetPrecision, mapHeight * UnitManager::damageNetPrecision, true);
-        UnitManager::enemyDamageNetTemp = new map2d<float>(mapWidth * UnitManager::damageNetPrecision, mapHeight * UnitManager::damageNetPrecision, true);
+        UnitManager::enemyDamageNetReal = new map2d<int8_t>(Aux::global_mapWidth * UnitManager::damageNetPrecision, Aux::global_mapHeight * UnitManager::damageNetPrecision, true);
+        UnitManager::enemyDamageNet = new map2d<DamageLocation>(Aux::global_mapWidth * UnitManager::damageNetPrecision, Aux::global_mapHeight * UnitManager::damageNetPrecision, true);
+        UnitManager::enemyDamageNetModify = new map2d<int8_t>(Aux::global_mapWidth * UnitManager::damageNetPrecision, Aux::global_mapHeight * UnitManager::damageNetPrecision, true);
+        UnitManager::enemyDamageNetTemp = new map2d<float>(Aux::global_mapWidth * UnitManager::damageNetPrecision, Aux::global_mapHeight * UnitManager::damageNetPrecision, true);
 
         SpacialHash::initGrid();
         SpacialHash::initGridEnemy();
 
-        strat = &Strategem::zuka_colossus_voidray;//&Strategem::pig_stalker_colossus;//&Strategem::shit_stalker_colossus;//&Strategem::hupsaiya_adept_timing;//&Strategem::chargelot_immortal_archon_timing;//
+        strat = &Strategem::shit_stalker_colossus;//&Strategem::zuka_colossus_voidray;//&Strategem::pig_stalker_colossus;//&Strategem::hupsaiya_adept_timing;//&Strategem::chargelot_immortal_archon_timing;//
 
         for (int i = 0; i < path_zhang_suen->width(); i++) {
             for (int j = 0; j < path_zhang_suen->height(); j++) {
@@ -960,12 +962,12 @@ public:
         };
         int numWords = sizeof(words) / sizeof(words[0]);
 
-        printf("Playing on %s\n", Observation()->GetGameInfo().map_name.c_str());
+        printf("Playing on %s\n", Aux::cached_gameinfo.map_name.c_str());
         Actions()->SendChat("My Origin? Its Primordial, baby! (protoss)");
         Actions()->SendChat(strprintf("Feel the %s of my Protoss (pheart)", words[std::rand() % numWords].c_str()));
 
         Units units = Observation()->GetUnits(sc2::Unit::Alliance::Neutral);
-        for (char c : Observation()->GetGameInfo().map_name) {
+        for (char c : Aux::cached_gameinfo.map_name) {
             if (c != ' ') {
                 fileName += c;
             }
@@ -1002,41 +1004,41 @@ public:
 
         printf("Generating Max Distance Grid took %.3fms\n", std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - startGenerateGrid).count() / 1000.0);
 
-        //saveBitmap("black.bmp", mapWidth, mapHeight, [](int i, int j) {return 0;}, [](int i, int j) {return 0;}, [](int i, int j) {return 0;});
-        saveBitmap("pathable.bmp", mapWidth, mapHeight, [](int i, int j) {return imRef(Aux::pathingMap, i, j);}, [](int i, int j) {return imRef(Aux::pathingMap, i, j);}, [](int i, int j) {return imRef(Aux::pathingMap, i, j);});
-        //saveBitmap("placable.bmp", mapWidth, mapHeight, [](int i, int j) {return imRef(Aux::pathingMap, i, j) * 255;}, [](int i, int j) {return imRef(Aux::pathingMap, i, j) * 255;}, [](int i, int j) {return imRef(Aux::pathingMap, i, j) * 255;});
+        //saveBitmap("black.bmp", Aux::global_mapWidth, Aux::global_mapHeight, [](int i, int j) {return 0;}, [](int i, int j) {return 0;}, [](int i, int j) {return 0;});
+        saveBitmap("pathable.bmp", Aux::global_mapWidth, Aux::global_mapHeight, [](int i, int j) {return imRef(Aux::pathingMap, i, j);}, [](int i, int j) {return imRef(Aux::pathingMap, i, j);}, [](int i, int j) {return imRef(Aux::pathingMap, i, j);});
+        //saveBitmap("placable.bmp", Aux::global_mapWidth, Aux::global_mapHeight, [](int i, int j) {return imRef(Aux::pathingMap, i, j) * 255;}, [](int i, int j) {return imRef(Aux::pathingMap, i, j) * 255;}, [](int i, int j) {return imRef(Aux::pathingMap, i, j) * 255;});
 
-        saveBitmap(fileName + "_distanceMaxPP.bmp", mapWidth, mapHeight, 
+        saveBitmap(fileName + "_distanceMaxPP.bmp", Aux::global_mapWidth, Aux::global_mapHeight, 
             [maximalMax](int i, int j) {return uint8_t(imRef(PrimordialStar::maxDistanceGrid, i, j).distancePP / maximalMax * 255.0);},
             [maximalMax](int i, int j) {return uint8_t(imRef(PrimordialStar::maxDistanceGrid, i, j).distancePP / maximalMax * 255.0);},
             [maximalMax](int i, int j) {return uint8_t(imRef(PrimordialStar::maxDistanceGrid, i, j).distancePP / maximalMax * 255.0);});
 
-        saveBitmap(fileName + "_distanceMaxNP.bmp", mapWidth, mapHeight,
+        saveBitmap(fileName + "_distanceMaxNP.bmp", Aux::global_mapWidth, Aux::global_mapHeight,
             [maximalMax](int i, int j) {return uint8_t(imRef(PrimordialStar::maxDistanceGrid, i, j).distanceNP / maximalMax * 255.0);},
             [maximalMax](int i, int j) {return uint8_t(imRef(PrimordialStar::maxDistanceGrid, i, j).distanceNP / maximalMax * 255.0);},
             [maximalMax](int i, int j) {return uint8_t(imRef(PrimordialStar::maxDistanceGrid, i, j).distanceNP / maximalMax * 255.0);});
 
-        saveBitmap(fileName + "_distanceMaxNN.bmp", mapWidth, mapHeight,
+        saveBitmap(fileName + "_distanceMaxNN.bmp", Aux::global_mapWidth, Aux::global_mapHeight,
             [maximalMax](int i, int j) {return uint8_t(imRef(PrimordialStar::maxDistanceGrid, i, j).distanceNN / maximalMax * 255.0);},
             [maximalMax](int i, int j) {return uint8_t(imRef(PrimordialStar::maxDistanceGrid, i, j).distanceNN / maximalMax * 255.0);},
             [maximalMax](int i, int j) {return uint8_t(imRef(PrimordialStar::maxDistanceGrid, i, j).distanceNN / maximalMax * 255.0);});
 
-        saveBitmap(fileName + "_distanceMaxPN.bmp", mapWidth, mapHeight,
+        saveBitmap(fileName + "_distanceMaxPN.bmp", Aux::global_mapWidth, Aux::global_mapHeight,
             [maximalMax](int i, int j) {return uint8_t(imRef(PrimordialStar::maxDistanceGrid, i, j).distancePN / maximalMax * 255.0);},
             [maximalMax](int i, int j) {return uint8_t(imRef(PrimordialStar::maxDistanceGrid, i, j).distancePN / maximalMax * 255.0);},
             [maximalMax](int i, int j) {return uint8_t(imRef(PrimordialStar::maxDistanceGrid, i, j).distancePN / maximalMax * 255.0);});
 
-        saveBitmap(fileName + "_distanceMin.bmp", mapWidth, mapHeight,
+        saveBitmap(fileName + "_distanceMin.bmp", Aux::global_mapWidth, Aux::global_mapHeight,
             [maximalMin](int i, int j) {return uint8_t(imRef(PrimordialStar::minDistanceGrid, i, j).distance / maximalMin * 255.0);},
             [maximalMin](int i, int j) {return uint8_t(imRef(PrimordialStar::minDistanceGrid, i, j).distance / maximalMin * 255.0);},
             [maximalMin](int i, int j) {return uint8_t(imRef(PrimordialStar::minDistanceGrid, i, j).distance / maximalMin * 255.0);});
 
-        //saveBitmap(fileName + "_master.bmp", mapWidth, mapHeight,
+        //saveBitmap(fileName + "_master.bmp", Aux::global_mapWidth, Aux::global_mapHeight,
         //    [this](int i, int j) {return (Aux::checkPathable(i, j, this) ? 255 : 0);},
         //    [this](int i, int j) {return (Aux::checkPlacable(i, j, this) ? 255 : 0);},
         //    [this](int i, int j) {return (Aux::checkPathable(i, j, this) || Aux::checkPlacable(i, j, this) ? 255 : 0);});
 
-        saveBitmap(fileName + "_master.bmp", mapWidth, mapHeight,
+        saveBitmap(fileName + "_master.bmp", Aux::global_mapWidth, Aux::global_mapHeight,
             [this](int i, int j) {return pathingMapToColor(Aux::getPathable(i, j)).r;},
             [this](int i, int j) {return pathingMapToColor(Aux::getPathable(i, j)).g;},
             [this](int i, int j) {return pathingMapToColor(Aux::getPathable(i, j)).b;});
@@ -1111,7 +1113,7 @@ public:
         SendDebug(this);
         Strategem::initStrategies();
 
-        Point2D middle{Observation()->GetGameInfo().width / 2.0F, Observation()->GetGameInfo().height / 2.0F};
+        Point2D middle{Aux::global_mapWidth / 2.0F, Aux::global_mapHeight / 2.0F};
 
         vector<Point2DI> possiblePoints;
 
@@ -1299,12 +1301,11 @@ public:
 
             UnitTypes allData = Observation()->GetUnitTypeData();
             UnitTypeData unit_stats = allData.at(static_cast<uint32_t>(unit->unit_type));
-            GameInfo game_info = Observation()->GetGameInfo();
 
             for (int i = std::max(0, int(unit->pos.x - unit_stats.sight_range) - 2);
-                 i < std::min(game_info.width, int(unit->pos.x + unit_stats.sight_range) + 2); i++) {
+                 i < std::min(Aux::global_mapWidth, int(unit->pos.x + unit_stats.sight_range) + 2); i++) {
                 for (int j = std::max(0, int(unit->pos.y - unit_stats.sight_range) - 2);
-                     j < std::min(game_info.height, int(unit->pos.y + unit_stats.sight_range) + 2); j++) {
+                     j < std::min(Aux::global_mapHeight, int(unit->pos.y + unit_stats.sight_range) + 2); j++) {
                     if (Distance2D(Point2D{i + 0.5F, j + 0.5F}, unit->pos) < unit_stats.sight_range) {
                         imRef(Aux::influenceMap, i, j) += 1;
                     }
@@ -1347,12 +1348,11 @@ public:
                 //Aux::removePlacement(unit->pos, unit->unit_type);
                 UnitTypes allData = Observation()->GetUnitTypeData();
                 UnitTypeData unit_stats = allData.at(static_cast<uint32_t>(unit->unit_type));
-                GameInfo game_info = Observation()->GetGameInfo();
 
                 for (int i = std::max(0, int(unit->pos.x - unit_stats.sight_range) - 2);
-                     i < std::min(game_info.width, int(unit->pos.x + unit_stats.sight_range) + 2); i++) {
+                     i < std::min(Aux::global_mapWidth, int(unit->pos.x + unit_stats.sight_range) + 2); i++) {
                     for (int j = std::max(0, int(unit->pos.y - unit_stats.sight_range) - 2);
-                         j < std::min(game_info.height, int(unit->pos.y + unit_stats.sight_range) + 2); j++) {
+                         j < std::min(Aux::global_mapHeight, int(unit->pos.y + unit_stats.sight_range) + 2); j++) {
                         if (Distance2D(Point2D{i + 0.5F, j + 0.5F}, unit->pos) < unit_stats.sight_range) {
                             imRef(Aux::influenceMapEnemy, i, j) -= 1;
                         }
@@ -1381,10 +1381,8 @@ public:
     }
 
     void loadVisionMap(Agent* agent) {
-        int mapWidth = agent->Observation()->GetGameInfo().width;
-        int mapHeight = agent->Observation()->GetGameInfo().height;
-        for (int i = 0; i < mapWidth; i++) {
-            for (int j = 0; j < mapHeight; j++) {
+        for (int i = 0; i < Aux::global_mapWidth; i++) {
+            for (int j = 0; j < Aux::global_mapHeight; j++) {
                 if (imRef(Aux::visionMap, i, j) > 1) {
                     imRef(Aux::visionMap, i, j) -= 1;
                 }
@@ -1394,14 +1392,15 @@ public:
         for (auto it = UnitManager::units.begin(); it != UnitManager::units.end(); it++) {
             auto all = it->second;
             UnitTypeData unit_stats = Aux::getStats(it->first, agent);
+            float range2 = unit_stats.sight_range * unit_stats.sight_range;
             for (auto it2 = all.begin(); it2 != all.end(); it2++) {
                 Point2D pos = (*it2)->pos(agent);
 
-                for (int i = std::max(0, int(pos.x - unit_stats.sight_range) - 2);
-                    i < std::min(mapWidth, int(pos.x + unit_stats.sight_range) + 2); i++) {
-                    for (int j = std::max(0, int(pos.y - unit_stats.sight_range) - 2);
-                        j < std::min(mapHeight, int(pos.y + unit_stats.sight_range) + 2); j++) {
-                        if (Distance2D(Point2D{ i + 0.5F, j + 0.5F }, pos) < unit_stats.sight_range) {
+                for (int i = std::max(0, int(pos.x - unit_stats.sight_range) - 1);
+                    i < std::min(Aux::global_mapWidth, int(pos.x + unit_stats.sight_range) + 2); i++) {
+                    for (int j = std::max(0, int(pos.y - unit_stats.sight_range) - 1);
+                        j < std::min(Aux::global_mapHeight, int(pos.y + unit_stats.sight_range) + 2); j++) {
+                        if (DistanceSquared2D(Point2D{ i + 0.5F, j + 0.5F }, pos) < range2) {
                             imRef(Aux::visionMap, i, j) = Aux::visionMax;
                         }
                     }
@@ -1525,11 +1524,9 @@ public:
             }
         #endif
 
-        if (0 && Observation()->GetGameLoop() % 200 == 0) { //1344
-            int mapWidth = Observation()->GetGameInfo().width;
-            int mapHeight = Observation()->GetGameInfo().height;
+        if (Observation()->GetGameLoop() % 200 == 0) { //1344
             string time = strprintf("_%d_", Observation()->GetGameLoop());
-            saveBitmap(fileName + time +"visionMap.bmp", mapWidth, mapHeight,
+            saveBitmap(fileName + time +"visionMap.bmp", Aux::global_mapWidth, Aux::global_mapHeight,
                 [this](int i, int j) {return (uint8_t)((float)imRef(Aux::visionMap, i, j) * 255 / Aux::visionMax);},
                 [this](int i, int j) {return (uint8_t)((float)imRef(Aux::visionMap, i, j) * 255 / Aux::visionMax);},
                 [this](int i, int j) {return (uint8_t)((float)imRef(Aux::visionMap, i, j) * 255 / Aux::visionMax);});
@@ -1537,17 +1534,15 @@ public:
 
         if (0) {
             //((ObservationImp*)Observation())->game_info_cached_ = false;
-            int mapWidth = Observation()->GetGameInfo().width;
-            int mapHeight = Observation()->GetGameInfo().height;
             if (Observation()->GetGameLoop() == 2) {
-                saveBitmap(fileName + "_pre_pathable.bmp", mapWidth, mapHeight, 
+                saveBitmap(fileName + "_pre_pathable.bmp", Aux::global_mapWidth, Aux::global_mapHeight,
                     [this](int i, int j) {return (Observation()->IsPathable({ float(i), float(j) }) ? 255 : 0);}, 
                     [this](int i, int j) {return (Observation()->IsPathable({ float(i), float(j) }) ? 255 : 0);}, 
                     [this](int i, int j) {return (Observation()->IsPathable({ float(i), float(j) }) ? 255 : 0);});
                 Debug()->DebugShowMap();
             }
             else if (Observation()->GetGameLoop() == 82) {
-                saveBitmap(fileName + "_mid_pathable.bmp", mapWidth, mapHeight,
+                saveBitmap(fileName + "_mid_pathable.bmp", Aux::global_mapWidth, Aux::global_mapHeight,
                     [this](int i, int j) {return (Observation()->IsPathable({ float(i), float(j) }) ? 255 : 0);},
                     [this](int i, int j) {return (Observation()->IsPathable({ float(i), float(j) }) ? 255 : 0);},
                     [this](int i, int j) {return (Observation()->IsPathable({ float(i), float(j) }) ? 255 : 0);});
@@ -1557,7 +1552,7 @@ public:
                 }
             }
             else if (Observation()->GetGameLoop() == 162) {
-                saveBitmap(fileName + "_end_pathable.bmp", mapWidth, mapHeight,
+                saveBitmap(fileName + "_end_pathable.bmp", Aux::global_mapWidth, Aux::global_mapHeight,
                     [this](int i, int j) {return (Observation()->IsPathable({ float(i), float(j) }) ? 255 : 0);},
                     [this](int i, int j) {return (Observation()->IsPathable({ float(i), float(j) }) ? 255 : 0);},
                     [this](int i, int j) {return (Observation()->IsPathable({ float(i), float(j) }) ? 255 : 0);});
@@ -1874,12 +1869,11 @@ public:
 
             UnitTypes allData = Observation()->GetUnitTypeData();
             UnitTypeData unit_stats = allData.at(static_cast<uint32_t>(unit->unit_type));
-            GameInfo game_info = Observation()->GetGameInfo();
 
             for (int i = std::max(0, int(unit->pos.x - unit_stats.sight_range) - 2);
-                 i < std::min(game_info.width, int(unit->pos.x + unit_stats.sight_range) + 2); i++) {
+                 i < std::min(Aux::global_mapWidth, int(unit->pos.x + unit_stats.sight_range) + 2); i++) {
                 for (int j = std::max(0, int(unit->pos.y - unit_stats.sight_range) - 2);
-                     j < std::min(game_info.height, int(unit->pos.y + unit_stats.sight_range) + 2); j++) {
+                     j < std::min(Aux::global_mapHeight, int(unit->pos.y + unit_stats.sight_range) + 2); j++) {
                     if (Distance2D(Point2D{i + 0.5F, j + 0.5F}, unit->pos) < unit_stats.sight_range) {
                         imRef(Aux::influenceMapEnemy, i, j) += 1;
                     }

@@ -82,6 +82,7 @@ void updateGrid(Agent *agent) {
         for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
             Point2D p = (*it2)->pos(agent);
             float size = (*it2)->radius;
+            float size2 = size*size;
             float x = p.x - size;
             float y = p.y - size;
             for (int i = 0; i < size * 2 + 1; i++) {
@@ -91,7 +92,7 @@ void updateGrid(Agent *agent) {
                         for (float b = 0; b <= 1; b += 0.25) {
                             if (a == 0 || a == 1 || b == 0 || b == 1 || (a == 0.5 && b == 0.5)) {
                                 Point2D temp{float((int)(i + x) + a), float((int)(j + y) + b)};
-                                if (Distance2D(p, temp) < size ||
+                                if (DistanceSquared2D(p, temp) < size2 ||
                                     ((int)(i + x) == (int)(p.x) && std::abs(j + y - p.y) < size) ||
                                     ((int)(j + y) == (int)(p.y) && std::abs(i + x - p.x) < size)) {
                                     activate = true;
@@ -184,8 +185,7 @@ static UnitWrappers findInRadius_INTERNAL(Bounds b, Agent *agent) {
                 continue;
             }
             if (imRef(gridModify, i, j) == 1) {
-                UnitWrappers cell = imRef(grid, i, j);
-                for (auto it = cell.begin(); it != cell.end(); it++) {
+                for (auto it = imRef(grid, i, j).begin(); it != imRef(grid, i, j).end(); it++) {
                     if (std::find(found.begin(), found.end(), *it) == found.end()) {
                         found.push_back(*it);
                     }
@@ -246,6 +246,7 @@ void updateGridEnemy(Agent *agent) {
         for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
             Point2D p = (*it2)->pos(agent);
             float size = (*it2)->radius;
+            float size2 = size * size;
             float x = p.x - size;
             float y = p.y - size;
             for (int i = 0; i < size * 2 + 1; i++) {
@@ -260,7 +261,7 @@ void updateGridEnemy(Agent *agent) {
                         for (float b = 0; b <= 1; b += 0.25) {
                             if (a == 0 || a == 1 || b == 0 || b == 1 || (a == 0.5 && b == 0.5)) {
                                 Point2D temp{float(intX + a), float(intY + b)};
-                                if (Distance2D(p, temp) < size ||
+                                if (DistanceSquared2D(p, temp) < size2 ||
                                     (intX == (int)(p.x) && std::abs(j + y - p.y) < size) ||
                                     (intY == (int)(p.y) && std::abs(i + x - p.x) < size)) {
                                     activate = true;
@@ -291,8 +292,7 @@ static UnitWrappers findInRadiusEnemy_INTERNAL(Bounds b, Agent* agent, bool excl
                 continue;
             }
             if (imRef(gridModify, i, j) == 1) {
-                UnitWrappers cell = imRef(gridEnemy, i, j);
-                for (auto it = cell.begin(); it != cell.end(); it++) {
+                for (auto it = imRef(gridEnemy, i, j).begin(); it != imRef(gridEnemy, i, j).end(); it++) {
                     if (std::find(found.begin(), found.end(), *it) == found.end() && !(excludeHallucination && (*it)->hallucination)) {
                         found.push_back(*it);
                     }
