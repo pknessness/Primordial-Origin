@@ -215,7 +215,7 @@ Point2D cliffCheckDisplace[8] = {
 */
 static bool checkCliff(Point2D start, uint8_t slot1, uint8_t slot2, Agent* agent) {
     if (slot1 < 0 || slot1 > 9 || slot2 < 0 || slot2 > 9) {
-        throw std::exception("Out of bounds");
+        throw std::runtime_error("Out of bounds");
     }
     bool path1 = agent->Observation()->IsPathable(start + cliffCheckDisplace[slot1]);
     bool path2 = agent->Observation()->IsPathable(start + cliffCheckDisplace[slot2]);
