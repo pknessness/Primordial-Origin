@@ -1483,9 +1483,15 @@ public:
                 }
                 unit->execute(this);
                 Point3D pos = unit->pos3D(this);
+                
+                Tag t = NullTag;
+                if (unit->targetWrap != nullptr) {
+                    t = unit->targetWrap->self;
+                }
+
                 s += strprintf("%s %.1fs %Ix %c {%.1f,%.1f}\n", UnitTypeToName(unit->getType(this)),
                     unit->get(this)->weapon_cooldown,
-                               ((ArmyUnit*)(unit))->targetWrap, squads[i].squadStates[unit->self], unit->posTarget.x, unit->posTarget.y);
+                    t, squads[i].squadStates[unit->self], unit->posTarget.x, unit->posTarget.y);
                 DebugText(this,strprintf("%c:%c", squads[i].squadStates[unit->self], squads[i].subSquadStates[unit->self]),
                                       pos,
                                       Color(210, 55, 55), 8);
