@@ -885,6 +885,10 @@ public:
             return { 126,209,223 };
         case (106):
             return { 35, 191, 31 };
+        case (121):
+            return { 100, 0, 193 };
+        case (122):
+            return { 167, 0, 193 }; 
         default:
             return { 200, 180, (uint8_t)map };
         }
@@ -1493,8 +1497,7 @@ public:
                     unit->get(this)->weapon_cooldown,
                     t, squads[i].squadStates[unit->self], unit->posTarget.x, unit->posTarget.y);
                 DebugText(this,strprintf("%c:%c", squads[i].squadStates[unit->self], squads[i].subSquadStates[unit->self]),
-                                      pos,
-                                      Color(210, 55, 55), 8);
+                                      pos, Color(210, 55, 55), 8);
                 
                 DebugLine(this, pos + Point3D{ 0,0,1 }, P3D(unit->posTarget) + Point3D{0,0,1}, {255, 150, 150});
                 DebugLine(this, pos + Point3D{ 0,0,1 }, P3D(unit->escapeLoc) + Point3D{ 0,0,1 }, { 10, 150, 255 });
@@ -1517,7 +1520,7 @@ public:
             }
         #endif
 
-        if (Observation()->GetGameLoop() % 200 == 0) { //1344
+        if (0 && Observation()->GetGameLoop() % 200 == 0) { //1344
             int mapWidth = Observation()->GetGameInfo().width;
             int mapHeight = Observation()->GetGameInfo().height;
             string time = strprintf("_%d_", Observation()->GetGameLoop());

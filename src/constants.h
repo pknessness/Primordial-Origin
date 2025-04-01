@@ -200,12 +200,53 @@ UnitTypeData getStats(UnitTypeID type, Agent *agent) {
     return statsMap[type];
 }
 
+int8_t cliffCheckDisplaceX[8] = { -1,0,1,-1,1,-1,0,1 };
+int8_t cliffCheckDisplaceY[8] = { 1,1,1,0,0,-1,-1,-1 };
+
+Point2D cliffCheckDisplace[8] = { 
+    Point2D{-1,1} , Point2D{0,1} , Point2D{1,1} , 
+    Point2D{-1,0} ,                 Point2D{1,0} , 
+    Point2D{-1,-1} , Point2D{0,-1} , Point2D{1,-1} };
+
+/*
+* 0 1 2
+* 3 , 4
+* 5 6 7
+*/
+static bool checkCliff(Point2D start, uint8_t slot1, uint8_t slot2, Agent* agent) {
+    if (slot1 < 0 || slot1 > 9 || slot2 < 0 || slot2 > 9) {
+        throw std::exception("Out of bounds");
+    }
+    bool path1 = agent->Observation()->IsPathable(start + cliffCheckDisplace[slot1]);
+    bool path2 = agent->Observation()->IsPathable(start + cliffCheckDisplace[slot2]);
+    if (path1 && path2) {
+        float height1 = agent->Observation()->TerrainHeight(start + cliffCheckDisplace[slot1]);
+        float height2 = agent->Observation()->TerrainHeight(start + cliffCheckDisplace[slot2]);
+        if ((height1 == (float)(int)height1) && (height2 == (float)(int)height2) && height1 != height2) {
+            return true;
+        }
+    }
+    return false;
+}
+
 static void loadPathables(Agent *agent) {
     int mapWidth = agent->Observation()->GetGameInfo().width;
     int mapHeight = agent->Observation()->GetGameInfo().height;
     for (int i = 0; i < mapWidth; i++) {
         for (int j = 0; j < mapHeight; j++) {
-            if (!agent->Observation()->IsPathable({ float(i), float(j) })) {
+            Point2D check = { float(i), float(j) };
+            if (!agent->Observation()->IsPathable(check)) {
+                if (i > 0 && i < (mapWidth - 1) && j > 0 && j < (mapHeight - 1)) {
+                    if (checkCliff(check, 1, 6, agent) || checkCliff(check, 3, 4, agent) ||
+                        checkCliff(check, 2, 6, agent) || checkCliff(check, 3, 2, agent) ||
+                        checkCliff(check, 0, 6, agent) || checkCliff(check, 3, 7, agent) ||
+                        checkCliff(check, 1, 6, agent) || checkCliff(check, 0, 4, agent) ||
+                        checkCliff(check, 1, 6, agent) || checkCliff(check, 5, 4, agent) ||
+                        checkCliff(check, 2, 6, agent) || checkCliff(check, 0, 7, agent)) {
+                        imRef(pathingMap, i, j) = 121;
+                        continue;
+                    }
+                }
                 imRef(pathingMap, i, j) = 127;
             }
         }
