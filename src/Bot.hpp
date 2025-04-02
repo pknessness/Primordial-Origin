@@ -1846,7 +1846,7 @@ public:
 
                 for (UnitWrapper* nexusWrap : nexuses) {
                     Point2D targPos = nexusWrap->pos(this);
-                    printf("%s %Ix is sqrt(%.1f) away\n", UnitTypeToName(unit->unit_type), unit->tag, DistanceSquared2D(targPos, unit->pos));
+                    //printf("%s %Ix is sqrt(%.1f) away\n", UnitTypeToName(unit->unit_type), unit->tag, DistanceSquared2D(targPos, unit->pos));
                     if (DistanceSquared2D(targPos, unit->pos) < 100) {
                         nexusNearby[unit->tag] = true;
                         ((Nexus*)nexusWrap)->minerals[((Nexus*)nexusWrap)->minsFound++] = unit->tag;
@@ -1854,7 +1854,7 @@ public:
                 }
             }
             else {
-                printf("%s %Ix\n", UnitTypeToName(unit->unit_type), unit->tag);
+                //printf("%s %Ix\n", UnitTypeToName(unit->unit_type), unit->tag);
             }
         }
     }
