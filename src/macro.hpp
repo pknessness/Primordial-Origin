@@ -245,6 +245,8 @@ namespace Macro {
                     for (int i = 0; i < pylons.size(); i++) {
                         if (agent->Observation()->GetUnit(pylons[i]->self)->build_progress != 1.0) {
                             cont = true;
+                            diagnostics += "PYLON BUILDING\n\n";
+                            macroProfiler.midLog("PYLON BUILDING");
                             break;
                         }
                     }
@@ -255,13 +257,26 @@ namespace Macro {
                     }
 
                     if (gt > (uint32_t)(lastPylonMade + 30)) {
-                        addBuildingTop(ABILITY_ID::BUILD_PYLON, Point2D{ -1, -1 }, 0);
-                        diagnostics += "mE-PYLON REQUESTED\n\n";
-                        macroProfiler.midLog("mE-PYLON REQUESTED");
-                        break;
+                        UnitWrappers probes = UnitManager::units[UNIT_TYPEID::PROTOSS_PROBE];
+                        bool pylonRequested = false;
+                        for (int i = 0; i < probes.size(); i ++){
+                            Probe* prob = (Probe*)probes[i];
+                            for (int b = 0; b < prob->buildings.size(); b++) {
+                                if (prob->buildings[b].build == ABILITY_ID::BUILD_PYLON) {
+                                    pylonRequested = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!pylonRequested) {
+                            addBuildingTop(ABILITY_ID::BUILD_PYLON, Point2D{ -1, -1 }, 0);
+                            diagnostics += "PYLON REQUESTED\n\n";
+                            macroProfiler.midLog("PYLON REQUESTED");
+                            break;
+                        }
                     }
-                    diagnostics += "mE-PYLON TOO SOON\n\n";
-                    macroProfiler.midLog("mE-PYLON TOO SOON");
+                    diagnostics += "PYLON TOO SOON\n\n";
+                    macroProfiler.midLog("PYLON TOO SOON");
                     continue;
                 }
             }

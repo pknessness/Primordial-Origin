@@ -556,14 +556,14 @@ namespace Strategem {
             MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),  // 54 probes @ 4:50
             MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}),              // 54 probes @ 4:55
             MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_TEMPEST), // 56 probes @ 5:00 (MOVE OUT)
-            MacroBuilding(ABILITY_ID::BUILD_SHIELDBATTERY, {-1,-1}) // 63 probes @ 5:10
-        };
+            MacroBuilding(ABILITY_ID::BUILD_SHIELDBATTERY, {-1,-1}), // 63 probes @ 5:10
 
-        // Unit Composition
+            MacroBuilding(ABILITY_ID::BUILD_STARGATE, {-1,-1}),
+            MacroBuilding(ABILITY_ID::BUILD_STARGATE, {-1,-1}),
+        };
         classic_gsl_tempest_rush.unitRatio.adept = 3;
         classic_gsl_tempest_rush.unitRatio.tempest = 3;
-
-        // Attack Timing
+        //classic_gsl_tempest_rush.unitRatio.carrier = 2;
         classic_gsl_tempest_rush.armyAttackNum = 6;  // Hit at 5:00 with 3 Tempests
     }
 }

@@ -8,16 +8,17 @@
 
 class Nexus : public UnitWrapper {
 private:
-    UnitTypeID type1;
-    Tag vespene1;
-    bool taken1;
-
-    UnitTypeID type2;
-    Tag vespene2;
-    bool taken2;
 public:
-    Nexus(const Unit* unit) : UnitWrapper(unit), type1(UNIT_TYPEID::INVALID), vespene1(NullTag), taken1(false), type2(UNIT_TYPEID::INVALID), vespene2(NullTag), taken2(false) {
+    Tag assimilator1;
+    Tag assimilator2;
 
+    Tag minerals[8];
+    int8_t minsFound;
+
+    Nexus(const Unit* unit) : UnitWrapper(unit), assimilator1(NullTag), assimilator2(NullTag), minsFound(0) {
+        for (int i = 0; i < 8; i++) {
+            minerals[i] = NullTag;
+        }
     }
 
     void nexusNearbyUpdate(Agent* agent) {
@@ -28,6 +29,7 @@ public:
             Point2D targPos = targWrap->pos(agent);
             if (DistanceSquared2D(targPos, pos(agent)) < 100) {
                 nexusNearby[targWrap->self] = true;
+                minerals[minsFound++] = targWrap->self;
             }
         }
     }

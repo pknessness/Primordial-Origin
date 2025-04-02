@@ -661,9 +661,9 @@ public:
             string type = UnitTypeToName(it->first);
             tot += ("\n" + type + ":\n");
             for (auto it2 = all.begin(); it2 != all.end(); it2++) {
-                if (it2->ability == ABILITY_ID::TRAIN_PROBE) {
-                    continue;
-                }
+                //if (it2->ability == ABILITY_ID::TRAIN_PROBE) {
+                //    continue;
+                //}
                 tot += strprintf("%s %d %.1f,%.1f\n", AbilityTypeToName(it2->ability), it2->index, it2->pos.x, it2->pos.y);
             }
         }
@@ -739,10 +739,12 @@ public:
 
     void neutralDisplay() {
         for (auto it = UnitManager::neutrals.begin(); it != UnitManager::neutrals.end(); it++) {
-            auto all = it->second;
-            for (auto it2 = all.begin(); it2 != all.end(); it2++) {
+            for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
                 #define LETTER_DISP -0.07F
                 string s = strprintf("%lx", (*it2)->self);
+                if (mineralDistance.find((*it2)->self) != mineralDistance.end()) {
+                    s += strprintf(" %.1f", mineralDistance[(*it2)->self]);
+                }
                 DebugText(this,s, (*it2)->pos3D(this) + Point3D{s.size() * LETTER_DISP, 0.3F, 0.5F}, Color(210, 55, 55),
                                       8);
             }
@@ -1118,7 +1120,7 @@ public:
         //Tool::draw_grid(this, map, {}, {}, path, came_from, start, goal);
         initializeStartings();
         initializeExpansions();
-        SendDebug(this);
+        //SendDebug(this);
         Strategem::initStrategies();
 
         Point2D middle{Aux::global_mapWidth / 2.0F, Aux::global_mapHeight / 2.0F};
@@ -1468,19 +1470,6 @@ public:
         //manageArmy();
         ArmyControl::step(this, rally_point, strat);
 
-        //for (UnitWrapper* wrap : UnitManager::units[UNIT_TYPEID::PROTOSS_STALKER]) {
-        //    float theta = ((float)std::rand()) * 2 * M_PI / RAND_MAX;
-        //    float magnitude = 8;//((float)std::rand()) * 8 / RAND_MAX;
-
-        //    Point2D displace{ cos(theta) * magnitude, sin(theta) * magnitude };
-
-        //    Point3D upos = wrap->pos3D(this);
-        //    Point3D blinkPos{ upos.x + displace.x, upos.y + displace.y, upos.z };
-        //    DebugLine(this, upos, blinkPos, { 240, 73, 250 });
-        //    printf("TELEPORT STALKER {%.1f, %.1f}\n", displace.x, displace.y);
-        //    Actions()->UnitCommand(wrap->self, ABILITY_ID::EFFECT_BLINK_STALKER, blinkPos);
-        //}
-
         onStepProfiler.midLog("ArmyControl");
 
         string s = "";
@@ -1523,9 +1512,9 @@ public:
         onStepProfiler.midLog("SquadExecute");
         #if MICRO_TEST == 0
             if (Observation()->GetGameLoop() == 2) {
-                for (int i = 0; i < 32; i++) {
-                    Macro::addProbe();
-                }
+                //for (int i = 0; i < 32; i++) {
+                //    Macro::addProbe();
+                //}
                 for (int i = 0; i < strat->build_order.size(); i++) {
                     Macro::addAction(strat->build_order[i]);
                 }
@@ -1581,6 +1570,35 @@ public:
             }
         }
 
+        int numProbes = 0;
+        int numProbesMax = 0;
+        for (UnitWrapper* nexusWrap : UnitManager::get(UNIT_TYPEID::PROTOSS_NEXUS)) {
+            float percentUntilViable = 1.0F - (Aux::getStats(UNIT_TYPEID::PROTOSS_PROBE, this).build_time / Aux::getStats(UNIT_TYPEID::PROTOSS_NEXUS, this).build_time);
+            if (nexusWrap->get(this)->build_progress < percentUntilViable) {
+                continue;
+            }
+            if (((Nexus*)nexusWrap)->assimilator1 != NullTag) {
+                numProbesMax += 3;
+                numProbes += probeTargetting[((Nexus*)nexusWrap)->assimilator1];
+            }
+            if (((Nexus*)nexusWrap)->assimilator2 != NullTag) {
+                numProbesMax += 3;
+                numProbes += probeTargetting[((Nexus*)nexusWrap)->assimilator2];
+            }
+            for (int i = 0; i < 8; i ++) {
+                if (((Nexus*)nexusWrap)->minerals[i] != NullTag) {
+                    numProbesMax += 2;
+                    numProbes += probeTargetting[((Nexus*)nexusWrap)->minerals[i]];
+                }
+            }
+        }
+
+        if ((numProbes + 1) < numProbesMax && Macro::actions[UNIT_TYPEID::PROTOSS_NEXUS].size() == 0) {
+            Macro::addProbe();
+        }
+        
+        onStepProfiler.midLog("ProbeCreation");
+        
         if (Observation()->GetGameLoop() > 20) {
             bool found = false;//TODO: GET RID
             for (int i = 0; i < Macro::actions[lastUnitSpawner].size(); i++) {//TODO: GET RID
@@ -1650,14 +1668,8 @@ public:
                 lastUnitIndex = m->index; //TODO: GET RID
             }
         }
-        
-        if (spareMinerals > 150 && spareVespene > 75) {
-            
 
-
-        }
-
-        onStepProfiler.midLog("StalkerCreation");
+        onStepProfiler.midLog("UnitCreation");
 
         clock_t new_time = clock();
         int dt = (new_time - last_time);
@@ -1828,7 +1840,22 @@ public:
             u->execute(this);
         } else {
             UnitWrapper* u = new UnitWrapper(unit);
-            //u->execute(this);
+
+            if (Aux::isMineral(*unit)) {
+                UnitWrappers nexuses = UnitManager::get(UNIT_TYPEID::PROTOSS_NEXUS);
+
+                for (UnitWrapper* nexusWrap : nexuses) {
+                    Point2D targPos = nexusWrap->pos(this);
+                    printf("%s %Ix is sqrt(%.1f) away\n", UnitTypeToName(unit->unit_type), unit->tag, DistanceSquared2D(targPos, unit->pos));
+                    if (DistanceSquared2D(targPos, unit->pos) < 100) {
+                        nexusNearby[unit->tag] = true;
+                        ((Nexus*)nexusWrap)->minerals[((Nexus*)nexusWrap)->minsFound++] = unit->tag;
+                    }
+                }
+            }
+            else {
+                printf("%s %Ix\n", UnitTypeToName(unit->unit_type), unit->tag);
+            }
         }
     }
 
@@ -1902,6 +1929,8 @@ public:
 //fix armored damage calculation
 
 //more complex army splitting, harrasssing army, etc
+
+//if no ground units, unit center can be flying but if ground units re-enter, it goes back to ground units
 
 //primordialstar optimizations: 
 //-check max num of paths from nodes and max length of a path to optimize

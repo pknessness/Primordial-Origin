@@ -115,7 +115,9 @@ namespace ArmyControl {
                 dangerous.push_back(enemySquads[i]);
             }
         }
+        bool hasTarget = 0;
         if (dangerous.size() > 0) {
+            hasTarget = true;
             if (unitCount == 0) {
                 squads[0].attack(dangerous[0].center(agent)); //probe defense
             }
@@ -123,26 +125,33 @@ namespace ArmyControl {
                 squads[0].attack(dangerous[0].center(agent));
             }
         }
-        else if (enemyBuildingCount > 0) {
-            if (squads[0].coreCount() > strat->armyAttackNum) {
+        else{
+            if (squads[0].coreCount() >= strat->armyAttackNum) {
                 if (squads[0].getCore(agent) != nullptr) {
                     float mindist = 400;
                     UnitWrapper* min = nullptr;
                     for (UnitWrapper* wrap : buildings) {
+                        if (wrap->pos(agent) == Point2D{ 0,0 }) {
+                            continue;
+                        }
                         float dist = PrimordialStar::getPathLength(squads[0].coreCenter(agent), wrap->pos(agent), squads[0].getCore(agent)->radius, agent);
                         if (dist < mindist) {
                             min = wrap;
                             mindist = dist;
                         }
                     }
-                    squads[0].attack(min->pos(agent));
+                    if (min != nullptr) {
+                        squads[0].attack(min->pos(agent));
+                        hasTarget = true;
+                    }
                 }
             }
             else {
                 squads[0].attack(rally);
+                hasTarget = true;
             }
         }
-        else {
+        if(!hasTarget){
             squads[0].search(Point2D{ 0,0 });
         }
 
