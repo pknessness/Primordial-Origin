@@ -403,7 +403,13 @@ public:
 
     float calculatePathDamage(Point2D start, Point2D end, Agent* agent) {
         float damageCost = 0.0F;
-        vector<Point2D> fullpath = PrimordialStar::getPath(start, end, radius, agent);
+        vector<Point2D> fullpath;
+        if (get(agent)->is_flying) {
+            fullpath = { start, end };
+        }
+        else {
+            fullpath = PrimordialStar::getPath(start, end, radius, agent);
+        }
         vector<Point2D> stepPoints = PrimordialStar::stepPointsAlongPath(fullpath, 1.0F);
 
         if (fullpath.size() != 0) {
@@ -665,7 +671,14 @@ public:
                     escapeLoc = position;
                 }
                 escapeCost = calculatePathDamage(position, escapeLoc, agent);
-                distToTarget = PrimordialStar::getPathLength(escapeLoc, posTarget, radius, agent);
+                vector<Point2D> pathToTarget;
+                if (get(agent)->is_flying) {
+                    pathToTarget = { escapeLoc, posTarget };
+                }
+                else {
+                    pathToTarget = PrimordialStar::getPath(escapeLoc, posTarget, radius, agent);
+                }
+                distToTarget = PrimordialStar::getPathLength(pathToTarget);
 
                 if (calculatePathDamage(position, posTarget, agent) == 0) {
                     escapeLoc = posTarget;
@@ -686,7 +699,7 @@ public:
                         checkPoints.push_back(checkPoint);
                         checkPointDistances.push_back(-1);
                     }
-                    if (position != posTarget) {
+                    if (position != posTarget && !get(agent)->is_flying) {
                         vector<Point2D> pathDijkstra = PrimordialStar::getPathDijkstra(position, posTarget, radius, agent);
                         float dijkstraLength = PrimordialStar::getPathLength(pathDijkstra);
                         for (int i = 0; i < alongPurePathBisects - 1; i++) {
@@ -711,10 +724,24 @@ public:
                         }
                         else if (escapeCost == checkCost) {
                             if (distToTarget == -1) {
-                                distToTarget = PrimordialStar::getPathLength(escapeLoc, posTarget, radius, agent);
+                                vector<Point2D> pathToTarget;
+                                if (get(agent)->is_flying) {
+                                    pathToTarget = { escapeLoc, posTarget };
+                                }
+                                else {
+                                    pathToTarget = PrimordialStar::getPath(escapeLoc, posTarget, radius, agent);
+                                }
+                                distToTarget = PrimordialStar::getPathLength(pathToTarget);
                             }
                             if (checkPointDistances[i] == -1) {
-                                checkPointDistances[i] = PrimordialStar::getPathLength(checkPoint, posTarget, radius, agent);
+                                vector<Point2D> pathToTarget;
+                                if (get(agent)->is_flying) {
+                                    pathToTarget = { escapeLoc, posTarget };
+                                }
+                                else {
+                                    pathToTarget = PrimordialStar::getPath(checkPoint, posTarget, radius, agent);
+                                }
+                                checkPointDistances[i] = PrimordialStar::getPathLength(pathToTarget);
                             }
                             if (distToTarget > checkPointDistances[i]) {
                                 escapeLoc = checkPoint;

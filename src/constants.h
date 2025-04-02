@@ -127,9 +127,10 @@ namespace Aux {
 * 127 is unpathables
 */
 map2d<int8_t>* pathingMap;
-map2d<int8_t> *buildingBlocked;
-map2d<int8_t> *influenceMap;
-map2d<int8_t> *influenceMapEnemy;
+map2d<int8_t>* buildingBlocked;
+map2d<int8_t>* influenceMap;
+map2d<int8_t>* influenceMapEnemy;
+map2d<Color>* coloredHeightMap;
 
 Point2D startLoc;
 Point2D enemyLoc;
@@ -241,18 +242,14 @@ void loadEffects(Agent* agent) {
 }
 
 bool isWithin(Point2D p, Agent* agent) {
-    int mapWidth = agent->Observation()->GetGameInfo().width;
-    int mapHeight = agent->Observation()->GetGameInfo().height;
-    if (p.x < 0 || p.x >= mapWidth || p.y < 0 || p.y >= mapHeight) {
+    if (p.x < 0 || p.x >= global_mapWidth || p.y < 0 || p.y >= global_mapHeight) {
         return false;
     }
     return true;
 }
 
 bool isWithin(int x, int y, Agent* agent) {
-    int mapWidth = agent->Observation()->GetGameInfo().width;
-    int mapHeight = agent->Observation()->GetGameInfo().height;
-    if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) {
+    if (x < 0 || x >= global_mapWidth || y < 0 || y >= global_mapHeight) {
         return false;
     }
     return true;
@@ -317,13 +314,11 @@ static bool checkCliff(Point2D start, uint8_t slot1, uint8_t slot2, Agent* agent
 }
 
 static void loadPathables(Agent *agent) {
-    int mapWidth = agent->Observation()->GetGameInfo().width;
-    int mapHeight = agent->Observation()->GetGameInfo().height;
-    for (int i = 0; i < mapWidth; i++) {
-        for (int j = 0; j < mapHeight; j++) {
+    for (int i = 0; i < global_mapWidth; i++) {
+        for (int j = 0; j < global_mapHeight; j++) {
             Point2D check = { float(i), float(j) };
             if (!agent->Observation()->IsPathable(check)) {
-                if (i > 0 && i < (mapWidth - 1) && j > 0 && j < (mapHeight - 1)) {
+                if (i > 0 && i < (global_mapWidth - 1) && j > 0 && j < (global_mapHeight - 1)) {
                     if (checkCliff(check, 1, 6, agent) || checkCliff(check, 3, 4, agent) ||
                         checkCliff(check, 2, 6, agent) || checkCliff(check, 3, 2, agent) ||
                         checkCliff(check, 0, 6, agent) || checkCliff(check, 3, 7, agent) ||
@@ -377,9 +372,9 @@ static Point2D getRandomPathable(Agent* agent, float startX = -1, float endX = -
     float sY = startY; 
     float eY = endY;
     if (sX == -1) sX = 0;
-    if (eX == -1) eX = (float)agent->Observation()->GetGameInfo().width;
+    if (eX == -1) eX = (float)global_mapWidth;
     if (sY == -1) sY = 0;
-    if (eY == -1) eY = (float)agent->Observation()->GetGameInfo().height;
+    if (eY == -1) eY = (float)global_mapHeight;
     Point2D p;
     do {
         float x = sX + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eX - sX)));
@@ -395,9 +390,9 @@ static Point2D getRandomNonPathable(Agent* agent, float startX = -1, float endX 
     float sY = startY;
     float eY = endY;
     if (sX == -1) sX = 0;
-    if (eX == -1) eX = (float)agent->Observation()->GetGameInfo().width;
+    if (eX == -1) eX = (float)global_mapWidth;
     if (sY == -1) sY = 0;
-    if (eY == -1) eY = (float)agent->Observation()->GetGameInfo().height;
+    if (eY == -1) eY = (float)global_mapHeight;
     Point2D p;
     do {
         float x = sX + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eX - sX)));
@@ -413,9 +408,9 @@ static Point2D getRandomPoint(Agent* agent, float startX = -1, float endX = -1, 
     float sY = startY;
     float eY = endY;
     if (sX == -1) sX = 0;
-    if (eX == -1) eX = (float)agent->Observation()->GetGameInfo().width;
+    if (eX == -1) eX = (float)global_mapWidth;
     if (sY == -1) sY = 0;
-    if (eY == -1) eY = (float)agent->Observation()->GetGameInfo().height;
+    if (eY == -1) eY = (float)global_mapHeight;
     float x = sX + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eX - sX)));
     float y = sY + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (eY - sY)));
     return Point2D{ x, y };
@@ -423,6 +418,22 @@ static Point2D getRandomPoint(Agent* agent, float startX = -1, float endX = -1, 
 
 static Color randomColor() {
     return Color{ uint8_t(255 * rand() / RAND_MAX) , uint8_t(255 * rand() / RAND_MAX) , uint8_t(255 * rand() / RAND_MAX) };
+}
+
+map<float, Color> colorHeightMap;
+
+static void loadColorHeightMap(Agent* agent) {
+    for (int i = 0; i < global_mapWidth; i++) {
+        for (int j = 0; j < global_mapHeight; j++) {
+            if (checkPathable(i, j)) {
+                float height = agent->Observation()->TerrainHeight({ float(i), float(j) });
+                if (colorHeightMap.find(height) == colorHeightMap.end()) {
+                    colorHeightMap[height] = randomColor();
+                }
+                imRef(coloredHeightMap, i, j) = colorHeightMap[height];
+            }
+        }
+    }
 }
 
 static bool isPylon(const Unit &unit) {

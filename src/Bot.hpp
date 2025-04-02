@@ -921,7 +921,10 @@ public:
         Aux::buildingBlocked = new map2d<int8_t>(Aux::global_mapWidth, Aux::global_mapHeight, true);
         Aux::pathingMap = new map2d<int8_t>(Aux::global_mapWidth, Aux::global_mapHeight, true);
 
+        Aux::coloredHeightMap = new map2d<Color>(Aux::global_mapWidth, Aux::global_mapHeight, true);
+
         Aux::loadPathables(this);
+        Aux::loadColorHeightMap(this);
 
         Aux::loadExtraDamageSources();
 
@@ -944,7 +947,7 @@ public:
         SpacialHash::initGrid();
         SpacialHash::initGridEnemy();
 
-        strat = &Strategem::shit_stalker_colossus;//&Strategem::zuka_colossus_voidray;//&Strategem::pig_stalker_colossus;//&Strategem::hupsaiya_adept_timing;//&Strategem::chargelot_immortal_archon_timing;//
+        strat = &Strategem::classic_gsl_tempest_rush;//&Strategem::shit_stalker_colossus;//&Strategem::zuka_colossus_voidray;//&Strategem::pig_stalker_colossus;//&Strategem::hupsaiya_adept_timing;//&Strategem::chargelot_immortal_archon_timing;//
 
         for (int i = 0; i < path_zhang_suen->width(); i++) {
             for (int j = 0; j < path_zhang_suen->height(); j++) {
@@ -1042,6 +1045,11 @@ public:
             [this](int i, int j) {return pathingMapToColor(Aux::getPathable(i, j)).r;},
             [this](int i, int j) {return pathingMapToColor(Aux::getPathable(i, j)).g;},
             [this](int i, int j) {return pathingMapToColor(Aux::getPathable(i, j)).b;});
+
+        saveBitmap(fileName + "_height.bmp", Aux::global_mapWidth, Aux::global_mapHeight,
+            [this](int i, int j) {return imRef(Aux::coloredHeightMap, i, j).r;},
+            [this](int i, int j) {return imRef(Aux::coloredHeightMap, i, j).g;},
+            [this](int i, int j) {return imRef(Aux::coloredHeightMap, i, j).b;});
 
         //grid(false);
         displayMaxDistanceGrid(maximalMax, false);
@@ -1624,14 +1632,14 @@ public:
                 percentPtrStrategy[i] = ((float)numPtrStrategy[i]) / totalUnitsStrategy;
             }
 
-            int mindex = 1;
+            int mindex = -1;
             for (int i = 0; i < 18; i++) {
                 if (percentPtrStrategy[i] != 0.0 && ((percentPtrStrategy[i] - percentPtr[i]) > (percentPtrStrategy[mindex] - percentPtr[mindex])) && Macro::actions[Strategem::UnitCreators[i]].size() == 0) {
                     mindex = i;
                 }
             }
 
-            if (Macro::actions[Strategem::UnitCreators[mindex]].size() == 0) {
+            if (mindex != -1 && Macro::actions[Strategem::UnitCreators[mindex]].size() == 0) {
                 printf("Strategy Profile:\n");
                 for (int i = 0; i < 18; i++) {
                     printf("%s   \t%.1f\t%.1f\n", UnitTypeToName(Strategem::UnitOrder[i]), percentPtrStrategy[i] * 100, percentPtr[i] * 100);
@@ -1900,6 +1908,10 @@ public:
 //-modify max dist to not include rocks
 
 //add chrono
+
+//add area sections
+
+//enemy expansion rankings for proxy stuff
 
 //-rework enemy squads code
 

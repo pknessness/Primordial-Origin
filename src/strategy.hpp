@@ -238,10 +238,12 @@ namespace Strategem {
     };
 
     Strategy shit_stalker_colossus;
-    Strategy pig_stalker_colossus;
-    Strategy chargelot_immortal_archon_timing;
-    Strategy hupsaiya_adept_timing;
+    Strategy pig_stalker_colossus; //https://lotv.spawningtool.com/build/184604/
+    Strategy chargelot_immortal_archon_timing; //https://lotv.spawningtool.com/build/188377/
+    Strategy hupsaiya_adept_timing; //https://lotv.spawningtool.com/build/190069/
     Strategy zuka_colossus_voidray;
+
+    Strategy classic_gsl_tempest_rush;//https://lotv.spawningtool.com/build/97659/
 
     void initStrategies() {
         shit_stalker_colossus.build_order = {
@@ -294,7 +296,6 @@ namespace Strategem {
         shit_stalker_colossus.unitRatio.observer = 1;
         shit_stalker_colossus.unitRatio.warpprism = 1;
 
-        //https://lotv.spawningtool.com/build/184604/
         pig_stalker_colossus.build_order = {
             MacroBuilding(ABILITY_ID::BUILD_PYLON, P2D(Aux::staging_location)),
             MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),
@@ -338,7 +339,7 @@ namespace Strategem {
         pig_stalker_colossus.unitRatio.observer = 1;
         pig_stalker_colossus.unitRatio.warpprism = 1;
 
-        //https://lotv.spawningtool.com/build/188377/
+        
         chargelot_immortal_archon_timing.build_order = {
             MacroBuilding(ABILITY_ID::BUILD_PYLON, P2D(Aux::staging_location)),
             MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),
@@ -401,7 +402,7 @@ namespace Strategem {
         
         chargelot_immortal_archon_timing.armyAttackNum = 19;
 
-        //https://lotv.spawningtool.com/build/190069/
+        
         hupsaiya_adept_timing.build_order = {
             MacroBuilding(ABILITY_ID::BUILD_PYLON, P2D(Aux::staging_location)),
             MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),
@@ -435,13 +436,13 @@ namespace Strategem {
             MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ADEPT),
             MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ADEPT),
         };
-
         hupsaiya_adept_timing.unitRatio.adept = 1; 
         hupsaiya_adept_timing.armyAttackNum = 1; //Hit at 4:37 with 14 Adepts
 
         zuka_colossus_voidray.build_order = {
             MacroBuilding(ABILITY_ID::BUILD_PYLON, P2D(Aux::staging_location)), // 14 probes
             MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}), // 15 probes
+            MacroBuilding(ABILITY_ID::GENERAL_MOVE, Aux::enemyLoc),
             MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}), // 16 probes
             MacroBuilding(ABILITY_ID::BUILD_NEXUS, P2D(Aux::rankedExpansions[0])), // 20 probes
             MacroBuilding(ABILITY_ID::BUILD_CYBERNETICSCORE, {-1,-1}), // 20 probes
@@ -510,12 +511,59 @@ namespace Strategem {
             MacroBuilding(ABILITY_ID::BUILD_TEMPLARARCHIVE, {-1,-1}), // 122 probes
             MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_VOIDRAY), // 126 probes
         };
-
         zuka_colossus_voidray.unitRatio.stalker = 10;
         zuka_colossus_voidray.unitRatio.colossus = 4;
         zuka_colossus_voidray.unitRatio.voidray = 6;
         zuka_colossus_voidray.unitRatio.observer = 1;
         zuka_colossus_voidray.unitRatio.immortal = 2;
         zuka_colossus_voidray.armyAttackNum = 16; //Adjust timing and army composition as needed
+
+        classic_gsl_tempest_rush.build_order = {
+            // Early Economy
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, P2D(Aux::staging_location)),  // 14 probes @ 0:18
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),                  // 15 probes @ 0:36
+            MacroBuilding(ABILITY_ID::GENERAL_MOVE, Aux::enemyLoc),
+            MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}),              // 17 probes @ 0:48
+            MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}),              // 18 probes @ 0:56
+
+            // Defensive Setup
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}),        // 19 probes @ 1:05
+            MacroBuilding(ABILITY_ID::BUILD_CYBERNETICSCORE, {-1,-1}),          // 20 probes @ 1:24
+
+            // Early Units
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ADEPT), // 23 probes @ 1:59 (Chrono)
+            MacroAction(UNIT_TYPEID::PROTOSS_CYBERNETICSCORE, ABILITY_ID::RESEARCH_WARPGATE), // 25 probes @ 2:01
+
+            // Expansion Phase
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ADEPT), // 26 probes @ 2:19
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}),                    // 26 probes @ 2:19
+            MacroBuilding(ABILITY_ID::BUILD_STARGATE, {-1,-1}),                 // 28 probes @ 2:29
+            MacroBuilding(ABILITY_ID::BUILD_NEXUS, P2D(Aux::rankedExpansions[0])),                    // 29 probes @ 2:46
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ADEPT), // 30 probes @ 2:50
+
+            // Tech Transition
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}),                    // 32 probes @ 2:58
+            MacroBuilding(ABILITY_ID::BUILD_FLEETBEACON, {-1,-1}),              // 33 probes @ 3:16
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),                  // 34 probes @ 3:29
+
+            // Tempest Production (All Chrono)
+            MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_TEMPEST), // 38 probes @ 4:00
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}),    // 43 probes @ 4:05
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),                  // 45 probes @ 4:20
+            MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_TEMPEST), // 47 probes @ 4:30
+
+            // Forward Pressure
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),  // 54 probes @ 4:50
+            MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}),              // 54 probes @ 4:55
+            MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_TEMPEST), // 56 probes @ 5:00 (MOVE OUT)
+            MacroBuilding(ABILITY_ID::BUILD_SHIELDBATTERY, {-1,-1}) // 63 probes @ 5:10
+        };
+
+        // Unit Composition
+        classic_gsl_tempest_rush.unitRatio.adept = 3;
+        classic_gsl_tempest_rush.unitRatio.tempest = 3;
+
+        // Attack Timing
+        classic_gsl_tempest_rush.armyAttackNum = 6;  // Hit at 5:00 with 3 Tempests
     }
 }
