@@ -366,8 +366,8 @@ public:
         Point2D position = pos(agent);
         UnitWrappers potentialTargets = UnitWrappers();
         std::vector<float> potentialPriority = std::vector<float>();
-        for (Weapon w : getStats(agent).weapons) {
-            for (UnitWrapper* enemy : targets) {
+        for (UnitWrapper* enemy : targets) {
+            for (Weapon w : getStats(agent).weapons) {
                 float weaponRadius = w.range + radius + enemy->radius;
                 float enemyRadius = Distance2D(position, enemy->pos(agent));
                 if (Army::hitsUnit(w.type, enemy->getComposition(agent))) {
