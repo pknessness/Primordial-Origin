@@ -135,7 +135,9 @@ map2d<Color>* coloredHeightMap;
 Point2D startLoc;
 Point2D enemyLoc;
 Point2D staging_location;
+Point2D enemyStagingLocation;
 std::vector<Point3D> rankedExpansions;
+std::vector<Point3D> enemyRankedExpansions;
 
 constexpr int visionMax = 1344 * 4;
 map2d<int16_t>* visionMap;

@@ -136,7 +136,7 @@ int main(int argc, char* argv[])
     coordinator.LoadSettings(argc, argv);
 
     Bot bot;
-    Difficulty diff = Difficulty::Hard;
+    Difficulty diff = Difficulty::HardVeryHard;
 
     if (MICRO_TEST) {
         Race race = Race::Random;

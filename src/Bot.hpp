@@ -36,6 +36,7 @@ public:
     std::vector<Point3D> expansions;
     std::vector<double> expansionDistance;
     std::vector<double> rankedExpansionDistance;
+    std::vector<double> enemyRankedExpansionDistance;
 
     Strategem::Strategy* strat;
 
@@ -67,62 +68,48 @@ public:
     }
 
     void initializeStartings() {
-        GameInfo game_info = Aux::cached_gameinfo;
-        if (Observation()->GetStartLocation().x > game_info.width / 2) {
-            Aux::staging_location.x = Observation()->GetStartLocation().x - 6;
-        } else {
-            Aux::staging_location.x = Observation()->GetStartLocation().x + 6;
-        }
-
-        if (Observation()->GetStartLocation().y > game_info.height / 2) {
-            Aux::staging_location.y = Observation()->GetStartLocation().y - 6;
-        } else {
-            Aux::staging_location.y = Observation()->GetStartLocation().y + 6;
-        }
         Aux::startLoc = Observation()->GetStartLocation();
         Aux::enemyLoc = Aux::cached_gameinfo.enemy_start_locations[0];
+
+        //SELF STAGING
+        if (Aux::startLoc.x > Aux::cached_gameinfo.width / 2) {
+            Aux::staging_location.x = Aux::startLoc.x - 6;
+        } else {
+            Aux::staging_location.x = Aux::startLoc.x + 6;
+        }
+        if (Aux::startLoc.y > Aux::cached_gameinfo.height / 2) {
+            Aux::staging_location.y = Aux::startLoc.y - 6;
+        } else {
+            Aux::staging_location.y = Aux::startLoc.y + 6;
+        }
+
+        //ENEMY STAGING
+        if (Aux::enemyLoc.x > Aux::cached_gameinfo.width / 2) {
+            Aux::enemyStagingLocation.x = Aux::enemyLoc.x - 6;
+        }
+        else {
+            Aux::enemyStagingLocation.x = Aux::enemyLoc.x + 6;
+        }
+
+        if (Aux::enemyLoc.y > Aux::cached_gameinfo.height / 2) {
+            Aux::enemyStagingLocation.y = Aux::enemyLoc.y - 6;
+        }
+        else {
+            Aux::enemyStagingLocation.y = Aux::enemyLoc.y + 6;
+        }
     }
 
     void initializeExpansions() {
-        // staging_location = Point2DI(startLocation.x + ;
         expansions = sc2::search::CalculateExpansionLocations(Observation(), Query());
-        printf("Expansions: ");
+        //printf("Expansions: ");
         for (auto point : expansions) {
             if (point.x == 0 && point.y == 0)
                 continue;
-            printf("{%.1f, %.1f}", point.x, point.y);
-            // auto path = generator.findPath(staging_location, (Point2DI)point);
-            // expansionDistance.push_back(path.size());
-            //auto came_from = jps(gridmap, staging_location, {int(point.x),int(point.y)}, Tool::euclidean, this);
-            //auto pathToExpansion = Tool::reconstruct_path(staging_location, {int(point.x), int(point.y)}, came_from);
-
-            //double length = fullDist(pathToExpansion);
-            //expansionDistance.push_back(length);
-
-            //for (Location l : pathToExpansion) {
-            //    printf("[%d,%d]", l.x, l.y);
-            //}
-            //printf("{%.1f}\n\n", length);
+            //printf("{%.1f, %.1f}", point.x, point.y);
 
             vector<Point2D> path = PrimordialStar::getPathDijkstra(P2D(Aux::staging_location), P2D(point), 0.2F, this);
             float length = PrimordialStar::getPathLength(path);
 
-            displayPath(path);
-
-            constexpr int numsteps = 6;
-            Units neut = Observation()->GetUnits(Unit::Alliance::Neutral, Aux::isMineral);
-            Units vesp = Observation()->GetUnits(Unit::Alliance::Neutral, Aux::isVespene);
-            neut.insert(neut.end(), vesp.begin(), vesp.end());
-            for (int i = 0; i < neut.size(); i++) {
-                if (Distance2D(point, neut[i]->pos) < 12) {
-                    Point2D dir = neut[i]->pos - point;
-                    for (int p = 0; p < numsteps; p++) {
-                        Point3D loc = point + (float)p * (neut[i]->pos - point) / ((float)numsteps);
-                        Aux::addPlacement(loc, 2);
-                        //DebugSphere(this,loc, 2);
-                    }
-                }
-            }
             Aux::removePlacement(point, 5);
 
             if (Aux::rankedExpansions.size() == 0) {
@@ -141,6 +128,27 @@ public:
             if (!inserted) {
                 Aux::rankedExpansions.push_back(point);
                 rankedExpansionDistance.push_back(length);
+            }
+
+            vector<Point2D> pathEnemy = PrimordialStar::getPathDijkstra(P2D(Aux::enemyStagingLocation), P2D(point), 0.2F, this);
+            float lengthE = PrimordialStar::getPathLength(pathEnemy);
+
+            if (Aux::enemyRankedExpansions.size() == 0) {
+                Aux::enemyRankedExpansions.push_back(point);
+                enemyRankedExpansionDistance.push_back(lengthE);
+            }
+            bool insertedE = false;
+            for (int i = 0; i < Aux::enemyRankedExpansions.size(); i++) {
+                if (enemyRankedExpansionDistance[i] > lengthE) {
+                    Aux::enemyRankedExpansions.insert(Aux::enemyRankedExpansions.begin() + i, point);
+                    enemyRankedExpansionDistance.insert(enemyRankedExpansionDistance.begin() + i, lengthE);
+                    insertedE = true;
+                    break;
+                }
+            }
+            if (!insertedE) {
+                Aux::enemyRankedExpansions.push_back(point);
+                enemyRankedExpansionDistance.push_back(lengthE);
             }
         }
         printf("\n");
@@ -783,7 +791,12 @@ public:
         for (int i = 0; i < Aux::rankedExpansions.size(); i++) {
             Point3D p = P3D(Aux::rankedExpansions[i]);
             DebugSphere(this,p, 12, {253, 216, 53});
-            DebugText(this,strprintf("%.1f", rankedExpansionDistance[i]), p + Point3D{0, 0, 0.5});
+            DebugText(this, strprintf("%.1f", rankedExpansionDistance[i]), p + Point3D{ 0, 0, 0.5 }, Color{ 30,215,30 });
+        }
+        for (int i = 0; i < Aux::enemyRankedExpansions.size(); i++) {
+            Point3D p = P3D(Aux::enemyRankedExpansions[i]);
+            DebugSphere(this, p, 12, { 253, 216, 53 });
+            DebugText(this, strprintf("%.1f", enemyRankedExpansionDistance[i]), p + Point3D{ 0, 0, 1.5 }, Color{ 215,30,30 });
         }
     }
 
@@ -810,71 +823,6 @@ public:
             }
         }
     }
-
-    //void manageArmy() {
-    //    EnemySquads danger = checkDangerAtHome();
-    //    if (danger.size() == 0) {
-    //        #if MICRO_TEST
-    //            squads[0].attack(START_OP);
-    //        #elif MICRO_TEST_2
-    //            squads[0].attack(Observation()->GetGameInfo().enemy_start_locations[0]);
-    //        #else
-    //            if (squads[0].army.size() > 11) {
-    //                squads[0].attack(Observation()->GetGameInfo().enemy_start_locations[0]);
-    //            } else {
-    //                squads[0].attack(rally_point);
-    //            }
-    //        #endif
-    //    } else {
-    //        for (int i = 0; i < danger.size(); i++) {
-    //            if (danger[i].unitComp.size() == 1 && (danger[i].unitComp[0] == UNIT_TYPEID::PROTOSS_PROBE ||
-    //                                                   danger[i].unitComp[0] == UNIT_TYPEID::ZERG_DRONE ||
-    //                                                   danger[i].unitComp[0] == UNIT_TYPEID::TERRAN_SCV)) {
-    //                UnitWrappers probes = UnitManager::get(UNIT_TYPEID::PROTOSS_PROBE);
-    //                UnitWrapper* closest = nullptr;
-    //                for (UnitWrapper* probeWrap : probes) {
-    //                    if (closest == nullptr || Distance2D(probeWrap->pos(this), danger[i].center) <
-    //                                                  Distance2D(closest->pos(this), danger[i].center)) {
-    //                        closest = probeWrap;
-    //                    }
-    //                }
-    //                Actions()->UnitCommand(closest->self, ABILITY_ID::ATTACK, danger[i].center);
-    //            } else {
-    //                squads[0].attack(danger[0].center);
-    //            }
-    //        }
-    //    }
-    //}
-
-    //EnemySquads checkDangerAtHome() {
-    //    //UnitWrappers danger = UnitWrappers();
-    //    EnemySquads danger = EnemySquads();
-    //    for (auto it = UnitManager::enemies.begin(); it != UnitManager::enemies.end(); it++) {
-    //        auto all = it->second;
-    //        for (auto it2 = all.begin(); it2 != all.end(); it2++) {
-    //            Point2D pos = (*it2)->pos(this);
-    //            if (pos == Point2D{0, 0}) {
-    //                continue;
-    //            }
-    //            if (imRef(Aux::influenceMap, int(pos.x), int(pos.y)) != 0) {
-    //                //danger.push_back((*it2));
-    //                bool added = false;
-    //                for (int i = 0; i < danger.size(); i++) {
-    //                    if (Distance2D(danger[i].center, pos) < ENEMY_SQUAD_RADIUS) {
-    //                        danger[i].add(*it2, this);
-    //                        added = true;
-    //                        break;
-    //                    }
-    //                }
-    //                if (added == false) {
-    //                    danger.emplace_back();
-    //                    danger.back().add(*it2, this);
-    //                }
-    //            }
-    //        }
-    //    }
-    //    return danger;
-    //}
 
     Color pathingMapToColor(int8_t map) {
         switch (map) {
@@ -949,7 +897,7 @@ public:
         SpacialHash::initGrid();
         SpacialHash::initGridEnemy();
 
-        strat = &Strategem::classic_gsl_tempest_rush;//&Strategem::shit_stalker_colossus;//&Strategem::zuka_colossus_voidray;//&Strategem::pig_stalker_colossus;//&Strategem::hupsaiya_adept_timing;//&Strategem::chargelot_immortal_archon_timing;//
+        strat = &Strategem::zuka_proxy_tempest;//&Strategem::classic_gsl_tempest_rush;//&Strategem::shit_stalker_colossus;//&Strategem::zuka_colossus_voidray;//&Strategem::pig_stalker_colossus;//&Strategem::hupsaiya_adept_timing;//&Strategem::chargelot_immortal_archon_timing;//
 
         for (int i = 0; i < path_zhang_suen->width(); i++) {
             for (int j = 0; j < path_zhang_suen->height(); j++) {
@@ -1521,7 +1469,7 @@ public:
             }
         #endif
 
-        if (Observation()->GetGameLoop() % 200 == 0) { //1344
+        if (0 && Observation()->GetGameLoop() % 200 == 0) { //1344
             string time = strprintf("_%d_", Observation()->GetGameLoop());
             saveBitmap(fileName + time +"visionMap.bmp", Aux::global_mapWidth, Aux::global_mapHeight,
                 [this](int i, int j) {return (uint8_t)((float)imRef(Aux::visionMap, i, j) * 255 / Aux::visionMax);},
