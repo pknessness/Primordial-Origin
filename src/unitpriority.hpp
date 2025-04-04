@@ -9,42 +9,12 @@
 //CASE(TERRAN_$1) {\n\treturn $2;\n}\n
 
 namespace Army {
+    struct AttackPriority {
+
+    };
+
 	int Priority(UnitTypeID self, UnitTypeID opponent) {
         switch (uint32_t(self)) {
-            /*
-            CASE(PROTOSS_SENTRY) {
-                switch (uint32_t(opponent)) {
-
-                    default: {
-                        return 0;
-                    }
-                }
-            }
-            CASE(PROTOSS_PROBE) {
-                switch (uint32_t(opponent)) {
-
-                    default: {
-                        return 0;
-                    }
-                }
-            }
-            CASE(PROTOSS_HIGHTEMPLAR) {
-                switch (uint32_t(opponent)) {
-
-                    default: {
-                        return 0;
-                    }
-                }
-            }
-            CASE(PROTOSS_DARKTEMPLAR) {
-                switch (uint32_t(opponent)) {
-
-                    default: {
-                        return 0;
-                    }
-                }
-            }
-            */
             CASE(PROTOSS_ADEPT) {
                 switch (uint32_t(opponent)) {
                     //Terran

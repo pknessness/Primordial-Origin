@@ -53,6 +53,8 @@ public:
 
     string fileName = "";
 
+    int chatPointer = 0;
+
     Point3D P3D(const Point2D& p) {
         return Point3D(p.x, p.y, Observation()->TerrainHeight(p));
     }
@@ -1696,6 +1698,56 @@ public:
         }
 
         onStepProfiler.midLog("OS-JPS");
+
+#ifndef BUILD_FOR_LADDER
+        vector<ChatMessage> chats = Observation()->GetChatMessages();
+        for (int i = 0; i < chats.size(); i++) {
+            printf("[%s]\n", chats[i].message.c_str());
+            if (chats[i].message[0] == '.') {
+                string command = "";
+                int commandPtr = 0;
+                vector<string> arguments;
+                for (commandPtr = 1; commandPtr < 50; commandPtr++) {
+                    char c = chats[i].message[commandPtr];
+                    if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
+                        command += c;
+                    }
+                    else {
+                        commandPtr++;
+                        break;
+                    }
+                }
+                while (commandPtr < chats[i].message.size()) {
+                    string arg = "";
+                    for (commandPtr; commandPtr < chats[i].message.size(); commandPtr++) {
+                        char c = chats[i].message[commandPtr];
+                        if (c != ' ') {
+                            arg += c;
+                        }
+                        if (c == ' ' || commandPtr == chats[i].message.size() - 1) {
+                            arguments.push_back(arg);
+                            commandPtr++;
+                            break;
+                        }
+                    }
+                }
+
+                Actions()->SendChat("Command: " + command);
+                for (string argument : arguments) {
+                    Actions()->SendChat(argument);
+                }
+
+                if (command == "spawn") {
+
+                }
+                else {
+                    Actions()->SendChat("Invalid Command " + command);
+                }
+            }
+        }
+
+        onStepProfiler.midLog("SerialCommands");
+#endif
         //DebugSphere(this,P3D(Observation()->GetCameraPos()), 0.6);
         //UnitManager::setEnemyDamageRadius(Observation()->GetCameraPos(), 0.6, {200,0,0,0,0,0}, this);
         //UnitManager::setEnemyDamageRadius(Observation()->GetCameraPos(), 0.6, {0,0,0,200,0,0 }, this);
@@ -1914,14 +1966,23 @@ public:
 };
 
 //MICRO
-//executeAttack doesnt work for some reason, redo it its also pretty dogshit code
+//-executeAttack doesnt work for some reason, redo it its also pretty dogshit code
 //keep army together
 //executeAttack gets stuck wierdly
+
+//make sure not to overkill
 
 //adept micro
 //cloaked unit micro
 //damagenet detector net
 //fix armored damage calculation
+//sentry FF micro
+//sentry scouting
+//sentry shield micro
+
+//instead of radius decreasing priority, radius should only decrease priority if going near will enter damage grid
+//or
+//priority is decreased if the path to an enemy has damage over a threshold
 
 //more complex army splitting, harrasssing army, etc
 
@@ -1931,9 +1992,16 @@ public:
 //-check max num of paths from nodes and max length of a path to optimize
 //-modify max dist to not include rocks
 
-//add chrono
+//-add chrono
 
 //add area sections
+
+//wall off well
+
+//attach units to the macroactions that created them, to properly create squadding
+//OR
+//dynamic squad splitting
+//add squad type (HARRASS SQUAD, MAIN SQUAD, CREEP CLEAR SQUAD, ETC.)
 
 //enemy expansion rankings for proxy stuff
 
