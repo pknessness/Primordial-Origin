@@ -987,7 +987,7 @@ public:
         if (uni == nullptr) {
             return false;
         }
-        if (uni->orders.size() > 0 && uni->orders[0].ability_id == ABILITY_ID::MORPH_ARCHON) {
+        if (uni->orders.size() > 0 && (uni->orders[0].ability_id == ABILITY_ID::MORPH_ARCHON || uni->orders[0].ability_id == ABILITY_ID::ARCHONWARP_ARCHONWARPTARGET)) {
             return false;
         }
         if (squad->mode == ATTACK) {
