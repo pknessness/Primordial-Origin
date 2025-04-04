@@ -901,7 +901,7 @@ public:
         SpacialHash::initGrid();
         SpacialHash::initGridEnemy();
 
-        strat = &Strategem::zuka_proxy_tempest;//&Strategem::classic_gsl_tempest_rush;//&Strategem::shit_stalker_colossus;//&Strategem::zuka_colossus_voidray;//&Strategem::pig_stalker_colossus;//&Strategem::hupsaiya_adept_timing;//&Strategem::chargelot_immortal_archon_timing;//
+        strat = &Strategem::shit_stalker_colossus;//&Strategem::classic_gsl_tempest_rush;//&Strategem::chirartem_proxy_dt;//&Strategem::zuka_proxy_tempest;//&Strategem::zuka_colossus_voidray;//&Strategem::pig_stalker_colossus;//&Strategem::hupsaiya_adept_timing;//&Strategem::chargelot_immortal_archon_timing;//
 
         for (int i = 0; i < path_zhang_suen->width(); i++) {
             for (int j = 0; j < path_zhang_suen->height(); j++) {
@@ -1325,6 +1325,22 @@ public:
         }
         else {
             UnitWrapper* u = UnitManager::findNeutral(unit->unit_type, unit->tag);
+
+            if (Aux::isMineral(*unit)) {
+                UnitWrappers nexuses = UnitManager::get(UNIT_TYPEID::PROTOSS_NEXUS);
+                for (UnitWrapper* nexusWrap : nexuses) {
+                    Point2D targPos = nexusWrap->pos(this);
+                    //printf("%s %Ix is sqrt(%.1f) away\n", UnitTypeToName(unit->unit_type), unit->tag, DistanceSquared2D(targPos, unit->pos));
+                    if (DistanceSquared2D(targPos, unit->pos) < 100) {
+                        for (int i = 0; i < 8; i++) {
+                            if (((Nexus*)nexusWrap)->minerals[i] == u) {
+                                ((Nexus*)nexusWrap)->minerals[i] = nullptr;
+                            }
+                        }
+                    }
+                }
+            }
+
             delete u;
             printf("NEUTRAL %s %Ix DEAD %p\n", UnitTypeToName(unit->unit_type), unit->tag, UnitManager::findNeutral(unit->unit_type, unit->tag));
         }
@@ -1534,24 +1550,42 @@ public:
         int numProbes = 0;
         int numProbesMax = 0;
         for (UnitWrapper* nexusWrap : UnitManager::get(UNIT_TYPEID::PROTOSS_NEXUS)) {
+            int numProbesN = 0;
+            int numProbesMaxN = 0;
             float percentUntilViable = 1.0F - (Aux::getStats(UNIT_TYPEID::PROTOSS_PROBE, this).build_time / Aux::getStats(UNIT_TYPEID::PROTOSS_NEXUS, this).build_time);
             if (nexusWrap->get(this)->build_progress < percentUntilViable) {
                 continue;
             }
             if (((Nexus*)nexusWrap)->assimilator1 != NullTag) {
-                numProbesMax += 3;
-                numProbes += probeTargetting[((Nexus*)nexusWrap)->assimilator1];
-            }
-            if (((Nexus*)nexusWrap)->assimilator2 != NullTag) {
-                numProbesMax += 3;
-                numProbes += probeTargetting[((Nexus*)nexusWrap)->assimilator2];
-            }
-            for (int i = 0; i < 8; i ++) {
-                if (((Nexus*)nexusWrap)->minerals[i] != NullTag) {
-                    numProbesMax += 2;
-                    numProbes += probeTargetting[((Nexus*)nexusWrap)->minerals[i]];
+                if (Observation()->GetUnit(((Nexus*)nexusWrap)->assimilator1) == nullptr) {
+                    ((Nexus*)nexusWrap)->assimilator1 = NullTag;
+                } else {
+                    numProbesMaxN += 3;
+                    numProbesN += probeTargetting[((Nexus*)nexusWrap)->assimilator1];
                 }
             }
+            if (((Nexus*)nexusWrap)->assimilator2 != NullTag) {
+                if (Observation()->GetUnit(((Nexus*)nexusWrap)->assimilator2) == nullptr) {
+                    ((Nexus*)nexusWrap)->assimilator2 = NullTag;
+                }
+                else {
+                    numProbesMaxN += 3;
+                    numProbesN += probeTargetting[((Nexus*)nexusWrap)->assimilator2];
+                }
+            }
+            for (int i = 0; i < 8; i ++) {
+                if (((Nexus*)nexusWrap)->minerals[i] != nullptr) {
+                    numProbesMaxN += 2;
+                    numProbesN += probeTargetting[((Nexus*)nexusWrap)->minerals[i]->self];
+                    if (((Nexus*)nexusWrap)->minerals[i]->get(this) != nullptr) {
+                        Point3D po = ((Nexus*)nexusWrap)->minerals[i]->pos3D(this);
+                        DebugBox(this, po + Point3D{ -0.125, -0.125, 3 }, po + Point3D{ 0.125, 0.125, 3.25 }, Colors::Red);
+                    }
+                }
+            }
+            DebugText(this, strprintf("%d/%d", numProbesN, numProbesMaxN), nexusWrap->pos3D(this) + Point3D{ 0,0, 5.5 });
+            numProbes += numProbesN;
+            numProbesMax += numProbesMaxN;
         }
 
         if ((numProbes + 1) < numProbesMax && Macro::actions[UNIT_TYPEID::PROTOSS_NEXUS].size() == 0) {
@@ -1810,7 +1844,7 @@ public:
                     //printf("%s %Ix is sqrt(%.1f) away\n", UnitTypeToName(unit->unit_type), unit->tag, DistanceSquared2D(targPos, unit->pos));
                     if (DistanceSquared2D(targPos, unit->pos) < 100) {
                         nexusNearby[unit->tag] = true;
-                        ((Nexus*)nexusWrap)->minerals[((Nexus*)nexusWrap)->minsFound++] = unit->tag;
+                        ((Nexus*)nexusWrap)->minerals[((Nexus*)nexusWrap)->minsFound++] = u;
                     }
                 }
             }

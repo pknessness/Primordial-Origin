@@ -14,12 +14,12 @@ public:
     Tag assimilator1;
     Tag assimilator2;
 
-    Tag minerals[8];
+    UnitWrapper* minerals[8];
     int8_t minsFound;
 
     Nexus(const Unit* unit) : UnitWrapper(unit), assimilator1(NullTag), assimilator2(NullTag), minsFound(0) {
         for (int i = 0; i < 8; i++) {
-            minerals[i] = NullTag;
+            minerals[i] = nullptr;
         }
     }
 
@@ -31,7 +31,7 @@ public:
             Point2D targPos = targWrap->pos(agent);
             if (DistanceSquared2D(targPos, pos(agent)) < 100) {
                 nexusNearby[targWrap->self] = true;
-                minerals[minsFound++] = targWrap->self;
+                minerals[minsFound++] = targWrap;
             }
         }
     }

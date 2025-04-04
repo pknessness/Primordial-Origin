@@ -112,6 +112,11 @@ public:
         if (agent->Observation()->GetUnit(target) == nullptr) {
             target = NullTag;
         }
+        else {
+            if (Aux::isAssimilatorType(agent->Observation()->GetUnit(target)->unit_type) && agent->Observation()->GetUnit(target)->vespene_contents == 0) {
+                target = NullTag;
+            }
+        }
         if (target == NullTag) {
             //Units minerals = agent->Observation()->GetUnits(Unit::Alliance::Neutral, Aux::isMineral);
             //Units assimilators = agent->Observation()->GetUnits(Unit::Alliance::Self, Aux::isAssimilator);
@@ -141,6 +146,9 @@ public:
             Point2D position = pos(agent);
 
             for ( UnitWrapper *targWrap : mineralWraps) {
+                if (Aux::isAssimilatorType(targWrap->getType(agent)) && targWrap->get(agent)->vespene_contents == 0) {
+                    continue;
+                }
                 //if (targ->display_type != Unit::DisplayType::Visible) {
                 //    continue;
                 //}
