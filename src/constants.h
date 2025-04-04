@@ -676,9 +676,63 @@ static UpgradeID researchAbilityToUpgrade(AbilityID build_ability) {
 }
 
 static Cost buildAbilityToCost(AbilityID build_ability, Agent *agent) {
-    sc2::UnitTypeData unit_stats =
-        agent->Observation()->GetUnitTypeData().at(static_cast<uint32_t>(buildAbilityToUnit(build_ability)));
-    return {unit_stats.mineral_cost, unit_stats.vespene_cost, 0, int(unit_stats.food_required)};
+    //sc2::UnitTypeData unit_stats =
+    //    agent->Observation()->GetUnitTypeData().at(static_cast<uint32_t>(buildAbilityToUnit(build_ability)));
+    return {getStats(buildAbilityToUnit(build_ability), agent).mineral_cost, getStats(buildAbilityToUnit(build_ability), agent).vespene_cost, 0, int(getStats(buildAbilityToUnit(build_ability), agent).food_required)};
+}
+
+static Cost unitAbilityToCost(AbilityID build_ability, Agent* agent) {
+    if (build_ability == ABILITY_ID::EFFECT_CHRONOBOOSTENERGYCOST) {
+        return { 0, 0, 50, 0 };
+    } else if (build_ability == ABILITY_ID::EFFECT_MASSRECALL_NEXUS) {
+        return { 0, 0, 50, 0 };
+    } else if (build_ability == ABILITY_ID::BATTERYOVERCHARGE) { //TODO: REPLACE WITH ENERGY OVERCHARGE
+        return { 0, 0, 50, 0 };
+    } else if (build_ability == ABILITY_ID::EFFECT_FORCEFIELD) {
+        return { 0, 0, 50, 0 };
+    } else if (build_ability == ABILITY_ID::EFFECT_GUARDIANSHIELD) {
+        return { 0, 0, 75, 0 };
+    } else if (build_ability == ABILITY_ID::HALLUCINATION_ADEPT) {
+        return { 0, 0, 75, 0 };
+    } else if (build_ability == ABILITY_ID::HALLUCINATION_ARCHON) {
+        return { 0, 0, 75, 0 };
+    } else if (build_ability == ABILITY_ID::HALLUCINATION_COLOSSUS) {
+        return { 0, 0, 75, 0 };
+    } else if (build_ability == ABILITY_ID::HALLUCINATION_DISRUPTOR) {
+        return { 0, 0, 75, 0 };
+    } else if (build_ability == ABILITY_ID::HALLUCINATION_HIGHTEMPLAR) {
+        return { 0, 0, 75, 0 };
+    } else if (build_ability == ABILITY_ID::HALLUCINATION_IMMORTAL) {
+        return { 0, 0, 75, 0 };
+    } else if (build_ability == ABILITY_ID::HALLUCINATION_ORACLE) {
+        return { 0, 0, 75, 0 };
+    } else if (build_ability == ABILITY_ID::HALLUCINATION_PHOENIX) {
+        return { 0, 0, 75, 0 };
+    } else if (build_ability == ABILITY_ID::HALLUCINATION_PROBE) {
+        return { 0, 0, 75, 0 };
+    } else if (build_ability == ABILITY_ID::HALLUCINATION_STALKER) {
+        return { 0, 0, 75, 0 };
+    } else if (build_ability == ABILITY_ID::HALLUCINATION_VOIDRAY) {
+        return { 0, 0, 75, 0 };
+    } else if (build_ability == ABILITY_ID::HALLUCINATION_WARPPRISM) {
+        return { 0, 0, 75, 0 };
+    } else if (build_ability == ABILITY_ID::HALLUCINATION_ZEALOT) {
+        return { 0, 0, 75, 0 };
+    } else if (build_ability == ABILITY_ID::EFFECT_GRAVITONBEAM) {
+        return { 0, 0, 50, 0 };
+    } else if (build_ability == ABILITY_ID::EFFECT_ORACLEREVELATION) {
+        return { 0, 0, 25, 0 };
+    } else if (build_ability == ABILITY_ID::BUILD_STASISTRAP) {
+        return { 0, 0, 50, 0 };
+    } else if (build_ability == ABILITY_ID::EFFECT_FEEDBACK) {
+        return { 0, 0, 50, 0 };
+    } else if (build_ability == ABILITY_ID::EFFECT_PSISTORM) {
+        return { 0, 0, 75, 0 };
+    } else if (build_ability == ABILITY_ID::GENERAL_MOVE) {
+        return { 0, 0, 0, 0 };
+    }
+    printf("Unknown Unit Ability %s\n", AbilityTypeToName(build_ability));
+    return { 0, 0, 0, 0 };
 }
 
 static Cost UpgradeToCost(AbilityID research_ability, Agent *agent) {
@@ -692,6 +746,9 @@ static Cost abilityToCost(AbilityID ability, Agent *agent) {
         return buildAbilityToCost(ability, agent);
     } else if (researchAbilityToUpgrade(ability)) {
         return UpgradeToCost(ability, agent);
+    }
+    else {
+        return unitAbilityToCost(ability, agent);
     }
     return {0, 0, 0, 0};
 }

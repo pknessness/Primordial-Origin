@@ -245,6 +245,7 @@ namespace Strategem {
 
     Strategy classic_gsl_tempest_rush;//https://lotv.spawningtool.com/build/97659/
     Strategy zuka_proxy_tempest;//https://lotv.spawningtool.com/build/150094/
+    Strategy chirartem_proxy_dt;//https://lotv.spawningtool.com/build/187995/
 
     void initStrategies() {
         shit_stalker_colossus.build_order = {
@@ -339,7 +340,6 @@ namespace Strategem {
         pig_stalker_colossus.unitRatio.colossus = 2;
         pig_stalker_colossus.unitRatio.observer = 1;
         pig_stalker_colossus.unitRatio.warpprism = 1;
-
         
         chargelot_immortal_archon_timing.build_order = {
             MacroBuilding(ABILITY_ID::BUILD_PYLON, P2D(Aux::staging_location)),
@@ -400,7 +400,6 @@ namespace Strategem {
         chargelot_immortal_archon_timing.unitRatio.archon = 8;
         chargelot_immortal_archon_timing.unitRatio.observer = 1;
         chargelot_immortal_archon_timing.unitRatio.warpprism = 1;
-        
         chargelot_immortal_archon_timing.armyAttackNum = 19;
 
         
@@ -532,7 +531,7 @@ namespace Strategem {
             MacroBuilding(ABILITY_ID::BUILD_CYBERNETICSCORE, {-1,-1}),          // 20 probes @ 1:24
 
             // Early Units
-            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ADEPT), // 23 probes @ 1:59 (Chrono)
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ADEPT, {0,0}, true), // 23 probes @ 1:59 (Chrono)
             MacroAction(UNIT_TYPEID::PROTOSS_CYBERNETICSCORE, ABILITY_ID::RESEARCH_WARPGATE), // 25 probes @ 2:01
 
             // Expansion Phase
@@ -548,10 +547,10 @@ namespace Strategem {
             MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),                  // 34 probes @ 3:29
 
             // Tempest Production (All Chrono)
-            MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_TEMPEST), // 38 probes @ 4:00
+            MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_TEMPEST, {0,0}, true), // 38 probes @ 4:00
             MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}),    // 43 probes @ 4:05
             MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),                  // 45 probes @ 4:20
-            MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_TEMPEST), // 47 probes @ 4:30
+            MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_TEMPEST, {0,0}, true), // 47 probes @ 4:30
 
             // Forward Pressure
             MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),  // 54 probes @ 4:50
@@ -564,7 +563,6 @@ namespace Strategem {
         };
         classic_gsl_tempest_rush.unitRatio.adept = 3;
         classic_gsl_tempest_rush.unitRatio.tempest = 3;
-        //classic_gsl_tempest_rush.unitRatio.carrier = 2;
         classic_gsl_tempest_rush.armyAttackNum = 6;  // Hit at 5:00 with 3 Tempests
 
         zuka_proxy_tempest.build_order = {
@@ -575,45 +573,45 @@ namespace Strategem {
             MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}),              // 14 probes @ 0:41
             MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}),              // 16 probes @ 0:51
             MacroBuilding(ABILITY_ID::BUILD_CYBERNETICSCORE, {-1,-1}),          // 18 probes @ 1:14
-            MacroBuilding(ABILITY_ID::BUILD_PYLON, P2D(Aux::enemyRankedExpansions[2])),                    // 18 probes @ 1:21
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, P2D(Aux::enemyRankedExpansions[3])),                    // 18 probes @ 1:21
 
             // ===== Tech Transition ===== (1:21-2:26)
-            MacroBuilding(ABILITY_ID::BUILD_STARGATE, P2D(Aux::enemyRankedExpansions[2]) + Point2D{2.5, 0.5}),                 // 20 probes @ 1:51
-            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ADEPT), // 21 probes @ 1:54 (Chrono)
+            MacroBuilding(ABILITY_ID::BUILD_STARGATE, P2D(Aux::enemyRankedExpansions[3]) + Point2D{2.5, 0.5}),                 // 20 probes @ 1:51
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ADEPT, {0,0}, true), // 21 probes @ 1:54 (Chrono)
             MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ADEPT), // 25 probes @ 2:17
-            MacroBuilding(ABILITY_ID::BUILD_PYLON, P2D(Aux::enemyRankedExpansions[2]) + Point2D{-2, -2}),                    // 26 probes @ 2:23
-            MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_VOIDRAY), // 26 probes @ 2:26 (Chrono)
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, P2D(Aux::enemyRankedExpansions[3]) + Point2D{-2, -2}),                    // 26 probes @ 2:23
+            MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_VOIDRAY, {0,0}, true), // 26 probes @ 2:26 (Chrono)
 
             // ===== Defensive Setup ===== (2:26-3:57)
-            MacroBuilding(ABILITY_ID::BUILD_SHIELDBATTERY, P2D(Aux::enemyRankedExpansions[2]) + Point2D{-2, 0}),            // 30 probes @ 2:42 (x2)
-            MacroBuilding(ABILITY_ID::BUILD_SHIELDBATTERY, P2D(Aux::enemyRankedExpansions[2]) + Point2D{-2, 2}),            // 30 probes @ 2:42 (x2)
+            MacroBuilding(ABILITY_ID::BUILD_SHIELDBATTERY, P2D(Aux::enemyRankedExpansions[3]) + Point2D{-2, 0}),            // 30 probes @ 2:42 (x2)
+            MacroBuilding(ABILITY_ID::BUILD_SHIELDBATTERY, P2D(Aux::enemyRankedExpansions[3]) + Point2D{-2, 2}),            // 30 probes @ 2:42 (x2)
             MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_VOIDRAY), // 30 probes @ 2:57
-            MacroBuilding(ABILITY_ID::BUILD_SHIELDBATTERY, P2D(Aux::enemyRankedExpansions[2]) + Point2D{0, 2}),            // 34 probes @ 3:09
+            MacroBuilding(ABILITY_ID::BUILD_SHIELDBATTERY, P2D(Aux::enemyRankedExpansions[3]) + Point2D{0, 2}),            // 34 probes @ 3:09
             MacroBuilding(ABILITY_ID::BUILD_FLEETBEACON, {-1,-1}),              // 34 probes @ 3:28
-            MacroBuilding(ABILITY_ID::BUILD_SHIELDBATTERY, P2D(Aux::enemyRankedExpansions[2]) + Point2D{0, -2}),            // 34 probes @ 3:57
+            MacroBuilding(ABILITY_ID::BUILD_SHIELDBATTERY, P2D(Aux::enemyRankedExpansions[3]) + Point2D{0, -2}),            // 34 probes @ 3:57
 
             // ===== Tempest Transition ===== (4:12-5:02)
             MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}),                    // 35 probes @ 4:12
             MacroBuilding(ABILITY_ID::BUILD_SHIELDBATTERY, {-1,-1}),            // 36 probes @ 4:24
-            MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_TEMPEST), // 36 probes @ 4:29 (Chrono)
+            MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_TEMPEST, {0,0}, true), // 36 probes @ 4:29 (Chrono)
             MacroBuilding(ABILITY_ID::BUILD_SHIELDBATTERY, {-1,-1}),            // 36 probes @ 4:30
             MacroBuilding(ABILITY_ID::BUILD_SHIELDBATTERY, {-1,-1}),            // 41 probes @ 4:39
             MacroAction(UNIT_TYPEID::PROTOSS_CYBERNETICSCORE, ABILITY_ID::RESEARCH_WARPGATE), // 41 probes @ 4:48
             MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),                  // 41 probes @ 4:49
-            MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_TEMPEST), // 41 probes @ 5:02 (Chrono)
+            MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_TEMPEST, {0,0}, true), // 41 probes @ 5:02 (Chrono)
 
             // ===== Mid-Game Push Prep ===== (5:21-6:16)
             MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}),                    // 46 probes @ 5:21
             MacroBuilding(ABILITY_ID::BUILD_SHIELDBATTERY, {-1,-1}),            // 46 probes @ 5:24
-            MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_TEMPEST), // 42 probes @ 5:38 (Chrono)
+            MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_TEMPEST, {0,0}, true), // 42 probes @ 5:38 (Chrono)
             MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),                  // 47 probes @ 5:45
             MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),                  // 43 probes @ 6:12
-            MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_TEMPEST), // 43 probes @ 6:16 (Chrono)
+            MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_TEMPEST, {0,0}, true), // 43 probes @ 6:16 (Chrono)
 
             // ===== Late-Game Army ===== (6:38-7:57)
             MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER), // 48 probes @ 6:38 (x2)
             MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER), // 48 probes @ 6:38 (x2)
-            MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_TEMPEST), // 52 probes @ 7:01 (Chrono)
+            MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_TEMPEST, {0,0}, true), // 52 probes @ 7:01 (Chrono)
             MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER), // 57 probes @ 7:25 (x4)
             MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER), // 57 probes @ 7:25 (x4)
             MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER), // 57 probes @ 7:25 (x4)
@@ -623,14 +621,46 @@ namespace Strategem {
             MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER), // 61 probes @ 7:57 (x4)
             MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER)  // 61 probes @ 7:57 (x4)
         };
-
-        // ===== Unit Composition =====
         zuka_proxy_tempest.unitRatio.adept = 2;
         zuka_proxy_tempest.unitRatio.voidray = 2;
         zuka_proxy_tempest.unitRatio.tempest = 5;
         zuka_proxy_tempest.unitRatio.stalker = 10;
-
-        // ===== Critical Timings =====
         zuka_proxy_tempest.armyAttackNum = 1;
+
+        chirartem_proxy_dt.build_order = {
+            // Early Economy
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, P2D(Aux::staging_location)),  // 14 probes @ 0:17
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),                  // 16 probes @ 0:36 (Chrono probes)
+            MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}),              // 17 probes @ 0:46
+            MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}),              // 18 probes @ 0:55 (Chrono probes)
+
+            // Proxy Setup
+            MacroBuilding(ABILITY_ID::BUILD_CYBERNETICSCORE, {-1,-1}),          // 21 probes @ 1:23
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, P2D(Aux::enemyRankedExpansions[3])),    // 22 probes @ 1:31 (Proxy)
+            MacroBuilding(ABILITY_ID::BUILD_TWILIGHTCOUNCIL, P2D(Aux::enemyRankedExpansions[3]) + Point2D{2.5, 0.5}), // 24 probes @ 1:59 (Proxy)
+            MacroAction(UNIT_TYPEID::PROTOSS_CYBERNETICSCORE, ABILITY_ID::RESEARCH_WARPGATE), // 24 probes @ 2:00
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER), // 24 probes @ 2:02
+
+            // Tech Rush
+            MacroBuilding(ABILITY_ID::BUILD_ROBOTICSFACILITY, P2D(Aux::enemyRankedExpansions[3]) + Point2D{-0.5, 2.5}), // 25 probes @ 2:12 (Proxy)
+            MacroBuilding(ABILITY_ID::BUILD_DARKSHRINE, P2D(Aux::enemyRankedExpansions[3]) + Point2D{-2, 0}), // 25 probes @ 2:37 (Proxy)
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),                  // 25 probes @ 2:44 (x2)
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),
+            MacroAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_WARPPRISM, {0,0}, true), // 25 probes @ 2:59 (Chrono)
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),                  // 25 probes @ 3:07
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}),                    // 25 probes @ 3:17
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}),                    // 25 probes @ 3:21
+
+            // DT Production
+            MacroAction(UNIT_TYPEID::PROTOSS_WARPGATE, ABILITY_ID::TRAIN_DARKTEMPLAR), // 25 probes @ 3:49 (x3)
+            MacroAction(UNIT_TYPEID::PROTOSS_WARPGATE, ABILITY_ID::TRAIN_DARKTEMPLAR),
+            MacroAction(UNIT_TYPEID::PROTOSS_WARPGATE, ABILITY_ID::TRAIN_DARKTEMPLAR)
+        };
+
+        // Unit Composition
+        chirartem_proxy_dt.unitRatio.stalker = 1;
+        chirartem_proxy_dt.unitRatio.darktemplar = 3;
+        chirartem_proxy_dt.unitRatio.warpprism = 1;
+        chirartem_proxy_dt.armyAttackNum = 4;  // Hit with 3 DTs + Warp Prism
     }
 }

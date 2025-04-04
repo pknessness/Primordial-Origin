@@ -8,6 +8,7 @@
 #include "probe.hpp"
 #include "vespene.hpp"
 #include "armyunit.hpp"
+#include "nexus.hpp"
 //#include "jps.hpp"
 //#include "grid.hpp"
 //#include "tools.hpp"
@@ -30,25 +31,29 @@ struct MacroAction {
     float dist_cache;
     Tag unit_cache;
 
-    MacroAction(UnitTypeID unit_type_, AbilityID ability_, Point2D pos_ = {0,0})
+    bool chronoBoost;
+
+    MacroAction(UnitTypeID unit_type_, AbilityID ability_, Point2D pos_ = {0,0}, bool chronoboost = false)
         : unit_type(unit_type_),
           ability(ability_),
           pos(pos_),
           index(globalIndex),
           lastChecked(0),
           dist_cache(-1),
-          unit_cache(NullTag) {
+          unit_cache(NullTag),
+            chronoBoost(chronoboost) {
         globalIndex ++;
     }
 
-    MacroAction(UnitTypeID unit_type_, AbilityID ability_, Point2D pos_, int index)
+    MacroAction(UnitTypeID unit_type_, AbilityID ability_, Point2D pos_, int index, bool chronoboost = false)
         : unit_type(unit_type_),
           ability(ability_),
           pos(pos_),
           index(index),
           lastChecked(0),
           dist_cache(-1),
-          unit_cache(NullTag) {
+          unit_cache(NullTag),
+            chronoBoost(chronoboost) {
     }
 
     Cost cost(Agent *agent) {
@@ -675,6 +680,9 @@ namespace Macro {
                     }
                 } else {
                     agent->Actions()->UnitCommand(actionUnit, topAct.ability);
+                }
+                if (topAct.chronoBoost) {
+                    Nexus::addChrono(UnitManager::find(getSuperType(actionUnit->unit_type), actionUnit->tag));
                 }
                 if (topAct.unit_type == UNIT_TYPEID::PROTOSS_WARPGATE) {
                     actions[UNIT_TYPEID::PROTOSS_GATEWAY].erase(actions[UNIT_TYPEID::PROTOSS_GATEWAY].begin());

@@ -995,13 +995,17 @@ map<UnitTypeID, UnitTypeID> superTypes = {
     {UNIT_TYPEID::ZERG_HIVE, UNIT_TYPEID::ZERG_HATCHERY},
 };
 
-UnitWrapper::UnitWrapper(const Unit *unit) : self(unit->tag), actualType(unit->unit_type), lastPos{0, 0, 0}, radius(unit->radius), team(unit->alliance), isBuilding(unit->is_building), health(0), healthMax(0), shields(0), shieldsMax(0), hallucination(unit->is_hallucination) {
-    if (superTypes.find(actualType) == superTypes.end()) {
-        type = actualType;
+UnitTypeID getSuperType(UnitTypeID in) {
+    if (superTypes.find(in) == superTypes.end()) {
+        return in;
     }
     else {
-        type = superTypes.at(actualType);
+        return superTypes.at(in);
     }
+}
+
+UnitWrapper::UnitWrapper(const Unit *unit) : self(unit->tag), actualType(unit->unit_type), lastPos{0, 0, 0}, radius(unit->radius), team(unit->alliance), isBuilding(unit->is_building), health(0), healthMax(0), shields(0), shieldsMax(0), hallucination(unit->is_hallucination) {
+    type = getSuperType(actualType);
 
     if (unit->alliance == Unit::Alliance::Self) {
         if (!UnitManager::checkExist(type)) {

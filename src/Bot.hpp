@@ -672,7 +672,11 @@ public:
                 //if (it2->ability == ABILITY_ID::TRAIN_PROBE) {
                 //    continue;
                 //}
-                tot += strprintf("%s %d %.1f,%.1f\n", AbilityTypeToName(it2->ability), it2->index, it2->pos.x, it2->pos.y);
+                tot += strprintf("%s %d %.1f,%.1f", AbilityTypeToName(it2->ability), it2->index, it2->pos.x, it2->pos.y);
+                if (it2->chronoBoost) {
+                    tot += " CHRONO";
+                }
+                tot += "\n";
             }
         }
         DebugText(this,tot, Point2D(0.01F, 0.11F), Color(250, 50, 15), 8);
@@ -1209,6 +1213,7 @@ public:
 
         
 #endif
+        Macro::addAction(MacroAction(UNIT_TYPEID::PROTOSS_NEXUS, ABILITY_ID::TRAIN_PROBE, { 0,0 }, true));
     }
 
     //! Called when a game has ended.
@@ -1402,6 +1407,14 @@ public:
         }
 
         onStepProfiler.midLog("ProbeExecute");
+
+        auto nexi = UnitManager::get(UNIT_TYPEID::PROTOSS_NEXUS);
+        for (auto it = nexi.begin(); it != nexi.end(); it++) {
+            Nexus* nexus = ((Nexus*)*it);
+            nexus->execute(this);
+        }
+
+        onStepProfiler.midLog("NexusExecute");
 
         SpacialHash::updateGrid(this);
 
