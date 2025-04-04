@@ -247,6 +247,8 @@ namespace Strategem {
     Strategy zuka_proxy_tempest;//https://lotv.spawningtool.com/build/150094/
     Strategy chirartem_proxy_dt;//https://lotv.spawningtool.com/build/187995/
 
+    Strategy gemini_chargelot_archon_disruptor;//https://lotv.spawningtool.com/build/187138/
+
     void initStrategies() {
         shit_stalker_colossus.build_order = {
             MacroBuilding(ABILITY_ID::BUILD_PYLON, P2D(Aux::staging_location)),
@@ -631,6 +633,7 @@ namespace Strategem {
             // Early Economy
             MacroBuilding(ABILITY_ID::BUILD_PYLON, P2D(Aux::staging_location)),  // 14 probes @ 0:17
             MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),                  // 16 probes @ 0:36 (Chrono probes)
+            MacroBuilding(ABILITY_ID::GENERAL_MOVE, Aux::enemyLoc),
             MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}),              // 17 probes @ 0:46
             MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}),              // 18 probes @ 0:55 (Chrono probes)
 
@@ -656,11 +659,143 @@ namespace Strategem {
             MacroAction(UNIT_TYPEID::PROTOSS_WARPGATE, ABILITY_ID::TRAIN_DARKTEMPLAR),
             MacroAction(UNIT_TYPEID::PROTOSS_WARPGATE, ABILITY_ID::TRAIN_DARKTEMPLAR)
         };
-
-        // Unit Composition
         chirartem_proxy_dt.unitRatio.stalker = 1;
         chirartem_proxy_dt.unitRatio.darktemplar = 3;
         chirartem_proxy_dt.unitRatio.warpprism = 1;
         chirartem_proxy_dt.armyAttackNum = 4;  // Hit with 3 DTs + Warp Prism
+
+        gemini_chargelot_archon_disruptor.build_order = {
+            // Early Economy
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, P2D(Aux::staging_location)),  // 14 probes @ 0:18
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),                  // 15 probes @ 0:38
+            MacroBuilding(ABILITY_ID::GENERAL_MOVE, Aux::enemyLoc),
+            MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}),              // 16 probes @ 0:47
+
+            // Expansion
+            MacroBuilding(ABILITY_ID::BUILD_NEXUS, P2D(Aux::rankedExpansions[0])), // 20 probes @ 1:24
+            MacroBuilding(ABILITY_ID::BUILD_CYBERNETICSCORE, {-1,-1}),          // 20 probes @ 1:34
+
+            // Tech Setup
+            MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}),              // 21 probes @ 1:45
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}),                    // 21 probes @ 1:53
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ADEPT, {0,0}, true), // 22 probes @ 2:08 (Chrono)
+            MacroAction(UNIT_TYPEID::PROTOSS_CYBERNETICSCORE, ABILITY_ID::RESEARCH_WARPGATE), // 23 probes @ 2:11
+
+            // Air Transition
+            MacroBuilding(ABILITY_ID::BUILD_STARGATE, {-1,-1}),                 // 28 probes @ 2:31
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_STALKER), // 29 probes @ 2:39
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ADEPT), // 37 probes @ 3:09
+
+            // Mid-Game
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}),                    // 39 probes @ 3:17
+            MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_VOIDRAY, {0,0}, true), // 39 probes @ 3:17 (Chrono)
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),                  // 45 probes @ 3:28
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}),                    // 46 probes @ 3:35
+            MacroAction(UNIT_TYPEID::PROTOSS_STARGATE, ABILITY_ID::TRAIN_ORACLE, {0,0}, true), // 47 probes @ 3:45 (Chrono)
+
+            // Tech Expansion
+            MacroBuilding(ABILITY_ID::BUILD_NEXUS, P2D(Aux::rankedExpansions[1])), // 53 probes @ 4:01
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}),                    // 53 probes @ 4:03
+            MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}),              // 55 probes @ 4:15 (x2)
+            MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}),
+            MacroBuilding(ABILITY_ID::BUILD_SHIELDBATTERY, {-1,-1}),            // 57 probes @ 4:26
+            MacroBuilding(ABILITY_ID::BUILD_FORGE, {-1,-1}),                    // 57 probes @ 4:29
+            MacroBuilding(ABILITY_ID::BUILD_TWILIGHTCOUNCIL, {-1,-1}),          // 57 probes @ 4:29
+
+            // Army Composition
+            MacroAction(UNIT_TYPEID::PROTOSS_TWILIGHTCOUNCIL, ABILITY_ID::RESEARCH_CHARGE, {0,0}, true), // 61 probes @ 4:53 (Chrono)
+            MacroAction(UNIT_TYPEID::PROTOSS_FORGE, ABILITY_ID::RESEARCH_PROTOSSGROUNDWEAPONSLEVEL1, {0,0}, true), // 61 probes @ 4:54 (Chrono)
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),                  // 61 probes @ 4:55 (x4)
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),
+
+            // Late-Game Transitions
+            MacroBuilding(ABILITY_ID::BUILD_TEMPLARARCHIVE, {-1,-1}),          // 63 probes @ 5:12
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),                  // 67 probes @ 5:28 (x2)
+            MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT), // 69 probes @ 5:39 (x2)
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ARCHON), // 76 probes @ 5:53 (x4)
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ARCHON), // 87 probes @ 5:58 (x2)
+
+            // Robotics Transition
+            MacroBuilding(ABILITY_ID::BUILD_ROBOTICSFACILITY, {-1,-1}),          // 87 probes @ 6:00
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT), // 87 probes @ 6:06 (x2)
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT),
+
+            // Late-Game Economy
+            MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}),              // 91 probes @ 6:13 (x2)
+            MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}),
+
+            // Army Spikes
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT), // 94 probes @ 6:24 (x5)
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT),
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT), // 96 probes @ 6:31
+
+            // Support Units
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_SENTRY), // 117 probes @ 6:55 (x2)
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_SENTRY),
+            MacroAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_OBSERVER), // 117 probes @ 6:56
+            MacroBuilding(ABILITY_ID::BUILD_NEXUS, P2D(Aux::rankedExpansions[2])), // 117 probes @ 6:57
+
+            // Upgrades and Tech
+            MacroAction(UNIT_TYPEID::PROTOSS_FORGE, ABILITY_ID::RESEARCH_PROTOSSGROUNDWEAPONSLEVEL2, {0,0}, true), // 125 probes @ 7:03 (Chrono)
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ARCHON), // 125 probes @ 7:13 (x2)
+
+            // Heavy Units
+            MacroAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_IMMORTAL, {0,0}, true), // 129 probes @ 7:22 (Chrono)
+            MacroBuilding(ABILITY_ID::BUILD_ROBOTICSFACILITY, {-1,-1}),          // 132 probes @ 7:28
+            MacroBuilding(ABILITY_ID::BUILD_ROBOTICSBAY, {-1,-1}),               // 136 probes @ 7:33
+
+            // Defensive Structures
+            MacroBuilding(ABILITY_ID::BUILD_PHOTONCANNON, {-1,-1}),             // 136 probes @ 7:41 (x4)
+            MacroBuilding(ABILITY_ID::BUILD_PHOTONCANNON, {-1,-1}),
+            MacroBuilding(ABILITY_ID::BUILD_PHOTONCANNON, {-1,-1}),
+            MacroBuilding(ABILITY_ID::BUILD_PHOTONCANNON, {-1,-1}),
+            MacroBuilding(ABILITY_ID::BUILD_SHIELDBATTERY, {-1,-1}),            // 136 probes @ 7:47
+
+            // Late-Game Army
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_HIGHTEMPLAR), // 138 probes @ 8:04 (x2)
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_HIGHTEMPLAR),
+
+            // Final Economy
+            MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}),              // 152 probes @ 8:12 (x2)
+            MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}),
+
+            // Disruptor Tech
+            MacroAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_DISRUPTOR, {0,0}, true), // 152 probes @ 8:16 (x2 Chrono)
+            MacroAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_DISRUPTOR, {0,0}, true),
+            MacroBuilding(ABILITY_ID::BUILD_PHOTONCANNON, {-1,-1}),             // 152 probes @ 8:17 (x2)
+            MacroBuilding(ABILITY_ID::BUILD_PHOTONCANNON, {-1,-1}),
+
+            // Archon Production
+            MacroAction(UNIT_TYPEID::PROTOSS_HIGHTEMPLAR, ABILITY_ID::MORPH_ARCHON), // 156 probes @ 8:22
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ARCHON), // 156 probes @ 8:24 (x2)
+
+            // Final Push Composition
+            MacroAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_DISRUPTOR, {0,0}, true), // 164 probes @ 8:42 (x2 Chrono)
+            MacroAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_DISRUPTOR, {0,0}, true),
+
+            // Sky Transition
+            MacroBuilding(ABILITY_ID::BUILD_STARGATE, {-1,-1}),                 // 180 probes @ 9:03 (x2)
+            MacroBuilding(ABILITY_ID::BUILD_STARGATE, {-1,-1}),
+            MacroBuilding(ABILITY_ID::BUILD_FLEETBEACON, {-1,-1}),              // 180 probes @ 9:06
+            MacroAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_DISRUPTOR, {0,0}, true),  // 180 probes @ 9:12 (x2 Chrono)
+            MacroAction(UNIT_TYPEID::PROTOSS_ROBOTICSFACILITY, ABILITY_ID::TRAIN_DISRUPTOR, {0,0}, true),
+        };
+        gemini_chargelot_archon_disruptor.unitRatio.adept = 2;
+        gemini_chargelot_archon_disruptor.unitRatio.stalker = 1;
+        gemini_chargelot_archon_disruptor.unitRatio.voidray = 2;
+        gemini_chargelot_archon_disruptor.unitRatio.oracle = 1;
+        gemini_chargelot_archon_disruptor.unitRatio.zealot = 10;
+        gemini_chargelot_archon_disruptor.unitRatio.archon = 5;
+        gemini_chargelot_archon_disruptor.unitRatio.immortal = 1;
+        gemini_chargelot_archon_disruptor.unitRatio.disruptor = 4;
+        gemini_chargelot_archon_disruptor.unitRatio.observer = 1;
+        gemini_chargelot_archon_disruptor.armyAttackNum = 8;  // First push at 5:58 with 2 Archons
     }
 }

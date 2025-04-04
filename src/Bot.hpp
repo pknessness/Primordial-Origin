@@ -903,7 +903,7 @@ public:
         SpacialHash::initGrid();
         SpacialHash::initGridEnemy();
 
-        strat = &Strategem::shit_stalker_colossus;//&Strategem::classic_gsl_tempest_rush;//&Strategem::chirartem_proxy_dt;//&Strategem::zuka_proxy_tempest;//&Strategem::zuka_colossus_voidray;//&Strategem::pig_stalker_colossus;//&Strategem::hupsaiya_adept_timing;//&Strategem::chargelot_immortal_archon_timing;//
+        strat = &Strategem::gemini_chargelot_archon_disruptor;//&Strategem::chargelot_immortal_archon_timing;//&Strategem::shit_stalker_colossus;//&Strategem::classic_gsl_tempest_rush;//&Strategem::chirartem_proxy_dt;//&Strategem::zuka_proxy_tempest;//&Strategem::zuka_colossus_voidray;//&Strategem::pig_stalker_colossus;//&Strategem::hupsaiya_adept_timing;//
 
         for (int i = 0; i < path_zhang_suen->width(); i++) {
             for (int j = 0; j < path_zhang_suen->height(); j++) {
