@@ -735,6 +735,8 @@ static Cost unitAbilityToCost(AbilityID build_ability, Agent* agent) {
         return { 0, 0, 75, 0 };
     } else if (build_ability == ABILITY_ID::GENERAL_MOVE) {
         return { 0, 0, 0, 0 };
+    } else if (build_ability == ABILITY_ID::RESEARCH_PROTOSSGROUNDWEAPONS) {
+        return { 0, 0, 0, 0 };
     }
     printf("Unknown Unit Ability %s\n", AbilityTypeToName(build_ability));
     return { 0, 0, 0, 0 };

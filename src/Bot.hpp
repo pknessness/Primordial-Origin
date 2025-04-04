@@ -1559,21 +1559,25 @@ public:
                 continue;
             }
             if (((Nexus*)nexusWrap)->assimilator1 != NullTag) {
-                if (Observation()->GetUnit(((Nexus*)nexusWrap)->assimilator1) == nullptr) {
-                    ((Nexus*)nexusWrap)->assimilator1 = NullTag;
-                } else {
-                    numProbesMaxN += 3;
-                    numProbesN += probeTargetting[((Nexus*)nexusWrap)->assimilator1];
-                }
+                //if (Observation()->GetUnit(((Nexus*)nexusWrap)->assimilator1) == nullptr) {
+                //    ((Nexus*)nexusWrap)->assimilator1 = NullTag;
+                //} else {
+                //    numProbesMaxN += 3;
+                //    numProbesN += probeTargetting[((Nexus*)nexusWrap)->assimilator1];
+                //}
+                numProbesMaxN += 3;
+                numProbesN += probeTargetting[((Nexus*)nexusWrap)->assimilator1];
             }
             if (((Nexus*)nexusWrap)->assimilator2 != NullTag) {
-                if (Observation()->GetUnit(((Nexus*)nexusWrap)->assimilator2) == nullptr) {
-                    ((Nexus*)nexusWrap)->assimilator2 = NullTag;
-                }
-                else {
-                    numProbesMaxN += 3;
-                    numProbesN += probeTargetting[((Nexus*)nexusWrap)->assimilator2];
-                }
+                //if (Observation()->GetUnit(((Nexus*)nexusWrap)->assimilator2) == nullptr) {
+                //    ((Nexus*)nexusWrap)->assimilator2 = NullTag;
+                //}
+                //else {
+                //    numProbesMaxN += 3;
+                //    numProbesN += probeTargetting[((Nexus*)nexusWrap)->assimilator2];
+                //}
+                numProbesMaxN += 3;
+                numProbesN += probeTargetting[((Nexus*)nexusWrap)->assimilator2];
             }
             for (int i = 0; i < 8; i ++) {
                 if (((Nexus*)nexusWrap)->minerals[i] != nullptr) {
@@ -1649,7 +1653,7 @@ public:
 
             int mindex = -1;
             for (int i = 0; i < 18; i++) {
-                if (percentPtrStrategy[i] != 0.0 && ((percentPtrStrategy[i] - percentPtr[i]) > (percentPtrStrategy[mindex] - percentPtr[mindex])) && Macro::actions[Strategem::UnitCreators[i]].size() == 0) {
+                if (percentPtrStrategy[i] != 0.0 && ((percentPtrStrategy[i] - percentPtr[i]) > (percentPtrStrategy[mindex] - percentPtr[mindex]) || mindex == -1) && Macro::actions[Strategem::UnitCreators[i]].size() == 0) {
                     mindex = i;
                 }
             }
@@ -1737,8 +1741,15 @@ public:
                     Actions()->SendChat(argument);
                 }
 
-                if (command == "spawn") {
-
+                if (command == "s") { //spawn
+                    if (spawnCommandMap.find(arguments[0]) != spawnCommandMap.end()) {
+                        DebugCreateUnit(this, spawnCommandMap[arguments[0]], Observation()->GetCameraPos(), 1);
+                    }
+                }
+                else if (command == "se") { //spawn enemy
+                    if (spawnCommandMap.find(arguments[0]) != spawnCommandMap.end()) {
+                        DebugCreateUnit(this, spawnCommandMap[arguments[0]], Observation()->GetCameraPos(), 2);
+                    }
                 }
                 else {
                     Actions()->SendChat("Invalid Command " + command);
