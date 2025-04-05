@@ -898,8 +898,8 @@ static Cost unitAbilityToCost(AbilityID build_ability, Agent* agent) {
         return { 0, 0, 50, 0 };
     } else if (build_ability == ABILITY_ID::EFFECT_MASSRECALL_NEXUS) {
         return { 0, 0, 50, 0 };
-    } else if (build_ability == ABILITY_ID::BATTERYOVERCHARGE) { //TODO: REPLACE WITH ENERGY OVERCHARGE
-        return { 0, 0, 50, 0 };
+    //} else if (build_ability == ABILITY_ID::BATTERYOVERCHARGE) { //TODO: REPLACE WITH ENERGY OVERCHARGE
+    //    return { 0, 0, 50, 0 };
     } else if (build_ability == ABILITY_ID::EFFECT_FORCEFIELD) {
         return { 0, 0, 50, 0 };
     } else if (build_ability == ABILITY_ID::EFFECT_GUARDIANSHIELD) {
