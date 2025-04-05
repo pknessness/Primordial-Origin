@@ -6,6 +6,7 @@
 
 using namespace std;
 using namespace std::chrono_literals;
+//using namespace backward;
 
 bool profilerPrint = true;
 int profilerThreshold = 0;
@@ -33,6 +34,7 @@ struct lastfew {
 
 using timeus = std::chrono::time_point<std::chrono::steady_clock>;
 map<string, long long> profilerMap;
+map<string, long long> profilerMax;
 map<string, int> profilerCoumt;
 map<string, lastfew> profilerLast;
 
@@ -69,11 +71,13 @@ public:
             profilerMap[sname] = dt;
             profilerCoumt[sname] = 1;
             profilerLast[sname].add(dt);
+            profilerMax[sname] = dt;
         }
         else {
             profilerMap[sname] += dt;
             profilerCoumt[sname] += 1;
             profilerLast[sname].add(dt);
+            profilerMax[sname] = max(profilerMax[sname], dt);
         }
     }
 
@@ -82,6 +86,17 @@ public:
             return;
         timeus now = std::chrono::steady_clock::now();
         long long dt = std::chrono::duration_cast<std::chrono::microseconds>(now - mid_time).count();
+        if (dt > 30000) {
+            FILE* fp;
+            fp = fopen("data/logging.txt", "a");
+            fprintf(fp, "%s - %.3fms\n", mid.c_str(), dt / 1000.0);
+            //backward::StackTrace st; st.load_here(32);
+            //backward::Printer p; p.print(st, fp);
+            fclose(fp);
+        }
+        if (mid == "MacroExecute" && dt > 25000) {
+            throw 2;
+        }
         if (profilerPrint && (dt > profilerThreshold)) {
             printf("<%s,%s - %.3fms>\n", name.c_str(), mid.c_str(), dt / 1000.0);
         }
@@ -94,6 +109,14 @@ public:
             return;
         timeus now = std::chrono::steady_clock::now();
         long long dt = std::chrono::duration_cast<std::chrono::microseconds>(now - start_time).count();
+        if (dt > 30000 && name != "onStep") {
+            FILE* fp;
+            fp = fopen("data/logging.txt", "a");
+            fprintf(fp, "%s - %.3fms\n", name.c_str(), dt / 1000.0);
+            //backward::StackTrace st; st.load_here(32);
+            //backward::Printer p; p.print(st, fp);
+            fclose(fp);
+        }
         if (profilerPrint && (dt > profilerThreshold)) {
             printf("<%s - %.3fms>\n", name.c_str(), dt / 1000.0);
         }

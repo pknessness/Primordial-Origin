@@ -862,6 +862,10 @@ public:
         profilerThreshold = 10;
         last_time = clock();
 
+        Aux::loadExtraDamageSources();
+
+        Aux::preloadStats(this);
+
         Aux::cached_gameinfo = Observation()->GetGameInfo();
 
         Aux::global_mapWidth = Aux::cached_gameinfo.width;
@@ -881,8 +885,6 @@ public:
 
         Aux::loadPathables(this);
         Aux::loadColorHeightMap(this);
-
-        Aux::loadExtraDamageSources();
 
         Aux::influenceMap = new map2d<int8_t>(Aux::global_mapWidth, Aux::global_mapHeight, true);
         Aux::influenceMapEnemy = new map2d<int8_t>(Aux::global_mapWidth, Aux::global_mapHeight, true);
@@ -1147,12 +1149,12 @@ public:
                 "terran",
                 "zerg"
         };
-        int p_c = sizeof(Strategem::ArmyUnitsProtoss) / sizeof(UnitTypeID);
-        vector<UnitTypeID> p(Strategem::ArmyUnitsProtoss, Strategem::ArmyUnitsProtoss + p_c);
-        int t_c = sizeof(Strategem::ArmyUnitsTerran) / sizeof(UnitTypeID);
-        vector<UnitTypeID> t(Strategem::ArmyUnitsTerran, Strategem::ArmyUnitsTerran + t_c);
-        int z_c = sizeof(Strategem::ArmyUnitsZerg) / sizeof(UnitTypeID);
-        vector<UnitTypeID> z(Strategem::ArmyUnitsZerg, Strategem::ArmyUnitsZerg + z_c);
+        int p_c = sizeof(Aux::ArmyUnitsProtoss) / sizeof(UnitTypeID);
+        vector<UnitTypeID> p(Aux::ArmyUnitsProtoss, Aux::ArmyUnitsProtoss + p_c);
+        int t_c = sizeof(Aux::ArmyUnitsTerran) / sizeof(UnitTypeID);
+        vector<UnitTypeID> t(Aux::ArmyUnitsTerran, Aux::ArmyUnitsTerran + t_c);
+        int z_c = sizeof(Aux::ArmyUnitsZerg) / sizeof(UnitTypeID);
+        vector<UnitTypeID> z(Aux::ArmyUnitsZerg, Aux::ArmyUnitsZerg + z_c);
 
         vector<UnitTypeID> unitLists[3] = { p, t, z };
 
@@ -1540,24 +1542,14 @@ public:
 
         onStepProfiler.midLog("BuildOrderSetup");
 
-        int spareMinerals = Observation()->GetMinerals();
-        int spareVespene = Observation()->GetVespene();
-
-        for (auto it = Macro::actions.begin(); it != Macro::actions.end(); it++) {
-            auto all = it->second;
-            for (auto it2 = all.begin(); it2 != all.end(); it2++) {
-                Cost c = it2->cost(this);
-                spareMinerals -= c.minerals;
-                spareVespene -= c.vespene;
-            }
-        }
-
         int numProbes = 0;
         int numProbesMax = 0;
+        onStepProfiler.midLog("ProbeCreation1");
         for (UnitWrapper* nexusWrap : UnitManager::get(UNIT_TYPEID::PROTOSS_NEXUS)) {
             int numProbesN = 0;
             int numProbesMaxN = 0;
             float percentUntilViable = 1.0F - (Aux::getStats(UNIT_TYPEID::PROTOSS_PROBE, this).build_time / Aux::getStats(UNIT_TYPEID::PROTOSS_NEXUS, this).build_time);
+            onStepProfiler.midLog("ProbeCreation2");
             if (nexusWrap->get(this)->build_progress < percentUntilViable) {
                 continue;
             }
@@ -1571,6 +1563,7 @@ public:
                 numProbesMaxN += 3;
                 numProbesN += probeTargetting[((Nexus*)nexusWrap)->assimilator1];
             }
+            onStepProfiler.midLog("ProbeCreation3");
             if (((Nexus*)nexusWrap)->assimilator2 != NullTag) {
                 //if (Observation()->GetUnit(((Nexus*)nexusWrap)->assimilator2) == nullptr) {
                 //    ((Nexus*)nexusWrap)->assimilator2 = NullTag;
@@ -1582,6 +1575,7 @@ public:
                 numProbesMaxN += 3;
                 numProbesN += probeTargetting[((Nexus*)nexusWrap)->assimilator2];
             }
+            onStepProfiler.midLog("ProbeCreation4");
             for (int i = 0; i < 8; i ++) {
                 if (((Nexus*)nexusWrap)->minerals[i] != nullptr) {
                     numProbesMaxN += 2;
@@ -1592,6 +1586,7 @@ public:
                     }
                 }
             }
+            onStepProfiler.midLog("ProbeCreation5");
             DebugText(this, strprintf("%d/%d", numProbesN, numProbesMaxN), nexusWrap->pos3D(this) + Point3D{ 0,0, 5.5 });
             numProbes += numProbesN;
             numProbesMax += numProbesMaxN;
@@ -1656,18 +1651,18 @@ public:
 
             int mindex = -1;
             for (int i = 0; i < 18; i++) {
-                if (percentPtrStrategy[i] != 0.0 && ((percentPtrStrategy[i] - percentPtr[i]) > (percentPtrStrategy[mindex] - percentPtr[mindex]) || mindex == -1) && Macro::actions[Strategem::UnitCreators[i]].size() == 0) {
+                if (percentPtrStrategy[i] != 0.0 && ((percentPtrStrategy[i] - percentPtr[i]) > (percentPtrStrategy[mindex] - percentPtr[mindex]) || mindex == -1) && Macro::actions[Aux::UnitCreators[i]].size() == 0) {
                     mindex = i;
                 }
             }
 
-            if (mindex != -1 && Macro::actions[Strategem::UnitCreators[mindex]].size() == 0) {
+            if (mindex != -1 && Macro::actions[Aux::UnitCreators[mindex]].size() == 0) {
                 printf("Strategy Profile:\n");
                 for (int i = 0; i < 18; i++) {
-                    printf("%s   \t%.1f\t%.1f\n", UnitTypeToName(Strategem::UnitOrder[i]), percentPtrStrategy[i] * 100, percentPtr[i] * 100);
+                    printf("%s   \t%.1f\t%.1f\n", UnitTypeToName(Aux::UnitOrder[i]), percentPtrStrategy[i] * 100, percentPtr[i] * 100);
                 }
-                printf("%s\n", AbilityTypeToName(Strategem::UnitCreationAbility[mindex]));
-                MacroAction* m = Macro::addAction(Strategem::UnitCreators[mindex], Strategem::UnitCreationAbility[mindex]);
+                printf("%s\n", AbilityTypeToName(Aux::UnitCreationAbility[mindex]));
+                MacroAction* m = Macro::addAction(Aux::UnitCreators[mindex], Aux::UnitCreationAbility[mindex]);
                 lastUnitSpawner = m->unit_type; //TODO: GET RID
                 lastUnitIndex = m->index; //TODO: GET RID
             }
@@ -1857,6 +1852,7 @@ public:
         static int max2 = 0;
         static int max3 = 0;
         static int max4 = 0;
+        static int max5 = 0;
         for (auto itr = profilerMap.begin(); itr != profilerMap.end(); itr ++) {
             string name = itr->first;
             int strlen = (int)(name.size());
@@ -1876,13 +1872,19 @@ public:
             for (int i = 0; i < (max3 - strlen); i++) {
                 totstr += " ";
             }
-            string lateststr = strprintf("LAT:%.3f", profilerLast[itr->first].time()/1000.0);
+            string lateststr = strprintf("LAT:%.3f", profilerLast[itr->first].time() / 1000.0);
             strlen = (int)(lateststr.size());
             max4 = max(strlen + 1, max4);
             for (int i = 0; i < (max4 - strlen); i++) {
                 lateststr += " ";
             }
-            profilestr += (name + lateststr + dtstr + totstr + "\n");
+            string maxstr = strprintf("MAX:%.3f", profilerMax[itr->first] / 1000.0);
+            strlen = (int)(maxstr.size());
+            max5 = max(strlen + 1, max5);
+            for (int i = 0; i < (max4 - strlen); i++) {
+                maxstr += " ";
+            }
+            profilestr += (name + lateststr + dtstr + maxstr + "\n");
         }
         DebugText(this,profilestr, Point2D(0.61F, 0.41F), Color(1, 212, 41), 8);
 

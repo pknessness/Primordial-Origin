@@ -107,15 +107,18 @@ namespace Macro {
     }
 
     void execute(Agent *agent) {
+        Profiler macroProfiler("macroExecute");
         DebugText(agent,diagnostics, Point2D(0.03F, 0.01F), Color(100, 190, 215), 8);
         uint32_t gt = agent->Observation()->GetGameLoop();
         if (gt < (uint32_t)(lastChecked + ACTION_CHECK_DT)) {
+            macroProfiler.midLog("earlyOut");
             return;
         }
         lastChecked = gt;
-        Profiler macroProfiler("macroExecute");
-        macroProfiler.disable();
+        
+        //macroProfiler.disable();
         vector<MacroAction> topActions = vector<MacroAction>();
+        macroProfiler.midLog("setup");
         for (auto it = actions.begin(); it != actions.end(); it++) {
             //vector<MacroAction> acts = it->second;
             if (it->second.size() == 0 /* || gt < lastChecked + ACTION_CHECK_DT*/) {
@@ -200,6 +203,8 @@ namespace Macro {
                     if (!ins) {
                         actions[UNIT_TYPEID::PROTOSS_GATEWAY].push_back(MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_HIGHTEMPLAR, { 0,0 }, topAct.index));
                     }
+                    diagnostics += "ARCHON FAILURE\n\n";
+                    macroProfiler.midLog("ARCHON FAILURE");
                     continue;
                 }
             }
@@ -419,9 +424,8 @@ namespace Macro {
 
             auto probes = UnitManager::get(UNIT_TYPEID::PROTOSS_PROBE);
             for (int i = 0; i < probes.size(); i ++) {
-                vector<Building> buildings = ((Probe *)probes[i])->buildings;
-                for (int b = 0; b < buildings.size(); b++) {
-                    Cost g = buildings[b].cost(agent);
+                for (int b = 0; b < ((Probe*)probes[i])->buildings.size(); b++) {
+                    Cost g = ((Probe*)probes[i])->buildings[b].cost(agent);
                     theoreticalMinerals -= g.minerals;
                     theoreticalVespene -= g.vespene;
                 }
@@ -481,11 +485,14 @@ namespace Macro {
                 float mindist = actions[UNIT_TYPEID::PROTOSS_PROBE].front().dist_cache;
                 actionUnit = agent->Observation()->GetUnit(actions[UNIT_TYPEID::PROTOSS_PROBE].front().unit_cache);
 
+                macroProfiler.midLog("ProbeDistanceCheck1");
                 const Unit *uni = units[std::rand() % units.size()];
 
+                macroProfiler.midLog("ProbeDistanceCheck2");
                 Point2D start = P2D(uni->pos);
                 Point2D goal = topAct.pos;
 
+                macroProfiler.midLog("ProbeDistanceCheck3");
                 float dist = 0;
                 if (topAct.ability == ABILITY_ID::BUILD_ASSIMILATOR) {
                     dist = Distance2D(P2D(start), P2D(goal));
@@ -495,7 +502,8 @@ namespace Macro {
                     //dist = fullDist(pat);
                     dist = PrimordialStar::getPathLength(start, goal, 0, agent);
                 }
-
+                
+                macroProfiler.midLog("ProbeDistanceCheck4");
                 if (mindist == -1 || dist < mindist || actionUnit == nullptr) {
                     mindist = dist;
                     actionUnit = uni;
@@ -503,42 +511,13 @@ namespace Macro {
                     actions[UNIT_TYPEID::PROTOSS_PROBE].front().unit_cache = uni->tag;
                 }
 
+                macroProfiler.midLog("ProbeDistanceCheck5");
                 float dt = (mindist - 2) / (unit_stats.movement_speed * timeSpeed);
 
                 if (mindist == -1)
                     dt = 0;
 
-                //float mindist = -1;
-
-                //for (const Unit *uni : units) {
-                //    Point2DI start = uni->pos;
-                //    Point2DI goal = topAct.pos;
-
-                //    float dist = 0;
-                //    if (topAct.ability == ABILITY_ID::BUILD_ASSIMILATOR) {
-                //        dist = Distance2D(P2D(start), P2D(goal));
-                //    } else {
-                //        auto came_from = jps(gridmap, start, goal, Tool::euclidean, agent);
-                //        vector<Location> pat = Tool::reconstruct_path(start, goal, came_from);
-                //        dist = fullDist(pat);
-                //    }
-
-                //    // printf("%.2f %.2f\n", agent->Query()->PathingDistance(uni, topAct.pos), dist);
-
-                //    if (mindist == -1 || dist < mindist) {
-                //        mindist = dist;
-                //        actionUnit = uni;
-                //    }
-                //}
-
-                //// float dt = agent->Query()->PathingDistance(actionUnit, topAct.pos) / (unit_stats.movement_speed *
-                //// timeSpeed);
-                //dt = (mindist - 2) / (unit_stats.movement_speed * timeSpeed);
-
-                //if (mindist == -1)
-                //    dt = 0;
-                
-                macroProfiler.midLog("ProbeDistanceCheck");
+                macroProfiler.midLog("ProbeDistanceCheck6");
                 
                 if (Aux::requiresPylon(topAct.ability) && viablePylons.back()->build_progress != 1.0) {
                     //UnitTypeData pylon_stats = allData.at(static_cast<uint32_t>(UNIT_TYPEID::PROTOSS_PYLON));
