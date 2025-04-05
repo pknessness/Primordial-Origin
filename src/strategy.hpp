@@ -705,6 +705,7 @@ namespace Strategem {
             // Army Composition
             MacroAction(UNIT_TYPEID::PROTOSS_TWILIGHTCOUNCIL, ABILITY_ID::RESEARCH_CHARGE, {0,0}, true), // 61 probes @ 4:53 (Chrono)
             MacroAction(UNIT_TYPEID::PROTOSS_FORGE, ABILITY_ID::RESEARCH_PROTOSSGROUNDWEAPONSLEVEL1, {0,0}, true), // 61 probes @ 4:54 (Chrono)
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}),
             MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),                  // 61 probes @ 4:55 (x4)
             MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),
             MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),
@@ -714,10 +715,14 @@ namespace Strategem {
             MacroBuilding(ABILITY_ID::BUILD_TEMPLARARCHIVE, {-1,-1}),          // 63 probes @ 5:12
             MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),                  // 67 probes @ 5:28 (x2)
             MacroBuilding(ABILITY_ID::BUILD_GATEWAY, {-1,-1}),
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}),
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}),
             MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT), // 69 probes @ 5:39 (x2)
             MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT),
             MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ARCHON), // 76 probes @ 5:53 (x4)
             MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ARCHON), // 87 probes @ 5:58 (x2)
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}),
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}),
 
             // Robotics Transition
             MacroBuilding(ABILITY_ID::BUILD_ROBOTICSFACILITY, {-1,-1}),          // 87 probes @ 6:00
@@ -727,6 +732,9 @@ namespace Strategem {
             // Late-Game Economy
             MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}),              // 91 probes @ 6:13 (x2)
             MacroBuilding(ABILITY_ID::BUILD_ASSIMILATOR, {-1,-1}),
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}),
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}),
+            MacroBuilding(ABILITY_ID::BUILD_PYLON, {-1,-1}),
 
             // Army Spikes
             MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ZEALOT), // 94 probes @ 6:24 (x5)
@@ -773,7 +781,7 @@ namespace Strategem {
             MacroBuilding(ABILITY_ID::BUILD_PHOTONCANNON, {-1,-1}),
 
             // Archon Production
-            MacroAction(UNIT_TYPEID::PROTOSS_HIGHTEMPLAR, ABILITY_ID::MORPH_ARCHON), // 156 probes @ 8:22
+            MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ARCHON),
             MacroAction(UNIT_TYPEID::PROTOSS_GATEWAY, ABILITY_ID::TRAIN_ARCHON), // 156 probes @ 8:24 (x2)
 
             // Final Push Composition

@@ -314,6 +314,10 @@ public:
         distToTarget = -1;
     }
 
+    virtual void attack(UnitWrapper* wrap, Agent* agent) {
+        agent->Actions()->UnitCommand(self, ABILITY_ID::ATTACK, wrap->self);
+    }
+
     UnitTypeData getStats(Agent *agent) {
         if (stats.unit_type_id == UNIT_TYPEID::INVALID) {
             stats = Aux::getStats(getType(agent),agent);
@@ -630,7 +634,8 @@ public:
             }
 
             if (squad->subSquadStates[self] == 'a') {
-                agent->Actions()->UnitCommand(self, ABILITY_ID::ATTACK, targetWrap->self);
+                //agent->Actions()->UnitCommand(self, ABILITY_ID::ATTACK, targetWrap->self);
+                attack(targetWrap, agent);
                 escapeLoc = posTarget;
             }
             else if (squad->subSquadStates[self] == 'k') {
@@ -974,6 +979,93 @@ public:
     // virtual bool execute(Agent *agent) {
     //
     // }
+};
+
+class Disruptor : public ArmyUnit {
+private:
+public:
+    Disruptor(const Unit* unit) : ArmyUnit(unit) {
+    }
+
+    virtual void attack(UnitWrapper* wrap, Agent* agent) {
+        //agent->Actions()->UnitCommand(self, ABILITY_ID::PURIFICATIONNOVA, wrap->self);
+        //agent->Actions()->UnitCommand(self, ABILITY_ID::PURIFICATIONNOVA, wrap->pos(agent));
+        //agent->Actions()->UnitCommand(self, ABILITY_ID::EFFECT_PURIFICATIONNOVA, wrap->self);
+        agent->Actions()->UnitCommand(self, ABILITY_ID::EFFECT_PURIFICATIONNOVA, wrap->pos(agent));
+    }
+
+    // virtual bool execute(Agent *agent) {
+    //
+    // }
+};
+
+constexpr float bonusOnKill = 2.0F;
+
+class PurificationNova : public ArmyUnit {
+private:
+public:
+
+    int lifetime; //2.1 * 22.4 = 47.04 frames
+
+    float escapeBenefit;
+
+    PurificationNova(const Unit* unit) : ArmyUnit(unit), lifetime(47), escapeBenefit(-1) {
+        escapeLoc = { 0,0 };
+    }
+
+    float calculateBenefit(Point2D p, Agent* agent) {
+        UnitWrappers enemies = SpacialHash::findInRadiusEnemy(p, 1.5F, agent);
+        float benefit = 0;
+        for (int i = 0; i < enemies.size(); i++) {
+            UnitWrapper* enemy = enemies[i];
+            if (enemy->getComposition(agent) == Composition::Ground && Distance2D(p, enemy->pos(agent)) < 1.5F + enemy->radius) {
+                float remainingShield = max(0.0F, enemy->shields - 100);
+                float remainHealth = max(0.0F, enemy->health + remainingShield - 100);
+                float depletedHealth = enemy->health + enemy->shields - remainHealth;
+
+                float benefitSingle = depletedHealth / 200.0F;
+                if (remainHealth == 0) {
+                    benefitSingle += bonusOnKill;
+                }
+                benefit += benefitSingle * priorityAttack(Aux::extraWeapons[ABILITY_ID::EFFECT_PURIFICATIONNOVA].w, enemy, agent);
+            }
+        }
+        return benefit;
+    }
+
+    virtual bool execute(Agent *agent) {
+        float radiusRemaining = lifetime / fps * Aux::getStats(UNIT_TYPEID::PROTOSS_DISRUPTORPHASED, agent).movement_speed;
+        Point3D p = pos3D(agent);
+
+        DebugSphere(agent, p, radiusRemaining, Colors::Yellow);
+        escapeBenefit = calculateBenefit(escapeLoc, agent);
+
+        vector<Point2D> checkPoints;
+        UnitWrappers enemies = SpacialHash::findInRadiusEnemy(p, radiusRemaining, agent);
+        checkPoints.reserve(enemies.size() + 3);
+
+        for (int i = 0; i < enemies.size(); i++) {
+            checkPoints.push_back(enemies[i]->pos(agent));
+        }
+
+        for (int i = 0; i < 3; i++) {
+            checkPoints.push_back(randomPointRadius(pos(agent), radiusRemaining));
+        }
+
+        for (int i = 0; i < checkPoints.size(); i++) {
+            Point2D checkP = checkPoints[i];
+            float checkBenefit = calculateBenefit(checkP, agent);
+            DebugSphere(agent, AP3D(checkP), 0.3F, checkBenefit == 0 ? Colors::Green : Colors::Red);
+            if (escapeBenefit == -1 || escapeBenefit < checkBenefit) {
+                escapeLoc = checkP;
+                escapeBenefit = checkBenefit;
+                agent->Actions()->UnitCommand(self, ABILITY_ID::GENERAL_MOVE, checkP);
+            }
+        }
+
+        lifetime--;
+        return false;
+    }
 };
 
 class HighTemplar : public ArmyUnit {

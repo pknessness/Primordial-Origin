@@ -281,6 +281,10 @@ UnitTypeData getStats(UnitTypeID type, Agent *agent) {
         }else if (type == UNIT_TYPEID::PROTOSS_SENTRY) {
             ComplexWeapon disruptionBeam(Weapon::TargetType::Any, 6, 1, 5, 0.71F);
             statsMap[UNIT_TYPEID::PROTOSS_SENTRY].weapons.push_back(disruptionBeam.w);
+        } else if (type == UNIT_TYPEID::PROTOSS_DISRUPTOR) {
+            //https://www.reddit.com/r/starcraft/comments/40pl7l/how_far_can_a_disruptors_purification_nova_travel/?rdt=50754
+            ComplexWeapon novaAura(Weapon::TargetType::Any, 100, 1, 13, 21.4F);
+            statsMap[UNIT_TYPEID::PROTOSS_DISRUPTOR].weapons.push_back(novaAura.w);
         }
     }
     return statsMap[type];
@@ -1322,6 +1326,9 @@ void loadExtraDamageSources() {
 
     ComplexWeapon lurkerSpines(Weapon::TargetType::Ground, 20, 1, 8, 1.43F);
     extraWeapons[ABILITY_ID::BEHAVIOR_HOLDFIREON_LURKER] = lurkerSpines;
+
+    ComplexWeapon purificationNova(Weapon::TargetType::Ground, 100, 1, 1.5, 1, 0, 0);
+    extraWeapons[ABILITY_ID::EFFECT_PURIFICATIONNOVA] = purificationNova;
 }
 
 
