@@ -4195,6 +4195,7 @@ public:
       SIGTRAP, // Trace/breakpoint trap
       SIGXCPU, // CPU time limit exceeded (4.2BSD)
       SIGXFSZ, // File size limit exceeded (4.2BSD)
+      SIGTERM,
 #if defined(BACKWARD_SYSTEM_DARWIN)
       SIGEMT, // emulation instruction executed
 #endif
@@ -4292,6 +4293,11 @@ public:
     Printer printer;
     printer.address = true;
     printer.print(st, stderr);
+
+    FILE* fp;
+    fp = fopen("data/crash.txt", "a");
+    printer.print(st, fp);
+    fclose(fp);
 
 #if (defined(_XOPEN_SOURCE) && _XOPEN_SOURCE >= 700) || \
     (defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 200809L)
