@@ -854,7 +854,7 @@ namespace PrimordialStar {
 			vector<Point2D> p;
 			p.push_back(start);
 			p.push_back(end);
-			profiler.midLog("getPath.quickEnd");
+			profiler.midLog("getDijkstra.quickEnd");
 			return p;
 		}
 

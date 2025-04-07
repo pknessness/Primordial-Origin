@@ -86,19 +86,11 @@ public:
             return;
         timeus now = std::chrono::steady_clock::now();
         long long dt = std::chrono::duration_cast<std::chrono::microseconds>(now - mid_time).count();
-        if (dt > 30000) {
+        if (profilerPrint && (dt > profilerThreshold)) {
             FILE* fp;
             fp = fopen("data/logging.txt", "a");
-            fprintf(fp, "%s - %.3fms\n", mid.c_str(), dt / 1000.0);
-            //backward::StackTrace st; st.load_here(32);
-            //backward::Printer p; p.print(st, fp);
+            fprintf(fp, "%s, %s - % .3fms\n", name.c_str(), mid.c_str(), dt / 1000.0);
             fclose(fp);
-        }
-        if (mid == "MacroExecute" && dt > 25000) {
-            throw 2;
-        }
-        if (profilerPrint && (dt > profilerThreshold)) {
-            printf("<%s,%s - %.3fms>\n", name.c_str(), mid.c_str(), dt / 1000.0);
         }
         addCall(mid, dt);
         mid_time = now;
@@ -109,16 +101,11 @@ public:
             return;
         timeus now = std::chrono::steady_clock::now();
         long long dt = std::chrono::duration_cast<std::chrono::microseconds>(now - start_time).count();
-        if (dt > 30000 && name != "onStep") {
+        if (profilerPrint && (dt > profilerThreshold)) {
             FILE* fp;
             fp = fopen("data/logging.txt", "a");
-            fprintf(fp, "%s - %.3fms\n", name.c_str(), dt / 1000.0);
-            //backward::StackTrace st; st.load_here(32);
-            //backward::Printer p; p.print(st, fp);
+            fprintf(fp,"%s - %.3fms\n", name.c_str(), dt / 1000.0);
             fclose(fp);
-        }
-        if (profilerPrint && (dt > profilerThreshold)) {
-            printf("<%s - %.3fms>\n", name.c_str(), dt / 1000.0);
         }
         addCall("-"+name, dt);
     }

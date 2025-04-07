@@ -116,7 +116,7 @@ namespace Macro {
         }
         lastChecked = gt;
         
-        //macroProfiler.disable();
+        macroProfiler.disable();
         vector<MacroAction> topActions = vector<MacroAction>();
         macroProfiler.midLog("setup");
         for (auto it = actions.begin(); it != actions.end(); it++) {

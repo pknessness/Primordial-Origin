@@ -705,7 +705,8 @@ public:
                         checkPointDistances.push_back(-1);
                     }
                     if (position != posTarget && !get(agent)->is_flying) {
-                        vector<Point2D> pathDijkstra = PrimordialStar::getPathDijkstra(position, posTarget, radius, agent);
+                        vector<Point2D> pathDijkstra = PrimordialStar::getPath(position, posTarget, radius, agent);
+                        //vector<Point2D> pathDijkstra = PrimordialStar::getPathDijkstra(position, posTarget, radius, agent);
                         float dijkstraLength = PrimordialStar::getPathLength(pathDijkstra);
                         for (int i = 0; i < alongPurePathBisects - 1; i++) {
                             Point2D checkPoint = PrimordialStar::distanceAlongPath(pathDijkstra, (i + 1) * dijkstraLength / alongPurePathBisects);

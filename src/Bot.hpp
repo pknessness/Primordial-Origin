@@ -858,8 +858,8 @@ public:
     //! Called when a game is started or restarted.
     virtual void OnGameStart() final {
 
-        profilerPrint = false;
-        profilerThreshold = 10;
+        profilerPrint = true;
+        profilerThreshold = 500;
         last_time = clock();
 
         Aux::loadExtraDamageSources();
@@ -1544,12 +1544,12 @@ public:
 
         int numProbes = 0;
         int numProbesMax = 0;
-        onStepProfiler.midLog("ProbeCreation1");
+        //onStepProfiler.midLog("ProbeCreation1");
         for (UnitWrapper* nexusWrap : UnitManager::get(UNIT_TYPEID::PROTOSS_NEXUS)) {
             int numProbesN = 0;
             int numProbesMaxN = 0;
             float percentUntilViable = 1.0F - (Aux::getStats(UNIT_TYPEID::PROTOSS_PROBE, this).build_time / Aux::getStats(UNIT_TYPEID::PROTOSS_NEXUS, this).build_time);
-            onStepProfiler.midLog("ProbeCreation2");
+            //onStepProfiler.midLog("ProbeCreation2");
             if (nexusWrap->get(this)->build_progress < percentUntilViable) {
                 continue;
             }
@@ -1563,7 +1563,7 @@ public:
                 numProbesMaxN += 3;
                 numProbesN += probeTargetting[((Nexus*)nexusWrap)->assimilator1];
             }
-            onStepProfiler.midLog("ProbeCreation3");
+            //onStepProfiler.midLog("ProbeCreation3");
             if (((Nexus*)nexusWrap)->assimilator2 != NullTag) {
                 //if (Observation()->GetUnit(((Nexus*)nexusWrap)->assimilator2) == nullptr) {
                 //    ((Nexus*)nexusWrap)->assimilator2 = NullTag;
@@ -1575,7 +1575,7 @@ public:
                 numProbesMaxN += 3;
                 numProbesN += probeTargetting[((Nexus*)nexusWrap)->assimilator2];
             }
-            onStepProfiler.midLog("ProbeCreation4");
+            //onStepProfiler.midLog("ProbeCreation4");
             for (int i = 0; i < 8; i ++) {
                 if (((Nexus*)nexusWrap)->minerals[i] != nullptr) {
                     numProbesMaxN += 2;
@@ -1586,7 +1586,7 @@ public:
                     }
                 }
             }
-            onStepProfiler.midLog("ProbeCreation5");
+            //onStepProfiler.midLog("ProbeCreation5");
             DebugText(this, strprintf("%d/%d", numProbesN, numProbesMaxN), nexusWrap->pos3D(this) + Point3D{ 0,0, 5.5 });
             numProbes += numProbesN;
             numProbesMax += numProbesMaxN;
