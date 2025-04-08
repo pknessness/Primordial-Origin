@@ -1078,17 +1078,6 @@ bool UnitWrapper::equals(UnitWrapper *wrapper) {
 
 //We only care about nexus, probe, gateway, ?zealot?, forge, cybercore, sentry, stalker, adept, shield battery, twilight council, stargate, pheonix, oracle, void ray, robotics facility, observer, warp prism, templar, high templar, archon, dark shrine, dark templar, fleet beacon, ?carrier, mothership, robotics bay, disruptor
 void UnitWrapper::loadAbilities(Agent *agent) {
-    //Units all = agent->Observation()->GetUnits(Unit::Alliance::Self);
-    //vector<AvailableAbilities> allAb = agent->Query()->GetAbilitiesForUnits(all);
-    //for (AvailableAbilities abil : allAb) {
-    //    if (abil.unit_tag != NullTag) {
-    //        UnitWrapper* u = UnitManager::find(abil.unit_type_id, abil.unit_tag);
-    //        if (u == nullptr) {
-    //            continue;
-    //        }
-    //        u->abilities = abil;
-    //    }
-    //}
     Units all;
     vector<UnitTypeID> types = {
         UNIT_TYPEID::PROTOSS_NEXUS,
@@ -1129,13 +1118,19 @@ void UnitWrapper::loadAbilities(Agent *agent) {
         }
     }
     vector<AvailableAbilities> allAb = agent->Query()->GetAbilitiesForUnits(all);
-    for (AvailableAbilities abil : allAb) {
-        if (abil.unit_tag != NullTag) {
-            UnitWrapper* u = UnitManager::find(abil.unit_type_id, abil.unit_tag);
+    for (int i = 0; i < allAb.size(); i ++) {
+        if (allAb[i].unit_tag != NullTag) {
+            UnitWrapper* u = UnitManager::find(allAb[i].unit_type_id, allAb[i].unit_tag);
             if (u == nullptr) {
                 continue;
             }
-            u->abilities = abil;
+            /*u->abilities = allAb[i];*/
+            u->abilities.unit_tag = allAb[i].unit_tag;
+            u->abilities.unit_type_id = allAb[i].unit_type_id;
+            for (int a = 0; a < allAb[i].abilities.size(); a++) {
+                u->abilities.abilities.clear();
+                u->abilities.abilities.push_back(allAb[i].abilities[a]);
+            }
         }
     }
 }
