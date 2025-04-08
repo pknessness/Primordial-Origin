@@ -1127,8 +1127,8 @@ void UnitWrapper::loadAbilities(Agent *agent) {
             /*u->abilities = allAb[i];*/
             u->abilities.unit_tag = allAb[i].unit_tag;
             u->abilities.unit_type_id = allAb[i].unit_type_id;
+            u->abilities.abilities.clear();
             for (int a = 0; a < allAb[i].abilities.size(); a++) {
-                u->abilities.abilities.clear();
                 u->abilities.abilities.push_back(allAb[i].abilities[a]);
             }
         }
